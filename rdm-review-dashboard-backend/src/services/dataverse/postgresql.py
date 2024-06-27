@@ -200,7 +200,7 @@ def add_view(view_name, db_username):
         return False
 
     query = None
-    file_path = f"rdm-review-dashboard-backend/src/sql/views/{view_name}.sql"
+    file_path = f"sql/views/{view_name}.sql"
 
     with open(file_path) as file:
         query = file.read()
