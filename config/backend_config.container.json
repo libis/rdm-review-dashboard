@@ -2,14 +2,14 @@
 
     "DataverseURL": "http://localhost:8080",
     "DataverseAPI": "http://dataverse:8080",
-    "DataverseAPIKeyFile": "/config/.secrets/api/key",
+    "DataverseAPIKeyFile": "",
 
     "SolrHost": "http://solr:8983",
 	"SolrAPIKeyFile": null,
 
     "PostgresHost": "postgres",
     "PostgresPort": "5432",
-    "PostgresPasswordFile": "/config/.secrets/db/password",
+    "PostgresPasswordFile": "",
     "PostgresDB": "dataverse",
     "PostgresUser": "dataverse",
 

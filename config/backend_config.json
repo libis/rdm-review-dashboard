@@ -23,7 +23,7 @@
 
     "dataPath": "../../data",
 
-    "UIPath": "../image/dist/review-dashboard",
+    "UIPath": "../../review-dashboard-ui/dist/review-dashboard",
 
     "issueDefinitionsFile": "../../config/dataset_issue_definitions.json",
 	"emailTemplatesPath": "../../config/emails",
