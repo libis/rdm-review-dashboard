@@ -1,0 +1,58 @@
+ {
+  "readme":  { 
+    "category": "files",
+    "id": "readme",
+    "title": "Readme",
+    "condition": "README.txt or README.md file is present",
+    "warning": "A README.txt or README.md file is missing.",
+    "message": "A README.txt or README.md file is missing. For more information go to <a href=\"\">this link</a>"
+  }, 
+    "fileExtensions":  { 
+    "category": "files",
+    "id": "fileExtensions",
+    "title": "File Extensions",
+    "condition": "All files in the dataset have file extensions (for larger datasets, just check the README file)",
+    "warning": "Not all files have file extensions.",
+    "message": "There is at least one file in the dataset that doesn’t have the file extension in the file name. This makes it difficult to open the files once downloaded, so could you please correct this. You can do this by deleting the file and reuploading it, or more simply by going to the file options (three vertical dots on the right side of the file) and making sure to type in the original file extension at the end of the file name."
+  }, 
+  "description":  { 
+    "category": "metadata",
+    "id": "description",
+    "title": "Description",
+    "condition": "Description is long enough and describes the dataset.",
+    "warning": "The description is insufficient.",
+    "message": "The description is too short. We typically expect at least three sentences, with it being a summary that describes the purpose, nature and scope of the dataset."
+  },
+  "keywords":  { 
+    "category": "metadata",
+    "id": "keywords",
+    "title": "Keywords",
+    "condition": "There is just one keyword or multiple keywords are entered separately, not in one field",
+    "warning": "Multiple keywords are entered in one field.",
+    "message": "You entered multiple keywords in a single keyword field. Please enter each keyword separately by using the + button behind the fields. Each keyword should be in its own <i>Term</i> field."
+  }, 
+  "license":  { 
+    "category": "terms",
+    "id": "license",
+    "title": "License",
+    "condition": "A license has been selected for the dataset.",
+    "warning": "No license has been selected for the dataset.",
+    "message": "No license has been selected for the dataset. Without a license or terms of use, the dataset cannot be published. (<a href=\"\">http://...</a>)"
+  },
+  "item1":  { 
+    "category": "other category",
+    "id": "item1",
+    "title": "Item 1",
+    "condition": "This dataset meets criterion 1.",
+    "warning": "This dataset does not meet criterion 1.",
+    "message": "Your dataset does not meet <i> criterion 1</i> of our dataverse. Please make sure to do this and this to make your dataset meet this criterion. ( For more information see <a href=\"\">http://___/ourdatasetguidelines/criterion1</a>)"
+  },
+  "item2":  { 
+    "category": "other category",
+    "id": "item2",
+    "title": "Item 2",
+    "condition": "This dataset meets criterion 2.",
+    "warning": "This dataset does not meet criterion 2.",
+    "message": "Your dataset does not meet <i> criterion 2</i> of our dataverse. Please make sure to do this and this to make your dataset meet this criterion. ( For more information see <a href=\"\">http://___/ourdatasetguidelines/criterion2</a>)"
+  }
+}

@@ -1,0 +1,49 @@
+<div *ngIf="dataset" class="review-box border-1 border-300 border-round p-3 mt-2 surface-card">
+  <p class="text-4xl mb-0">{{dataset.title}}</p>
+  <div class="grid">
+    <p *ngIf="dataset.identifier" class="col-3">{{dataset.identifier}}</p>
+    <p *ngIf="dataset.version!=0" class="col-2">Current version: {{dataset.version?.toFixed(1)|| 'N/A'}}</p>
+    <p class="col-2"> Size: {{getDatasetSize()}}</p>
+  </div>
+  <div class="flex flex-row">
+    <div class="flex flex-column">
+      <app-avatar [name]="dataset.authorName[0]"> </app-avatar>
+    </div>
+    <div class="flex flex-column">
+      <p class="text-xl mt-0 mb-0">{{dataset.authorName.join('; ')}}</p>
+      <p class="text-500 mt-0 mb-0">{{dataset.title}}</p>
+    </div>
+  </div>
+  <div></div>
+  <div class="flex flex-row">
+    <app-dataset-tags class="flex align-items-center justify-content-center mb-2" [dataset]="dataset"
+      [reviewerTags$]="reviewerTags$" 
+      [observableTags$]="supportTag$"
+      [tags]="this.datasetService.getTags(this.dataset)"></app-dataset-tags>
+  </div>
+  <div class="flex flex-row">
+    <app-dataset-tags class="flex align-items-center justify-content-center mb-2" [dataset]="dataset"
+      [tags]="this.datasetService.getDepartmentAndFacultyTags(this.dataset)"></app-dataset-tags>
+  </div>
+  <div class="flex flex-row vertical-align-end align-items-center justify-content-end">
+    <app-assign-button class="flex p-2 m-2" [dataset]="dataset"> </app-assign-button>
+    <button pButton type="button" class="flex p-button p-2 m-2" label="View dataset in {{this.dataverseName}}" icon="pi pi-link"
+      (click)="openDataset()"></button>
+    <button pButton *ngIf="this.reviewService.canLoggedUserReadSelectedDataset()" type="button"
+      class="flex p-button-outlined p-2 m-2" icon="pi pi-envelope" label="Contact dataset creator(s)"
+      (click)="mailToContact()"></button>
+    <button pButton
+      *ngIf="this.reviewService.canLoggedUserReadSelectedDataset() && (supportAsked.asObservable()|async)==false"
+      type="button" class="flex p-button-outlined p-2 m-2" label="Ask for support" icon="pi pi-flag"
+      (click)="askSupport()"></button>
+    <button pButton
+      *ngIf="this.reviewService.canLoggedUserReadSelectedDataset() && (supportAsked.asObservable() |async)==true"
+      type="button" class="flex p-button-outlined p-2 m-2" label="Remove support flag" icon="pi pi-flag"
+      (click)="removeSupport()"></button>
+    <button pButton *ngIf="this.reviewService.canLoggedUserReadSelectedDataset()" type="button"
+      class="flex p-button-outlined p-2 m-2" label="View history" icon="pi pi-history"
+      (click)="showReviewHistory()"></button>
+  </div>
+  <div *ngIf="dataset.lastUpdateTime" class="relative right-0 text-sm flex align-items-center justify-content-start">
+    Last modified: {{dataset.lastUpdateTime | date:"dd/MM/yy"}}</div>
+</div>

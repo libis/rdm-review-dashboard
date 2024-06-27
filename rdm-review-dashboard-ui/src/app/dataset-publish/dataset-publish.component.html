@@ -1,0 +1,39 @@
+<app-dataset-info> </app-dataset-info>
+
+<div *ngIf="reviewService.canLoggedUserReadSelectedDataset()">
+  <div class="review-box border-1 border-300 border-round p-3 mt-2 surface-card"
+    *ngIf="!reviewService.selectedDatasetToBePublished">
+    <h1>Return to author
+    </h1>
+    <p>Due to issues with the dataset, the dataset will be returned to the author and the following email with feedback
+      will be sent:</p>
+    <div class="card">
+      <div class="border-300 border-round p-3 mt-2 surface-card" [innerHTML]="feedbackTextAsHTML"></div>
+
+    </div>
+    <br>
+    <button pButton type="button" class="p-button-outlined p-2 m-2 flex-auto" label="Cancel" icon="pi pi-undo"
+      [disabled]="locked" (click)="cancelReturn()"></button>
+    <button pButton type="button" class="p-2 m-2 flex-auto" label="Return dataset" [disabled]="locked"
+      (click)="return()" icon="pi pi-sign-out"></button>
+  </div>
+  <div class="review-box border-1 border-300 border-round p-3 mt-2 surface-card"
+    *ngIf="reviewService.selectedDatasetToBePublished">
+    <h1>Publish dataset</h1>
+    <p>Once published, all metadata will be openly available and all files according to their set restrictions.</p>
+    <p>Once published, you can find the dataset on the homepage and an email notification will be sent to the author of
+      the dataset to notify them of the publication.</p>
+    <div *ngIf="!firstPublish">
+      <p> Please select the level of change.</p>
+      <p-dropdown [(ngModel)]="selectedVersionType" [options]="versionOptions" placeholder="Please select..."
+        optionLabel="label" optionValue="value"></p-dropdown>
+    </div>
+    <div *ngIf="firstPublish">
+      <p>This is the first version of the dataset, therefore no level of version change needs to be selected.</p>
+    </div>
+    <button pButton type="button" class="p-button-outlined p-2 m-2 flex-auto" label="Cancel" icon="pi pi-undo"
+      [disabled]="locked" (click)="cancelPublish()"></button>
+    <button pButton type="button" class=" p-2 m-2 flex-auto" label="Publish dataset" [disabled]="locked"
+      (click)="publish()" icon="pi pi-sign-out"></button>
+  </div>
+</div>

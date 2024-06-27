@@ -1,0 +1,17 @@
+services:
+  review:
+    container_name: "review"
+    hostname: "review"
+    image: rdm/review:1.3
+    restart: unless-stopped
+    environment:
+      BACKEND_CONFIG_FILE: "/config/backend_config.container.json"
+    ports: 
+      - "8000:8000"
+    networks:
+      - dataverse
+    volumes:
+      - ./data:/data
+      - ./config:/config
+    depends_on:
+      - dataverse

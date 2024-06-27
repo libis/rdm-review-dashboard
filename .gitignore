@@ -1,0 +1,12 @@
+data/*
+!data/.gitkeep
+config/.secrets
+config/backend_config.local.json
+config/backend_config.container.localrdr.json
+compose.*
+!compose.review.yml
+.env.*
+!.env
+.vscode 
+rdm-review-dashboard-backend/.git
+rdm-review-dashboard-ui/.git

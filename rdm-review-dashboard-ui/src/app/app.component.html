@@ -1,0 +1,10 @@
+<div *ngIf="user.loggedUserId.value">
+  <app-top-banner class="top-0 z-5"></app-top-banner>
+  <div *ngIf="user.loggedUserId.value" class="progress-section sticky top-0 z-5" app-progress-section></div>
+  <div class="application content px-4 py-4 m-0 bg-blue-50">
+    <router-outlet class="router-section"></router-outlet>
+  </div>
+  <div class="footer">
+    <div class="row" [innerHTML]="customFooter">
+    </div>
+  </div>

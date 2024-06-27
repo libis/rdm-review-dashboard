@@ -1,0 +1,24 @@
+<p-confirmDialog header="Confirmation" icon="pi pi-exclamation-triangle"></p-confirmDialog>
+<app-dataset-info> </app-dataset-info>
+<div *ngIf="reviewService.canLoggedUserReadSelectedDataset()">
+  <div class="review-box border-1 border-300 border-round p-3 mt-2 surface-card">
+    <app-dataset-checklist *ngIf="dataset.value" [datasetId]="dataset.value.identifier"></app-dataset-checklist>
+  </div>
+  <div class="review-box border-1 border-300 border-round p-3 mt-2 surface-card">
+    <h1>Internal Notes</h1>
+
+    <br>
+    <textarea pInputTextarea id="notes" #notesText [(ngModel)]="noteContent" type="text" rows="20"
+      cols="100"> </textarea>
+    <br>
+    <button pButton type="button" class="p-button-outlined p-2 m-2 flex-auto " label="Clear"
+      [disabled]="this.noteContent == ''" icon="pi pi-times" (click)="clearNotesForm()"></button>
+  </div>
+</div>
+<div class="review-box border-1 border-300 border-round p-3 mt-2 surface-card">
+  <button pButton type="button" class="p-button-outlined p-2 m-2 flex-auto " label="Select dataset"
+    icon="pi pi-chevron-left" routerLink="/select"></button>
+  <button *ngIf="dataset.value && reviewService.canLoggedUserReadSelectedDataset() " pButton type="button"
+    class=" p-2 m-2 flex-auto" label="Feedback" icon="pi pi-chevron-right" iconPos="right"
+    (click)="feedback()"></button>
+</div>

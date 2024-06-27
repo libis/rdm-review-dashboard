@@ -1,0 +1,8 @@
+<div class="flex justify-content-center flex-wrap card-container align-content-center grid bg-blue-50">
+  <div class="col-11">
+    <div [innerHTML]="customHeader"> </div>
+  </div>
+  <div class="col-1 align-content-center">
+    <p>{{(this.user | async)?.userfirstname || ''}}</p>
+  </div>
+</div>

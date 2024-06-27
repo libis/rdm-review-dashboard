@@ -1,0 +1,15 @@
+<p-confirmDialog header="Confirmation" icon="pi pi-exclamation-triangle"></p-confirmDialog>
+<!-- Can logged user change reviewer?  -->
+<button *ngIf="(this.userService.loggedUserDetails$|async)?.isAdmin && isInReview()" [disabled]="isLockedForReviewing" pButton
+    type="button" class="flex-1 p-2 m-2 p-button-outlined" (click)="showAssignDialogue()" label="Change Reviewer"
+    icon="pi pi-user-plus"></button>
+<!-- Can logged user be assigned to the dataset as reviewer?  -->
+<button
+    *ngIf="((this.userService.loggedUserDetails$|async)?.isAdmin || (this.userService.loggedUserDetails$|async)?.isReviewer) && isSubmittedForReview()"
+    [disabled]="isLockedForReviewing" pButton type="button" class="flex-1 p-2 m-2" (click)="showAssignDialogue()" label="Assign"
+    icon="pi pi-user-plus"></button>
+<!-- Can logged user be unassigned from the dataset?  -->
+<button
+    *ngIf="canUnassignReviewer() || (this.dataset.reviewer.length>0 && (this.userService.loggedUserDetails$ | async)?.isAdmin)"
+    pButton type="button" [disabled]="isLockedForReviewing" class="flex-1 p-button-outlined p-2 m-2" (click)="showUnassignDialog()"
+    label="Unassign" icon="pi pi-times"></button>

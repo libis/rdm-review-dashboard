@@ -1,0 +1,9 @@
+<div *ngFor="let tag of (reviewerTags$ | async)">
+    <app-tag [type]="tag.type" [text]="tag.content" [color]="getColor(tag)"> </app-tag>
+</div>
+<div *ngFor="let tag of (observableTags$ | async)">
+    <app-tag [type]="tag.type" [text]="tag.content" [color]="getColor(tag)"> </app-tag>
+</div>
+<div *ngFor="let tag of tags">
+    <app-tag [type]="tag.type" [text]="tag.content" [color]="getColor(tag)"> </app-tag>
+</div>

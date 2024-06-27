@@ -1,0 +1,37 @@
+{
+
+    "DataverseURL": "http://localhost:8080",
+    "DataverseAPI": "http://localhost:8080",
+    "DataverseAPIKeyFile": "../../config/.secrets/api/key",
+
+    "SolrHost": "http://localhost:8983",
+	"SolrAPIKeyFile": null,
+
+    "PostgresHost": "localhost",
+    "PostgresPort": "5432",
+    "PostgresPasswordFile": "../../config/.secrets/db/password",
+    "PostgresDB": "dataverse",
+    "PostgresUser": "dataverse",
+
+    "SMTPHost": "smtp",
+    "SMTPPort": "25",
+    "SMTPPasswordFile": null,
+    "testEmail": null,
+    "helpdeskEmails": [],
+
+    "userIdHeaderField": "Ajp_uid",
+
+    "dataPath": "../../data",
+
+    "UIPath": "../image/dist/review-dashboard",
+
+    "issueDefinitionsFile": "../../config/dataset_issue_definitions.json",
+	"emailTemplatesPath": "../../config/emails",
+
+    "reviewerRoles": ["reviewer", "admin"],
+    "dataverseUserGroupAliases" : {
+        "reviewer": ["reviewer", "admin"], 
+        "admin": ["admin"]
+    }
+
+}

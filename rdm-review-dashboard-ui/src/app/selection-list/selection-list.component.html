@@ -1,0 +1,64 @@
+
+<div #pnl *ngIf="(this.userService.isAuthorizedToReview$ | async)" >
+  <p-tabView [activeIndex]="tabIndex" (onChange)="onTabChange($event)" >   
+    <p-tabPanel  header="My Reviews"> 
+      <div class="grid mt-4 overflow-y-auto"></div> 
+    </p-tabPanel>
+    <p-tabPanel   header="Submitted for Review">
+      <div class="grid mt-4 overflow-y-auto"></div> 
+    </p-tabPanel>
+    <p-tabPanel   header="In Review">
+      <div class="grid mt-4 overflow-y-auto"></div>
+    </p-tabPanel>
+    <p-tabPanel   header="Published">
+      <div class="grid mt-4 overflow-y-auto"></div>
+    </p-tabPanel>
+    <p-tabPanel   header="Draft">
+      <div class="grid mt-4 overflow-y-auto"></div>
+    </p-tabPanel>
+    <p-tabPanel header="All">
+      <div class="grid mt-4 overflow-y-auto"> </div>
+    </p-tabPanel>
+    
+    <div class="grid mt-4 overflow-y-auto"> 
+
+      <!-- Datasets -->
+      <div app-selection-item class="xl:col-4 lg:col-6 sm:col-12 col-12 my-2 mx-0 px-2 py-0" 
+            *ngFor="let dataset of (datasets$ | async)" 
+            [dataset]="dataset">
+      </div>
+    </div>
+    <div style="background-color: white;"> 
+      <div *ngIf="((datasetCount$ | async) || 0) == 0"  style="background-color: white;">
+        <div class="flex justify-content-center align-items-center gap-3" style="color: rgb(137, 137, 137)">
+           No datasets to display in this category.
+        </div>
+      </div>
+      <!-- paginator -->
+      <div *ngIf="((datasetCount$ | async) || 0 )> 0" style="background-color: white;">
+        <div  class="flex justify-content-center align-items-center gap-3">
+          <div>
+          <p-paginator (onPageChange)="onPageChange($event)"  
+                        [first]="firstRecord.value" 
+                        [rows]="rows.value" 
+                        [totalRecords]="(datasetCount$ | async) || 0"
+                        [showCurrentPageReport]="true" >
+          </p-paginator>
+          </div>
+          <div>
+          <p style="color: rgb(137, 137, 137)"> 
+            <p-inputNumber #inputNum inputId="inputNumberOfItems" 
+                            [(ngModel)]="itemsPerPage"  
+                            (onBlur)="onNumberOfItemsChange()" 
+                            (keyup.enter)="onNumberOfItemsChange()"> 
+            </p-inputNumber> datasets per page.
+          </p>
+        </div>
+        </div>
+      </div>
+      <div class="flex justify-content-center align-items-center gap-3"></div>
+      <div class="flex justify-content-center align-items-center gap-3"></div>
+      <div class="flex justify-content-center align-items-center gap-3"></div>
+    </div>
+  </p-tabView>
+</div>

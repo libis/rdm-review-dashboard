@@ -1,0 +1,16 @@
+Hi {author_names},
+
+Your dataset titled  "{dataset_title}" has been returned from review because of the following reason(s):
+
+{issues_list}
+
+If you have any questions or need further support, please let us know by responding to this message.
+Once you've made the necessary changes, you can resubmit for review and we'll check again.
+
+
+Kind regards,
+
+{reviewer_name}
+
+
+If you wish to respond to this email, make sure to keep the original subject to ensure it gets sent to the original reviewer.
