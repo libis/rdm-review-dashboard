@@ -27,15 +27,12 @@ The backend_config.json file contains settings for Review Dashboard backend. Its
   ### User related fields:
       "userIdHeaderField": The HTTP header field that contains the dataverse username of the reviewer. 
       "reviewerRoles": The user groups that can access the Review Dashboard. 
-      "dataverseUserGroupAliases": 
-          "reviewer": 
-          "admin": 
+      "dataverseUserGroupAliases": The groups that can review datasets and admin the review dashboard.
       
   ### Various paths:
-      "UIPath": The path for the compiled UI files to be statically served by the backend. Set to _null_ if you do not want the UI to be statically served by the backend.  
-      "issueDefinitionsFile": Location of the dataset_issue_definitions.json, described below.
+      "UIPath": The path for the compiled UI files to be statically served by the backend. Set this to _null_ if you do not want the UI to be statically served by the backend.  
+      "issueDefinitionsFile": Location of the dataset_issue_definitions.json, as described below.
 	    "emailTemplatesPath": Location of the template for feedback email, described below.
-
 
 ## Issue Definitions and Feedback
 The dataset_issue_definitions.json file contains the issues that the reviewers need to check in the review process for your installation. This file is also used in automatically generating feedback emails to be sent when datasets are returned to the author. 
@@ -52,7 +49,7 @@ Each issue has the following structure:
   }, 
 ```
 
-An example:
+For example:
 ```
   "readme":  { 
     "category": "files", // This issue belongs to the 'files' category
@@ -64,16 +61,16 @@ An example:
   }, 
 ```
 This issue will appear as follows in the checklist for reviewer:
-![alt text](docs/images/checklist.png)
+![alt text](images/checklist.png)
 
 And will be added to the review summary as the item 1:
-![alt text](docs/images/review_issues_summary.png)
+![alt text](images/review_issues_summary.png)
 
 Will result in the following item in the feedback email:
-![alt text](docs/images/feedback_email.png)
+![alt text](images/feedback_email.png)
 
 ## Email Templates
-The feedback email is sent to the dataset contact. The text for the email can be changed by editing feedback.txt in the path configured as emailTemplatesPath in backend_config.json. The following fields will be replaced when creating the actual email:
+The feedback email is the email that is sent to the dataset contact in case of returning to the author. The text of the email can be changed by editing feedback.txt in the path configured as emailTemplatesPath in backend_config.json. The following fields will be replaced when creating the actual email:
 ```
 {author_names}
 ```
