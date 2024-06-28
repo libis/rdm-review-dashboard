@@ -22,14 +22,14 @@ make run
 
 This will also statically serve the frontend, if the UI_PATH variable is set. If you do not want the frontend to be served by the backend (to put it into a separate container or serve it otherwise), set UI_PATH to null. For more in-depth look at the configuration, see rdm-review-dashboard-backend/docs/configuration.md.
 
-To build the Review Dashboard as a Docker container, after building the frontend, use;
+To build the Review Dashboard as a Docker container, after building the frontend, use:
 
 ```
 make build-container
 ```
 
 
-The container could be added to your Docker Compose by using the compose.review.yml. For example, to try the review dashboard with the Dataverse demo container, download the Dataverse demo compose.yml (https://guides.dataverse.org/en/latest/container/running/demo.html) into the root folder and in the root folder of the review dashboard run:
+The container can be added to your Docker Compose by using the compose.review.yml. For example, to try the review dashboard with the Dataverse demo container, download the Dataverse demo compose.yml (https://guides.dataverse.org/en/latest/container/running/demo.html) into the root folder and in the root folder of the review dashboard run:
 ```
 docker compose -f compose.yml -f compose.review.yml up
 ```
