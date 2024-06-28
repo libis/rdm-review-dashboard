@@ -29,7 +29,7 @@ make build-container
 ```
 
 
-The container could be added to your Docker Compose by using the compose.review.yml. For example, to try the review dashboard with the Dataverse demo container, download the Dataverse demo compose.yml from Dataverse container ['Demo or Evaluation' page] (https://guides.dataverse.org/en/latest/container/running/demo.html) into the root folder and in the root folder run:
+The container could be added to your Docker Compose by using the compose.review.yml. For example, to try the review dashboard with the Dataverse demo container, download the Dataverse demo compose.yml (https://guides.dataverse.org/en/latest/container/running/demo.html) into the root folder and in the root folder of the review dashboard run:
 ```
 docker compose -f compose.yml -f compose.review.yml up
 ```
