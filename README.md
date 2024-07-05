@@ -6,8 +6,14 @@ The dashboard connects to Dataverse via PostgreSQL and Solr for fast retrieval o
 
 It allows for various customization options, with customizable repository name, review checklists, and feedback emails. Branding can be customized by placing custom header and footer HTMLs. The Dataverse user group names can also be customized to integrate or not conflict with installations’ existing groups. 
 
+Here is a screen-recording, demonstrating the review dashboard usage:  https://kuleuven.mediaspace.kaltura.com/media/KU+Leuven+Review+DashboardA+screen+recording/1_fuuts6ic
+
 ## Installation
-The review dashboard contains a frontend and a backend. The frontend requires Angular CLI 14.1.2 to build. At the runtime, the app requires a backend_config.json file, which should by default be placed to the default location in the root directory. Alternatively, it’s location can be set in BACKEND_CONFIG_FILE environment variable, which can be useful when running from a container. For more in-depth information please refer to the the configuration files.
+The review dashboard contains a frontend and a backend. The frontend requires Angular CLI 14.1.2 to build. At the runtime, the app requires a backend_config.json file, which should by default be placed to the default location in the root directory. Alternatively, it’s location can be set in BACKEND_CONFIG_FILE environment variable, which can be useful when running from a container. 
+
+Particularly important is adding the reviewer users to a 'reviewer' group in the Dataverse UI, and setting the 'userIdHeaderField' in your backend configuration. The latter is necessary for the dashboard to get  the authenticated user’s username from the HTTP header field. This field be simulated with browser plugins for testing purposes. For details, see the documentation for backend configuration. 
+
+For more in-depth information please refer to the the configuration documentation. 
 
 To build the frontend use:
 ```
