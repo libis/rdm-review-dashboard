@@ -2,9 +2,17 @@ from utils import request_utils
 import json
 from typing import Optional, Literal
 from utils.logging import logging
+from requests import Response
 BASE_URL = ''
 KEY = ''
 
+
+def wait_dataverse():
+    """Waits until dataverse API responds."""
+    request_url = f'{BASE_URL}/info/version'
+    response = None
+    while not isinstance(response, Response)  or response.status_code != 200:
+        response = request_utils.get_request(request_url)
 
 def retrieve_dataset_assignees(persistent_id):
     """Retrieves all assignments of the dataset."""

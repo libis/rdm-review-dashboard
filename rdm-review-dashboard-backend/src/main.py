@@ -68,6 +68,7 @@ def configure():
     configure_routing()
 
     configure_api_keys(settings)
+    native.wait_dataverse()
     configure_email(settings)
     configure_postgresql(settings)
     configure_authentication(settings)
