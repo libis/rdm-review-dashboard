@@ -17,7 +17,7 @@ GROUP_ID ?= $(shell id -g)
 
 build-frontend: ## Build Frontend
 	echo "Building frontend ..."
-	cd ./rdm-review-dashboard-ui && rm -rf ./dist && ng build --configuration="production" --base-href $(BASE_HREF)
+	cd ./rdm-review-dashboard-ui && rm -rf ./dist && npm install && ng build --configuration="production" --base-href $(BASE_HREF)
 
 build-container: ## Build Docker image
 	echo "Building Docker image ..."
