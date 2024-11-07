@@ -19,7 +19,7 @@ build-frontend: ## Build Frontend
 	echo "Building frontend ..."
 	cd ./rdm-review-dashboard-ui && rm -rf ./dist && npm install && ng build --configuration="production" --base-href $(BASE_HREF)
 
-build-container: ## Build Docker image
+build-container: build-frontend ## Build Docker image
 	echo "Building Docker image ..."
 	rm -rf rdm-review-dashboard-backend/image/dist
 	rm -rf rdm-review-dashboard-backend/image/src
