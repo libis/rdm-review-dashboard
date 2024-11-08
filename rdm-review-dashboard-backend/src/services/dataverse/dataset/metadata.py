@@ -102,17 +102,12 @@ async def async_get_dataset_details(persistent_identifier: str):
     
     """
     authority, identifier = await get_authority_and_identifier(persistent_identifier)
+    
+    records = postgresql.query_dataset_metadata(authority, identifier)
     result = []
-    cur = postgresql.query_dataset_metadata(authority, identifier)
-
-    row = cur.fetchone()
-    cols = [description_item[0] for description_item in cur.description]
-    if row:     
-        new_record = {col:content for col, content in zip(cols, row)}
-        new_record = await format_dataset_metadata(new_record)
+    for record in records:
+        new_record = await format_dataset_metadata(record)
         result.append(new_record)
-    
-    
     result = await append_dataset_storage_usage(result)
 
     return result[0] if len(result)>0 else None
@@ -137,17 +132,11 @@ async def async_get_datasets_details(start=None, rows=False, status=None, review
     """
 
     reviewer = await sanitize_reviewer_username(reviewer)
+    records = postgresql.query_datasets_metadata(start=start, rows=rows, status=status, reviewer=reviewer)
     result = []
-    cur = postgresql.query_datasets_metadata(start=start, rows=rows, status=status, reviewer=reviewer)
-
-    row = cur.fetchone()
-    cols = [description_item[0] for description_item in cur.description]
-    while row:     
-        new_record = {col:content for col, content in zip(cols, row)}
-        new_record = await format_dataset_metadata(new_record)
+    for record in records:
+        new_record = await format_dataset_metadata(record)
         result.append(new_record)
-        row = cur.fetchone()
-    
     result = await append_dataset_storage_usage(result)
 
     return result
@@ -199,28 +188,23 @@ async def differentiate_departments_faculties(department_faculty: Optional[List[
 async def get_review_status_counts(reviewer=None):
     if reviewer and not reviewer.startswith('@'):
         reviewer = "@" + reviewer
-
-    cur = postgresql.query_dataset_review_status_counts(reviewer=reviewer)
-    rows = cur.fetchall()
-    cols = [description_item[0] for description_item in cur.description]
-
+    records = postgresql.query_dataset_review_status_counts(reviewer=reviewer)
     result = {
         'in_review': {'status': 'in_review', 'count': 0},
         'draft': {'status': 'draft', 'count': 0},
         'submitted_for_review': {'status': 'submitted_for_review', 'count': 0},
         'published': {'status': 'published', 'count': 0}
     }
-    for row in rows:
-        record = {col:content for col, content in zip(cols, row)}
-        dataset_count = record.get('datasetcount')
-        if record.get('versionstate')=='RELEASED':
+    for row in records:
+        dataset_count = row.get('datasetcount')
+        if row.get('versionstate')=='RELEASED':
             result['published']['count'] = result.get('published').get('count') + dataset_count
-        elif record.get('versionstate')=='DRAFT' and record.get('inreview') == True:
-            if record.get('hasreviewer') == True:
+        elif row.get('versionstate')=='DRAFT' and row.get('inreview') == True:
+            if row.get('hasreviewer') == True:
                 result['in_review']['count'] = result.get('in_review').get('count') + dataset_count
             else:
                 result['submitted_for_review']['count'] = result.get('submitted_for_review').get('count') + dataset_count
-        elif record.get('versionstate')=='DRAFT' and record.get('inreview') == False:
+        elif row.get('versionstate')=='DRAFT' and row.get('inreview') == False:
             result['draft']['count'] = result.get('draft').get('count') + dataset_count
     result['all'] = {'status': 'all', 'count': sum([c.get('count') for c in result.values()])}
     return result

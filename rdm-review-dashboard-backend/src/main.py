@@ -115,19 +115,17 @@ def configure_dataset_issue_definitions(settings):
 
 
 def configure_postgresql(settings):
-    pg_host = get_setting(settings, "PostgresHost", required=True)
-    pg_port = get_setting(settings, "PostgresPort", required=True)
-    pg_password_file = get_setting(settings, "PostgresPasswordFile", required=True)
-    pg_db = get_setting(settings, "PostgresDB", required=True)
-    pg_user = get_setting(settings, "PostgresUser", required=True)
-    pg_password = read_value_from_file(pg_password_file, required=True)
-    postgresql.conn = postgresql.get_connection(
-        pg_host, pg_port, pg_db, pg_user, pg_password
-    )
+    postgresql.HOST = get_setting(settings, "PostgresHost", required=True)
+    postgresql.PORT = get_setting(settings, "PostgresPort", required=True)
+    postgresql.PASSWD_FILE = get_setting(settings, "PostgresPasswordFile", required=True)
+    postgresql.DATABASE = get_setting(settings, "PostgresDB", required=True)
+    postgresql.USER = get_setting(settings, "PostgresUser", required=True)
+    postgresql.test_connection()
+
     lock = threading.Lock()
     with lock:
         for view_name in ["datasetversion_info", "datasetversion_metadata"]:
-            result = postgresql.add_view(view_name, pg_user)
+            result = postgresql.add_view(view_name)
             if result:
                 logging.info(f"PostgreSQL view {view_name} added successfully.")
                 continue

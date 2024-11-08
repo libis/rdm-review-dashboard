@@ -13,13 +13,10 @@ async def get_user_info(user_id: str) -> dict:
     result = {}
     user_id = user_id.strip(" ")
     user_id = user_id.strip("@")
-    cur = postgresql.query_dataverse_user_info(user_id)
+    rows = postgresql.query_dataverse_user_info(user_id)
 
-    row = cur.fetchone()
-    cols = [description_item[0] for description_item in cur.description]
-    while row:
-        new_record = {col: content for col, content in zip(cols, row)}
-        new_record = await format_user_data(new_record)
+    for row in rows:
+        new_record = await format_user_data(row)
         result = result or new_record
         if new_record["isReviewer"] == True:
             result["isReviewer"] = True
@@ -34,26 +31,20 @@ async def get_user_info(user_id: str) -> dict:
             result["name"] += last_name
         if not result["name"]:
             result["name"] = result["username"]
-
-        row = cur.fetchone()
     return result
 
 
 async def get_user_roles(user_id: str) -> dict:
     """Returns the roles of the user."""
     dataverse_user_id = user_id.strip("@")
-    cur = postgresql.query_dataverse_user_info(dataverse_user_id)
-    row_data = cur.fetchone()
-    cols = [description_item[0] for description_item in cur.description]
+    rows = postgresql.query_dataverse_user_info(dataverse_user_id)
     result = {}
     user_groupaliases = set()
-    while row_data:
-        row = {col: content for col, content in zip(cols, row_data)}
+    for row in rows:
         if result == {} and row:
             result = row
         if group_alias := row.get("groupaliasinowner"):
             user_groupaliases.add(group_alias)
-        row_data = cur.fetchone()
     for group_name, group_aliases in GROUP_ALIASES.items():
         result[f"is{group_name.capitalize()}"] = (
             result.get(f"is{group_name.capitalize()}")
@@ -84,12 +75,9 @@ async def get_dataverse_assignees(groups=None) -> List[dict]:
         group_aliases = group_aliases.union(set(GROUP_ALIASES.get(group, [])))
 
     users = {}
-    cur = postgresql.query_dataverse_users(group_aliases=list(group_aliases))
-    row = cur.fetchone()
-    cols = [description_item[0] for description_item in cur.description]
-    while row:
-        new_record = {col: content for col, content in zip(cols, row)}
-        new_record = await format_user_data(new_record)
+    rows = postgresql.query_dataverse_users(group_aliases=list(group_aliases))
+    for row in rows:
+        new_record = await format_user_data(row)
         username = new_record.get("username")
         user = users.get(username) or new_record
         if new_record["isReviewer"] == True:
@@ -98,7 +86,6 @@ async def get_dataverse_assignees(groups=None) -> List[dict]:
             user["isAdmin"] = True
 
         users[username] = user
-        row = cur.fetchone()
 
     users_from_file = {k.strip("@"): v for k, v in USERS.items()}
     usernames = set(users_from_file.keys()).union(set(users.keys()))

@@ -1,5 +1,7 @@
 from enum import Enum
 import json 
+from pathlib import Path
+from utils.logging import logging
 
 def read_json(fn):
     with open(fn, 'r') as fp:     
@@ -28,3 +30,13 @@ async def get_persistent_id(doi: str, identifier:str)->str:
     if not doi.startswith('doi:'):
         doi = 'doi:' + doi
     return f"{doi}/{identifier}"
+
+def read_value_from_file(file_path, required=False):
+    file = Path(file_path).absolute()
+    if not file.exists():
+        if required:
+            logging.info(f"{file_path} file not found.")
+            raise FileNotFoundError
+        return None
+    with open(file) as f:
+        return f.readline().strip()

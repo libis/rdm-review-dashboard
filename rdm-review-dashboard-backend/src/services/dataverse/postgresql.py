@@ -1,18 +1,52 @@
 import psycopg2
 from utils.logging import logging
+from utils.generic import read_value_from_file
 
-conn = None
+HOST = ""
+PORT = ""
+DATABASE = ""
+USER = ""
+PASSWD_FILE = ""
 
 
-def get_connection(host, port, database, user, password):
-    """Returns a connection to the specified PostgreSQL database."""
+def get_password():
+    global PASSWD_FILE
+    return read_value_from_file(PASSWD_FILE)
+
+def test_connection():
     logging.info(
-        f"Establishing connection to PostgreSQL Database: {host}:{port} {database}"
+        f"Testing connection to PostgreSQL database: {HOST}:{PORT} {DATABASE}"
     )
-    return psycopg2.connect(
-        host=host, port=port, database=database, user=user, password=password
-    )
+    result = False
+    conn = None
+    try:
+        conn = get_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT version();")
+            db_version = cursor.fetchone()
+            result = db_version[0]
+            logging.info(
+                f"Connection to PostgreSQL database successful. DB version: {result}"
+            )
+    except Exception as e:
+        logging.error(f"Connection to PostgreSQL database failed: {e}")
+    finally:
+        if conn:
+            conn.close()
+    return result
 
+
+def get_connection():
+    """Returns a connection to the specified PostgreSQL database."""
+    conn = None
+    try:
+        conn = psycopg2.connect(
+        host=HOST, port=PORT, database=DATABASE, user=USER, password=get_password()
+    )
+    except Exception as e:
+        logging.info(f"Could not connect to PostgresSQL: {e}")
+        raise
+    return conn
 
 def query_locks():
     """Returns all dataset locks."""
@@ -22,14 +56,27 @@ def query_locks():
                     datasetlock.user_id AS lock_user_id 
                 FROM dataset AS ds 
                 LEFT join datasetlock ON ds.id = datasetlock.dataset_id;"""
-    cur = conn.cursor()
-    cur.execute(query)
-    return cur
+    return run_query(query)
 
+def run_query(query):
+    """Establishes a connection to the database, runs the query and closes the connection. 
+    Returns the results in a list of dictionaries, consisting of column name and data. """
+    conn = get_connection()
+    result = []
+    with conn.cursor() as cur:
+        cur.execute(query)
+        row = cur.fetchone()
+        while row:
+            cols = [description_item[0] for description_item in cur.description]
+            if row:     
+                new_record = {col:content for col, content in zip(cols, row)}
+                result.append(new_record)
+            row = cur.fetchone()
+    return result
 
 def query_dataset_metadata(authority=None, identifier=None):
     """Returns metadata for a dataset.
-
+    
     Returns:
     PostgreSQL cursor.
     """
@@ -48,9 +95,7 @@ def query_dataset_metadata(authority=None, identifier=None):
     WHERE authority='{authority}' AND identifier='{identifier}'
     ;
     """
-    cur = conn.cursor()
-    cur.execute(query)
-    return cur
+    return run_query(query)
 
 
 def query_datasets_metadata(start=None, rows=None, status=None, reviewer=None):
@@ -102,9 +147,7 @@ def query_datasets_metadata(start=None, rows=None, status=None, reviewer=None):
     {'OFFSET ' + str(start) if isinstance(start, int) else ''}
     ;
     """
-    cur = conn.cursor()
-    cur.execute(query)
-    return cur
+    return run_query(query)
 
 
 def query_dataverse_user_info(user_id):
@@ -126,9 +169,7 @@ def query_dataverse_user_info(user_id):
         ON explicitgroup.id=explicitgroup_authenticateduser.explicitgroup_id
         WHERE authenticateduser.useridentifier=\'{user_id.strip('@')}\';
         """
-    cur = conn.cursor()
-    cur.execute(query)
-    return cur
+    return run_query(query)
 
 
 def query_dataverse_users(group_aliases=None):
@@ -154,9 +195,7 @@ def query_dataverse_users(group_aliases=None):
             LEFT JOIN authenticateduser ON explicitgroup_authenticateduser.containedauthenticatedusers_id=authenticateduser.id
             {group_id_clause if isinstance(group_id_clause, str) else ''};
         """
-    cur = conn.cursor()
-    cur.execute(query)
-    return cur
+    return run_query(query)
 
 
 def query_dataset_review_status_counts(reviewer=None):
@@ -170,9 +209,7 @@ def query_dataset_review_status_counts(reviewer=None):
             from datasetversion_info 
             {assigned_to_query if assigned_to_query else ''}
             GROUP BY versionState, inReview, hasReviewer;"""
-    cur = conn.cursor()
-    cur.execute(query)
-    return cur
+    return run_query(query)
 
 
 def view_exists(view_name):
@@ -182,18 +219,19 @@ def view_exists(view_name):
                 FROM information_schema.views
                 WHERE table_name = '{view_name}'
                 );"""
-    cur = conn.cursor()
-    cur.execute(query)
-    postgres_result = cur.fetchone()
-    try:
-        result = postgres_result[0]
-    except:
-        result = None
-        raise Exception(f"View check in postgres returned: {postgres_result}")
+    result = None
+    with get_connection().cursor() as cur:
+        cur.execute(query)
+        postgres_result = cur.fetchone()
+        try:
+            result = postgres_result[0]
+        except:
+            result = None
+            raise Exception(f"View check in postgres returned: {postgres_result}")
     return result
 
 
-def add_view(view_name, db_username):
+def add_view(view_name):
     """Checks if a view is present in the database and adds it if not."""
     if view_exists(view_name):
         logging.info(f"PosgreSQL view {view_name} already exists.")
@@ -206,11 +244,7 @@ def add_view(view_name, db_username):
         query = file.read()
     if not query:
         raise Exception(f"Could not read query {file_path}")
-    query = query.replace("__db_username__", db_username)
-    cur = conn.cursor()
-    cur.execute(query)
-    conn.commit()
-
+    query = query.replace("__db_username__", USER)
     if not view_exists(view_name):
         raise Exception(f"PostgreSQL view {view_name} could not be added.")
 
@@ -224,6 +258,4 @@ def query_dataset_assignments(authority: str, identifier: str):
 	LEFT JOIN authenticateduser ON authenticateduser.useridentifier=SUBSTRING(roleassignment.assigneeidentifier FROM 2) 
     LEFT JOIN dataverserole ON roleassignment.role_id=dataverserole.id
 	WHERE datasetversion_info.authority='{authority}' AND datasetversion_info.identifier='{identifier}';"""
-    cur = conn.cursor()
-    cur.execute(query)
-    return cur
+    return run_query(query)
