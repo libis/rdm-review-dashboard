@@ -7,7 +7,7 @@ import os
 from utils.logging import logging
 import utils.logging
 from utils import response_headers
-
+from utils.generic import read_value_from_file
 
 import json
 from services.dataverse import native
@@ -139,17 +139,6 @@ def load_settings_file(file_path):
     except:
         raise
     return result
-
-
-def read_value_from_file(file_path, required=False):
-    file = Path(file_path).absolute()
-    if not file.exists():
-        if required:
-            logging.info(f"{file_path} file not found.")
-            raise FileNotFoundError
-        return None
-    with open(file) as f:
-        return f.readline().strip()
 
 
 def get_setting(settings, setting_name, required=False):
