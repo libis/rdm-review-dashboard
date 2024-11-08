@@ -1,5 +1,7 @@
 from functools import wraps
 from services.dataverse import user
+from utils.logging import logging
+from fastapi import HTTPException
 
 USERID_HEADER_FIELD = ""
 ROLES = []
@@ -21,8 +23,13 @@ def inject_uid(func):
         This decorator will not work if 'request' and 'response' are not in the kwargs of the
         wrapped call!"""
         uid = kwargs.get("request").headers.get(USERID_HEADER_FIELD)
-        if uid and await has_authorized_role(uid):
+        if not uid:
+            logging.info("User not logged in.")
+            raise HTTPException(status_code=404, detail="User not logged in.")   
+        if not await has_authorized_role(uid):
+            logging.info(f"User {uid} not authorized.")
+            raise HTTPException(status_code=404, detail=f"User '{uid}' not authorized.")
+        else:
             kwargs["response"].headers["X-User"] = uid
             return await func(*args, **kwargs)
-        return "Not authorized."
     return wrapper
