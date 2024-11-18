@@ -77,8 +77,6 @@ export class DatasetDetailComponent implements AfterViewInit, OnInit, OnDestroy 
 
 
   ngOnDestroy(): void {
-    this.routerSubscription.unsubscribe();
-    this.noteSubscription.unsubscribe();
   }
 
 
