@@ -72,6 +72,8 @@ def run_query(query):
                 new_record = {col:content for col, content in zip(cols, row)}
                 result.append(new_record)
             row = cur.fetchone()
+    if conn:
+        conn.close()
     return result
 
 def query_dataset_metadata(authority=None, identifier=None):
@@ -220,7 +222,8 @@ def view_exists(view_name):
                 WHERE table_name = '{view_name}'
                 );"""
     result = None
-    with get_connection().cursor() as cur:
+    conn = get_connection()
+    with conn.cursor() as cur:
         cur.execute(query)
         postgres_result = cur.fetchone()
         try:
@@ -228,6 +231,9 @@ def view_exists(view_name):
         except:
             result = None
             raise Exception(f"View check in postgres returned: {postgres_result}")
+        finally:
+            if conn:
+                conn.close()
     return result
 
 
@@ -245,9 +251,20 @@ def add_view(view_name):
     if not query:
         raise Exception(f"Could not read query {file_path}")
     query = query.replace("__db_username__", USER)
+    conn = get_connection()
+    with conn.cursor() as cur:
+        try:
+            logging.debug(f"Adding view: {view_name} with query: {query}")
+            cur.execute(query)
+            conn.commit()
+        except Exception as e:
+            logging.critical(f"{view_name} could not be added: {e}")
+        finally:
+            if conn:
+                conn.close()
+
     if not view_exists(view_name):
         raise Exception(f"PostgreSQL view {view_name} could not be added.")
-
     logging.info(f"PostgreSQL view {view_name} added successfully.")
     return True
 
