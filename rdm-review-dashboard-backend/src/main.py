@@ -18,6 +18,8 @@ from persistence import filesystem
 from services.dataverse import user
 from views import home, datasets, reviewer, status, notes, support, feedback
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
+
 from services.dataverse import postgresql
 import threading
 import urllib3
@@ -48,6 +50,11 @@ async def redirect_to_index(request: fastapi.Request, call_next):
         or response.status_code != 404
     ):
         return response
+    
+    # redirect_response.headers["Access-Control-Allow-Origin"] = "*"
+    print(response.headers)
+    # return redirect_response
+
     return fastapi.responses.HTMLResponse(
         content=open(UI_PATH + "/index.html", "r").read(), status_code=200
     )
@@ -87,8 +94,9 @@ def configure():
     # configure_users(settings)
 
     UI_PATH = get_setting(settings, "UIPath", required=True)
+    UI_BASE_HREF = get_setting(settings, "UI_BASE_HREF", required=False) or "/ui/"
     if UI_PATH:
-        api.mount("/ui/", StaticFiles(directory=UI_PATH), name="ui")
+        api.mount(UI_BASE_HREF, StaticFiles(directory=UI_PATH), name="ui")
 
 
 def configure_routing():
