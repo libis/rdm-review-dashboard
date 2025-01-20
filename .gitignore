@@ -1,8 +1,9 @@
 data/*
 !data/.gitkeep
 config/.secrets
-config/backend_config.local.json
-config/backend_config.container.localrdr.json
+config/*.json
+!backend_config.json
+!backend_config.container.json
 compose.*
 !compose.review.yml
 .env.*
