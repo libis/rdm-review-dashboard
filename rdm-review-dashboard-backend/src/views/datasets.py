@@ -59,7 +59,7 @@ async def get_dataset_issues(
 
 @router.get("/api/datasets/{persistent_identifier:path}/contact")
 @response_headers.inject_uid
-async def get_dataset_issues(
+async def get_dataset_contact(
     response: fastapi.Response,
     request: fastapi.Request,
     persistent_identifier: str,
