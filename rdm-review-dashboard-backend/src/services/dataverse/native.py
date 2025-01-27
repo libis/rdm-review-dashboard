@@ -82,8 +82,8 @@ async def async_retrieve_dataset_assignees(persistent_id: str):
     return response
 
 async def async_retrieve_dataset_details(dataset_id: str):
-    request_url =  f'{BASE_URL}/datasets/:persistentId?persistentId={dataset_id}' 
-    response = await request_utils.async_get_request(request_url, key=KEY)
+    request_url =  f'{BASE_URL}/datasets/:persistentId' 
+    response = await request_utils.async_get_request(request_url, key=KEY, persistentId=dataset_id)
     return response
 
 async def async_retrieve_dataset_versions(dataset_id: str):
