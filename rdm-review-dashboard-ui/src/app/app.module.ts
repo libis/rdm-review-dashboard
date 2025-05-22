@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { APP_INITIALIZER } from '@angular/core';
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
 
 // PrimeNG
@@ -119,7 +120,8 @@ import { ReviewHistoryComponent } from './review-history/review-history.componen
         return appConfigService.loadConfig();
       };
     }
-  }
+  }, 
+  {provide: LocationStrategy, useClass: HashLocationStrategy}
   ],
   bootstrap: [AppComponent]
 })
