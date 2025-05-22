@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { ReviewService } from '../services/review.service';
 import { Router, Event, NavigationStart, NavigationEnd, NavigationError, ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, BehaviorSubject } from 'rxjs';
 
 interface ReviewState {
   enabled: boolean,
@@ -15,12 +15,6 @@ interface ReviewState {
 })
 export class ProgressSectionComponent implements OnDestroy {
 
-  currentState!: string;
-  select!: ReviewState;
-  detail!: ReviewState;
-  feedback!: ReviewState;
-  publish!: ReviewState;
-  subscription!: Subscription;
   unlocked = {
     active: false,
     enabled: true
@@ -36,25 +30,25 @@ export class ProgressSectionComponent implements OnDestroy {
     enabled: false
   }
 
+  currentState!: string;
+  select: BehaviorSubject<ReviewState> = new BehaviorSubject<ReviewState>(this.locked);
+  detail: BehaviorSubject<ReviewState> = new BehaviorSubject<ReviewState>(this.locked);
+  feedback: BehaviorSubject<ReviewState> = new BehaviorSubject<ReviewState>(this.locked);
+  publish: BehaviorSubject<ReviewState> = new BehaviorSubject<ReviewState>(this.locked);
+  subscription!: Subscription;
+
 
 
   constructor(private reviewService: ReviewService, private router: Router, private route: ActivatedRoute) {
 
-    this.currentState = 'select';
-
-    this.setState('select');
+    this.currentState = this.getStateFromUrl(this.router.url);
+    this.setState(this.currentState);
     this.subscription = this.router.events.subscribe((event: Event) => {
       if (event instanceof NavigationStart) {
       }
 
       if (event instanceof NavigationEnd) {
-        let url = event.url;
-        let state = 'datasets';
-        for (let s of ['select', 'feedback', 'publish']) {
-          if (url.includes(s)) {
-            state = s;
-          }
-        }
+        let state = this.getStateFromUrl(event.url);
         this.setState(state);
       }
 
@@ -67,6 +61,18 @@ export class ProgressSectionComponent implements OnDestroy {
     this.subscription.unsubscribe();
   }
 
+
+  getStateFromUrl(url: string) {
+    let state = 'datasets';
+    for (let s of ['select', 'feedback', 'publish']) {
+      if (url.includes(s)) {
+        state = s;
+      }
+    }
+    return state;
+
+  }
+
   selectionChanged() {
 
   }
@@ -75,33 +81,30 @@ export class ProgressSectionComponent implements OnDestroy {
 
 
     if (newState == 'select') {
-      this.select = this.active;
-      this.detail = this.locked;
-      this.feedback = this.locked;
-      this.publish = this.locked;
+      this.select.next(this.active);
+      this.detail.next(this.locked);
+      this.feedback.next(this.locked);
+      this.publish.next(this.locked);
 
     }
     else if (newState == 'datasets') {
-      this.select = this.unlocked;
-      this.detail = this.active;
-      this.feedback = this.locked;
-      this.publish = this.locked;
+      this.select.next(this.unlocked);
+      this.detail.next(this.active);
+      this.feedback.next(this.locked);
+      this.publish.next(this.locked);
 
     } else if (newState == 'feedback') {
-      this.select = this.unlocked;
-      this.detail = this.unlocked;
-      this.feedback = this.active;
-      this.publish = this.locked;
+      this.select.next(this.unlocked);
+      this.detail.next(this.unlocked);
+      this.feedback.next(this.active);
+      this.publish.next(this.locked);  
 
     } else if (newState == 'publish') {
-      this.select = this.unlocked;
-      this.detail = this.unlocked;
-      this.feedback = this.unlocked;
-      this.publish = this.active;
+      this.select.next(this.unlocked);
+      this.detail.next(this.unlocked);
+      this.feedback.next(this.unlocked);
+      this.publish.next(this.active);
     }
-    if (!this.reviewService.canLoggedUserReadSelectedDataset())
-      this.feedback = this.locked;
-    this.publish = this.locked;
 
 
     this.currentState = newState

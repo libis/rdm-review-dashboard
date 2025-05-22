@@ -3,17 +3,17 @@
     style="height: 2px; left: 10%; width: 80%;"></div>
   <div class="lg:col-3 md:col-6 sm:col-12 col-12 z-4">
     <app-progress-item id='select' name="Selection" description="Select a dataset to review" icon="pi pi-search"
-      [enabled]="select.enabled" [active]="select.active" (click)="onClickSelect()"></app-progress-item>
+      [enabled]="(select.asObservable() | async)!.enabled" [active]="(select.asObservable() | async)!.active" (click)="onClickSelect()"></app-progress-item>
   </div>
   <div class="lg:col-3 md:col-6 sm:col-12 col-12 z-4">
     <app-progress-item id='details' name="Details" description="View details of review" icon="pi pi-info-circle"
-      [enabled]="detail.enabled" [active]="detail.active" (click)="onClickDetail()"></app-progress-item>
+      [enabled]="(detail.asObservable() | async)!.enabled" [active]="(detail.asObservable() | async)!.active" (click)="onClickDetail()"></app-progress-item>
   </div>
   <div class="lg:col-3 md:col-6 sm:col-12 col-12 z-4">
     <app-progress-item id='feedback' name="Feedback" description="Write feedback for creator" icon="pi pi-file-edit"
-      [enabled]="feedback.enabled" [active]="feedback.active" (click)="onClickReview()"></app-progress-item>
+      [enabled]="(feedback.asObservable() | async)!.enabled" [active]="(feedback.asObservable() | async)!.active" (click)="onClickReview()"></app-progress-item>
   </div>
   <div class="lg:col-3 md:col-6 sm:col-12 col-12 z-4">
     <app-progress-item id='publish' name="Publish/Return" description="Publish or return dataset" icon="pi pi-sign-out"
-      [enabled]="publish.active" [active]="publish.enabled" (click)="onClickPublish()"></app-progress-item>
+      [enabled]="(publish.asObservable() | async)!.enabled" [active]="(publish.asObservable() | async)!.active" (click)="onClickPublish()"></app-progress-item>
   </div>

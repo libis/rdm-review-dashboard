@@ -2,7 +2,7 @@
 
 <div *ngIf="reviewService.canLoggedUserReadSelectedDataset()">
   <div class="review-box border-1 border-300 border-round p-3 mt-2 surface-card"
-    *ngIf="!reviewService.selectedDatasetToBePublished">
+    *ngIf="reviewService.selectedDatasetToBePublished === false">
     <h1>Return to author
     </h1>
     <p>Due to issues with the dataset, the dataset will be returned to the author and the following email with feedback
@@ -18,7 +18,7 @@
       (click)="return()" icon="pi pi-sign-out"></button>
   </div>
   <div class="review-box border-1 border-300 border-round p-3 mt-2 surface-card"
-    *ngIf="reviewService.selectedDatasetToBePublished">
+    *ngIf="reviewService.selectedDatasetToBePublished === true">
     <h1>Publish dataset</h1>
     <p>Once published, all metadata will be openly available and all files according to their set restrictions.</p>
     <p>Once published, you can find the dataset on the homepage and an email notification will be sent to the author of

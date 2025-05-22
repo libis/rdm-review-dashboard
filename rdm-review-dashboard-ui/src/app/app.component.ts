@@ -36,12 +36,12 @@ export class AppComponent implements OnInit {
         } else {
           this.user.loggedUserId.next(uid_response);
         }
+        if (!this.user.loggedUserId.value) {
+          router.navigate(['/']).then();
+        }    
       }
     );
 
-    if (!this.user.loggedUserId.value) {
-      router.navigate(['/']).then();
-    }
   }
   ngOnInit() {
     this.http.get('assets/footer.html', { responseType: 'text' })

@@ -29,7 +29,7 @@ export interface Warning {
 export class ReviewService {
   selectedDatasetId: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
   selectedDataset: BehaviorSubject<Dataset | null> = new BehaviorSubject<Dataset | null>(null);
-  selectedDatasetToBePublished = false;
+  selectedDatasetToBePublished: boolean | null = null;
 
 
 
@@ -57,6 +57,7 @@ export class ReviewService {
     let subscription = this.selectedDatasetId.asObservable().subscribe(
       {
         next: (datasetId) => {
+          this.selectedDatasetToBePublished = null;
           if (datasetId) {
             this.apiService.retrieveDatasetDetails(datasetId).subscribe(
               (dataset) => {

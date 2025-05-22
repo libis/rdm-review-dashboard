@@ -28,10 +28,14 @@ export class DatasetPublishComponent implements OnInit {
 
     this.feedbackTextAsHTML = this.reviewService.selectedDatasetSavedFeedback.value?.replace(/(?:\r\n|\r|\n)/g, '<br>') || '';
     this.locked = this.reviewService.isLockedForReviewing()
+    console.log(this.reviewService.selectedDatasetToBePublished);
   }
 
   ngOnInit(): void {
 
+    if (this.reviewService.selectedDatasetToBePublished == null) {
+      this.router.navigate(['/feedback', this.reviewService.selectedDatasetId.value]).then();
+    }
     this.versionOptions = [];
     if (!this.reviewService.selectedDataset.value?.version) {
       this.firstPublish = true;
@@ -94,7 +98,7 @@ export class DatasetPublishComponent implements OnInit {
 
   cancelPublish() {
     window.alert('The dataset has NOT been published...');
-    this.router.navigate(['/feedback']).then();
+    this.router.navigate(['/feedback', this.reviewService.selectedDatasetId.value]).then();
   }
 
   return() {
@@ -106,6 +110,6 @@ export class DatasetPublishComponent implements OnInit {
   
   cancelReturn() {
     window.alert('The dataset has NOT been returned to the author...');
-    this.router.navigate(['/feedback']).then();
+    this.router.navigate(['/feedback', this.reviewService.selectedDatasetId.value]).then();
   }
 }
