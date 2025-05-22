@@ -42,16 +42,6 @@ async def get_feedback(
     """Returns the previously saved feedback email."""
     note_id = await async_id_from_args(persistent_identifier)
     _note = note.get_note_by_id(persistent_identifier, note_id, "feedback")
-    if not _note:
-        try:
-            feedback_text = await issue.generate_feedback_email(persistent_identifier)
-            note.upsert_note(
-                persistent_identifier, feedback_text, AJP_USER, "feedback", note_id
-            )
-            _note = note.get_note_by_id(persistent_identifier, note_id, "feedback")
-        except Exception as e:
-            logging.error(e)
-            raise fastapi.HTTPException(status_code=404, detail="Dataset not found")
     return _note
 
 

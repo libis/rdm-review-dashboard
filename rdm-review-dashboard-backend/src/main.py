@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 import os
+import shutil
 from utils.logging import logging
 import utils.logging
 from utils import response_headers
@@ -51,9 +52,6 @@ async def redirect_to_index(request: fastapi.Request, call_next):
     ):
         return response
     
-    # redirect_response.headers["Access-Control-Allow-Origin"] = "*"
-    print(response.headers)
-    # return redirect_response
 
     return fastapi.responses.HTMLResponse(
         content=open(UI_PATH + "/index.html", "r").read(), status_code=200
@@ -92,12 +90,16 @@ def configure():
         raise e
 
     # configure_users(settings)
-
+    
     UI_PATH = get_setting(settings, "UIPath", required=True)
     UI_BASE_HREF = get_setting(settings, "UI_BASE_HREF", required=False) or "/ui/"
-    if UI_PATH:
-        api.mount(UI_BASE_HREF, StaticFiles(directory=UI_PATH), name="ui")
+    UI_ASSETS_PATH = get_setting(settings, "UIAssetsPath", required=False)
 
+    if UI_ASSETS_PATH:
+        api.mount("/ui/assets/", StaticFiles(directory=UI_ASSETS_PATH), name="assets")
+
+    if UI_PATH:
+        api.mount(UI_BASE_HREF, StaticFiles(directory=UI_PATH, html=True), name="ui")
 
 def configure_routing():
     api.include_router(home.router)
