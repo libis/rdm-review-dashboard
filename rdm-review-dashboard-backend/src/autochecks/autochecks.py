@@ -21,7 +21,7 @@ def run_checks(persistent_id: str) -> List[CheckResult]:
         method = getattr(module, "run")        
         if not asyncio.iscoroutinefunction(method):
             check_result : CheckResult = method(context)
-            logging.info("{check} on {persistent_id} result: {check_result.check_result}, message: {check_result.message}")
+            logging.info(f"{check} on {persistent_id} result: {check_result.check_result}, message: {check_result.message}")
             result.append(check_result)
     return result
         
