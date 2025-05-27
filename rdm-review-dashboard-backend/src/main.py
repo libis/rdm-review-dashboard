@@ -5,6 +5,7 @@ import uvicorn
 
 import os
 import shutil
+import autochecks.autochecks
 from utils.logging import logging
 import utils.logging
 from utils import response_headers
@@ -24,6 +25,7 @@ from fastapi.responses import RedirectResponse
 from services.dataverse import postgresql
 import threading
 import urllib3
+import sys
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -100,6 +102,13 @@ def configure():
 
     if UI_PATH:
         api.mount(UI_BASE_HREF, StaticFiles(directory=UI_PATH, html=True), name="ui")
+        
+    autocheck_scripts_path = get_setting(settings, "automationsPath", required=False)
+    
+    if autocheck_scripts_path:
+        if autocheck_scripts_path not in sys.path:
+            sys.path.insert(1, autocheck_scripts_path) 
+        autochecks.autochecks.check_list =  get_setting(settings, "automations", required=True)
 
 def configure_routing():
     api.include_router(home.router)
