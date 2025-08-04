@@ -103,12 +103,11 @@ def configure():
     if UI_PATH:
         api.mount(UI_BASE_HREF, StaticFiles(directory=UI_PATH, html=True), name="ui")
         
-    autocheck_scripts_path = get_setting(settings, "automationsPath", required=False)
+    autochecks.autochecks.path = get_setting(settings, "automationsPath", required=False)
+    if autochecks.autochecks.path and autochecks.autochecks.path not in sys.path:
+        sys.path.insert(1, autochecks.autochecks.path) 
+    autochecks.autochecks.default_timeout = get_setting(settings, "automationDefaultCheckTimeout", required=False)
     
-    if autocheck_scripts_path:
-        if autocheck_scripts_path not in sys.path:
-            sys.path.insert(1, autocheck_scripts_path) 
-        autochecks.autochecks.check_list =  get_setting(settings, "automations", required=True)
 
 def configure_routing():
     api.include_router(home.router)
