@@ -1,6 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { IssueDetail, ReviewService } from '../services/review.service';
 import { DatePipe } from '@angular/common';
+import { BehaviorSubject } from 'rxjs';
+import { ColdObservable } from 'rxjs/internal/testing/ColdObservable';
 
 @Component({
   selector: 'app-dataset-checklist',
@@ -11,44 +13,53 @@ export class DatasetChecklistComponent {
   checklist: string[] = [];
   issueDetails: Map<string, IssueDetail> = new Map<string, IssueDetail>();
   @Input() datasetId!: string;
-  issues!: any;
   checklistCategories: any[] = [];
-  autoChecklist: Map<String, boolean | null> = new Map<String, boolean | null>();
-  autoCheckWarnings: Map<String, String | null> = new Map<String, String | null>();
+  autoChecklist: Map<string, boolean | null> = new Map<string, boolean | null>();
+  autoCheckWarnings: Map<string, string | null> = new Map<string, string | null>();
   lastAutocheck!: string | null;
+  autochecksEnabled: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  allSameAsAutocheck: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   constructor(public reviewService: ReviewService, private datePipe: DatePipe) {
     this.reviewService.getSelectedDatasetIssues().subscribe(
-      (issues) => {
-        if (issues) {
-          this.checklist = issues.manual_checklist;
-          console.log(this.autoChecklist)
-          this.checklistCategories = issues.categories;
-          this.lastAutocheck = issues.autocheck_performed;
-          for (let issue of issues.details) {
-            this.issueDetails.set(issue.id, issue);
-          }
-          for (const [key, value] of Object.entries(issues.auto_checklist_states as { [key: string]: boolean | null })) {
-            this.autoChecklist.set(key, value);
-          }
-          for (const [key, value] of Object.entries(issues.auto_checklist_messages as { [key: string]: String | null })) {
-            this.autoCheckWarnings.set(key, value);
-          }
-
-        }
-      }
+      (issues) => this.updateChecklist(issues)
     )
   }
+  allChecksSameAsAutocheck() {
+    for (let issueName of this.issueDetails.keys()) {
+      if (this.autoChecklist.get(issueName)===undefined || this.autoChecklist.get(issueName)===null){
+        continue;
+      } else if (this.autoChecklist.get(issueName)===this.checklist.includes(issueName)) {
+        continue;
+      }
+        else {
+        return false;
+      }
+    }
+    return true;
 
+  }
   onChecklistChange() {
-    this.reviewService.setCheckList(this.checklist);
+    let values: Map<string, boolean | null> = new Map<string, boolean | null>();
+    for (let value of this.checklist) {
+      values.set(value, true);
+    }
+    this.reviewService.setCheckList(values);
+     this.allSameAsAutocheck.next(this.allChecksSameAsAutocheck());
   }
 
-  getAutocheckState(item: String) {
+  runAutochecks() {
+    this.autochecksEnabled.next(false);
+    this.reviewService.runAutochecks().subscribe(
+      (autochecks) => this.updateChecklist(autochecks)
+    );
+  }
+
+  getAutocheckState(item: string) {
     let result = this.autoChecklist.get(item);
     return result;
   }
 
-  getAutocheckWarning(item: String): String | null | undefined {
+  getAutocheckWarning(item: string): string | null | undefined {
     return this.autoCheckWarnings.get(item);
   }
 
@@ -58,7 +69,7 @@ export class DatasetChecklistComponent {
       return false;
     }
 
-    if (this.checklist.includes(item) && this.getAutocheckState(item) == true) {
+    if (this.checklist.includes(item) && this.getAutocheckState(item)===true) {
       return true;
     } else if (!this.checklist.includes(item) && this.getAutocheckState(item) != null && this.getAutocheckState(item) == false) {
       return true;
@@ -79,6 +90,42 @@ export class DatasetChecklistComponent {
   }
 
   isAutochecksDone(): boolean {
-    return this.getLastAutocheck() != null;
+    return this.lastAutocheck != null;
   }
+
+  updateChecklist(issues: any) 
+    { 
+        if (issues) {
+          this.checklistCategories = issues.categories;
+          console.log(issues.autocheck_performed);
+          this.lastAutocheck = issues.autocheck_performed;
+          for (let issue of issues.details) {
+            this.issueDetails.set(issue.id, issue);
+            if (issues.manual_checklist[issue.id]) {
+              this.checklist.push(issue.id);
+            }
+          }
+          for (const [key, value] of Object.entries(issues.auto_checklist_states as { [key: string]: boolean | null })) {
+            this.autoChecklist.set(key, value);
+          }
+          for (const [key, value] of Object.entries(issues.auto_checklist_messages as { [key: string]: string | null })) {
+            this.autoCheckWarnings.set(key, value);
+          }
+          this.autochecksEnabled.next(true);
+
+        }
+     this.allSameAsAutocheck.next(this.allChecksSameAsAutocheck());
+      }
+  updateFromAutochecks() 
+    {     let checklist = [];
+          for (let issuename of this.autoChecklist.keys()) {
+            let currentIssue = this.autoChecklist.get(issuename);
+            if (currentIssue==true || (this.checklist.includes(issuename) && currentIssue!=false)) {
+              checklist.push(issuename)
+            } 
+      }
+      this.checklist = checklist;
+     this.allSameAsAutocheck.next(this.allChecksSameAsAutocheck());
+
+    }
 }

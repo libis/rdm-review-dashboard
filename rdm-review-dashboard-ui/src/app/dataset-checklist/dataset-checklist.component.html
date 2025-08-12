@@ -1,18 +1,28 @@
 <h1>Review checklist </h1>
 <p>Check the following elements before approving a dataset. (automated checks are applied in grey)</p>
 <div class="flex flex-row my-2 vertical-align-end align-items-center justify-content-end" style="margin-right: 20px;">
-
-  <button pButton [class]="isAutochecksDone() ? 'p-button p-button-info p-button-outlined' : 'p-button p-button-info'" *ngIf="isAutochecksAvailable()" style="margin-right: 5px; padding: 5px; padding-right: 12px; padding-left: 12px;"
-   pTooltip="{{ getLastAutocheck() }}"
-  tooltipPosition="top" >
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24" stroke-width="1.0"
-      stroke="currentColor" style="margin-right: 5px;">
-      <path stroke-linecap="round" stroke-linejoin="round"
-        d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-    </svg>
-    <b> <span>Run Autochecks</span> </b>
+  <button pButton [class]="isAutochecksDone() ? 'p-button p-button-info p-button-outlined' : 'p-button p-button-info'"
+    *ngIf="isAutochecksAvailable() && !isAutochecksDone()" (click)="runAutochecks()"
+    style="margin-right: 5px; padding: 5px; padding-right: 12px; padding-left: 12px;"
+    [disabled]="!(autochecksEnabled.asObservable() | async)" pTooltip="{{ getLastAutocheck() || 'Not checked'}}"
+    tooltipPosition="top">
+    <div [style]="(autochecksEnabled.asObservable() | async) ? 'display: contents;' :'display: none;'">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24" stroke-width="1.0"
+        stroke="currentColor" style="margin-right: 5px;">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+      </svg>
+      <b> <span>Run Autochecks</span> </b>
+    </div>
+    <div [style]="!(autochecksEnabled.asObservable() | async) ? 'display: contents;' :'display: none;'">
+      <i class="pi pi-spin pi-spinner" style="margin-right: 5px;"></i>
+      <b> <span> Checking ...</span> </b>
+    </div>
   </button>
-    <button *ngIf="false" pButton class="p-button p-button-info " style="margin-right: 5px;">
+  <button *ngIf="isAutochecksDone()" pButton
+    [class]="(this.allSameAsAutocheck.asObservable()|async) ? 'p-button p-button-outlined' : 'p-button p-button-info'"
+    style="margin-right: 5px; padding: 5px; padding-right: 12px; padding-left: 12px;" (click)="updateFromAutochecks()"
+    [disabled]="(this.allSameAsAutocheck.asObservable()|async)">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24" stroke-width="1.0"
       stroke="currentColor" style="margin-right: 5px;">
       <path stroke-linecap="round" stroke-linejoin="round"
@@ -30,33 +40,33 @@
     <div class="checklist border-1 border-300 border-round w-full mr-4 px-4 py-2">
       <h2>{{category.label}}</h2>
       <div>
-        <div style="padding: .5rem; display: inline-block; "  *ngIf="isAutochecksDone()" >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 24 24"
+        <div style="padding: .5rem; display: inline-block; " *ngIf="isAutochecksDone()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#ADD8E6" viewBox="0 0 24 24"
             stroke-width="1.0" stroke="#ADD8E6" style="filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.01));">
             <path stroke-linecap="round" stroke-linejoin="round"
               d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
           </svg>
-
         </div>
       </div>
-
       <div *ngFor="let item of category.issues" style="margin-bottom: 18px;" class="flex-row">
-        <div *ngIf="isAutochecksDone()" style="padding: .5rem; display: inline;"  pTooltip="{{ getAutocheckWarning(item) }}"
-  tooltipPosition="top" >
+        <div *ngIf="isAutochecksDone()" style="padding: .5rem; display: inline;"
+          pTooltip="{{ getAutocheckWarning(item) }}" tooltipPosition="top">
           <i class="pi pi-check" *ngIf="getAutocheckState(item)"
             style="color: rgb(77, 255, 41); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);"></i>
           <i class="pi pi-times" *ngIf="getAutocheckState(item)==false"
             style="color: rgb(255, 0, 0); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);"></i>
-          <i class="pi pi-exclamation-triangle" *ngIf="(getAutocheckState(item)==null||getAutocheckState(item)==undefined)&&getAutocheckWarning(item)!=null"
+          <i class="pi pi-exclamation-triangle"
+            *ngIf="getAutocheckWarning(item)!=null && (getAutocheckState(item)==null || getAutocheckState(item)==undefined)"
             style="color: rgb(255, 140, 0); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);"></i>
-          <i class="pi pi-exclamation-triangle" *ngIf="(getAutocheckState(item)==null||getAutocheckState(item)==undefined)&&(getAutocheckWarning(item)==null||getAutocheckWarning(item)==undefined)"
-            style="color: rgb(87, 85, 82); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03); visibility: hidden;"></i>
-
+          <i class="pi pi-exclamation-triangle"
+            *ngIf="getAutocheckWarning(item)==null && (getAutocheckState(item)==null || getAutocheckState(item)==undefined)"
+            style="visibility: hidden;"></i>
         </div>
         <div class="field-checkbox" style="display: inline">
           <p-checkbox [name]='item' [value]="item" [inputId]="item" [(ngModel)]="checklist"
-            (onChange)="onChecklistChange()"></p-checkbox>
-          <label [for]="item" [style]="!isDefaultAutocheckedState(item) ? 'font-style: normal; ' : 'font-style: italic; color: grey;'">{{issueDetails.get(item)?.condition}}</label>
+            [disabled]="!(autochecksEnabled.asObservable() | async)" (onChange)="onChecklistChange()"></p-checkbox>
+          <label [for]="item"
+            [style]="!isDefaultAutocheckedState(item) ? 'font-style: normal; ' : 'font-style: italic; color: grey;'">{{issueDetails.get(item)?.condition}}</label>
         </div>
       </div>
     </div>

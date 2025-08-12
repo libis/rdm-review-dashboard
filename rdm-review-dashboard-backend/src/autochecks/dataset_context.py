@@ -10,9 +10,9 @@ import json
 
 class DatasetContext:
     persistent_id : str
-    metadata_blocks : dict|None = None
-    metadata : dict
-    dataset_metadata_json : dict
+    metadata_blocks : dict|None = None # metadata blocks in original format
+    metadata : dict # flattened metadata blocks
+    dataset_metadata_json : dict # other metadata
     files : list
 
     def get_metadata(self, persistent_id: str) -> dict:
@@ -37,7 +37,6 @@ class DatasetContext:
         self.metadata_blocks = dataset["latestVersion"] \
             .get("metadataBlocks")
         if self.metadata_blocks:
-            # print(self.metadata_blocks)
             try:
                 self.metadata = self.parse_metadata_blocks(self.metadata_blocks)
             except Exception as e:

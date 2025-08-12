@@ -3,7 +3,6 @@ from typing import Optional
 from utils.logging import logging
 from services.dataverse.dataset import metadata
 from services import issue
-from models.note import IssueList
 from utils import response_headers
 
 router = fastapi.APIRouter()
@@ -26,6 +25,31 @@ async def async_get_datasets_details(
     )
     return datasets
 
+@router.post("/api/datasets/{persistent_identifier:path}/issues/autochecks")
+@response_headers.inject_uid
+async def update_dataset_issues_from_autocheck(
+    response: fastapi.Response,
+    request: fastapi.Request,
+    persistent_identifier: str,
+    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
+):
+    """Saves a list of strings, representing issues to the specified dataset."""
+    issue.update_from_autochecks(persistent_identifier)
+    result = await issue.get_details(persistent_identifier)
+    return result
+
+@router.get("/api/datasets/{persistent_identifier:path}/issues/autochecks")
+@response_headers.inject_uid
+async def get_autocheck_results(
+    response: fastapi.Response,
+    request: fastapi.Request,
+    persistent_identifier: str,
+    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
+):
+    """Saves a list of strings, representing issues to the specified dataset."""
+    issue.get_autochecks(persistent_identifier)
+    result = await issue.get_details(persistent_identifier)
+    return result
 
 @router.post("/api/datasets/{persistent_identifier:path}/issues/checklist")
 @response_headers.inject_uid
@@ -33,15 +57,17 @@ async def update_dataset_issues(
     response: fastapi.Response,
     request: fastapi.Request,
     persistent_identifier: str,
-    issues: Optional[issue.IssueList] = None,
+    issues: Optional[issue.IssueDict]=None, 
     AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
 ):
     """Saves a list of strings, representing issues to the specified dataset."""
     if not issues:
-        issues = IssueList()
+        issues = issue.IssueDict(persistent_id=persistent_identifier)
+        issues.issues = issue.get_empty_issue_checklist()
     issues.persistent_id = persistent_identifier
     issue.set(issues, AJP_USER)
-    return issues
+    result = await issue.get_details(persistent_identifier)
+    return result
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/issues")

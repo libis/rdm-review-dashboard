@@ -111,13 +111,22 @@ export class ApiService {
     }
   }
 
-  updateDatasetIssuesChecklist(datasetId: string, checklist: string[]) {
+  updateDatasetIssuesChecklist(datasetId: string, checklist: Map<string, boolean | null>) {
     /* 
      * Updates the issues checklist for the dataset using the Review Dashboard API. 
      */
     let url = `${this.baseUrl}/datasets/${datasetId}/issues/checklist`;
-    let body = { issues: checklist }
+    let issues = Object.fromEntries(checklist);
+    let body = { issues: issues }
     return this.http.post(url, body).subscribe();
+  }
+
+  retrieveAutochecks(datasetId: string): Observable<any> {
+    /* 
+     * Updates the issues checklist for the dataset using the Review Dashboard API. 
+     */
+    let url = `${this.baseUrl}/datasets/${datasetId}/issues/autochecks`;
+    return this.http.get(url);
   }
 
 

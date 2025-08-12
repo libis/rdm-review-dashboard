@@ -68,7 +68,7 @@ export class DatasetFeedbackComponent implements AfterViewInit, OnDestroy {
         if (issues) {
           for (let issue of issues?.details || []) {
             this.issueDetails.set(issue.id, issue);
-            if (!issues.manual_checklist.includes(issue.id)) {
+            if (!issues.manual_checklist[issue.id]===true) {
               this.combinedIssues.push(issue.id);
             }
           }
