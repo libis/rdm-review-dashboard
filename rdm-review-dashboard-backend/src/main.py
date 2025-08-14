@@ -129,8 +129,7 @@ def configure_dataset_issue_definitions(settings):
     issues = load_settings_file(
         Path(get_setting(settings, "issueDefinitionsFile", required=True)).absolute()
     )
-    issue.ISSUE_DEFINITIONS = issues
-
+    issue.ISSUE_DEFINITIONS_FILE = get_setting(settings, "issueDefinitionsFile", required=True)
 
 def configure_postgresql(settings):
     postgresql.HOST = get_setting(settings, "PostgresHost", required=True)
