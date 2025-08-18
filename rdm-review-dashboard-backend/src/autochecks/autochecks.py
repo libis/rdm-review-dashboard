@@ -20,7 +20,7 @@ def get_check_list() -> List[Check]:
     check_list: List[Check] = []
     if not path:
         return check_list
-    with open(path + "/auto_checks.json") as f:
+    with open(path + "/autochecks.json") as f:
         checks = json.loads(f.read())
         for check in checks:
             timeout = check.get("timeout")
