@@ -66,19 +66,13 @@ def get_module_name(method: Callable):
     
 
 def perform_check(method: Callable, context:DatasetContext, timeout: int|None):
-        result : CheckResult = CheckResult(None, None)
-        start = time.time()
+        check_result : CheckResult = CheckResult(None, None)
         try:
-            result = run_function(method, context, timeout)
-            result.checked = True
-            logging.info(f"{get_module_name(method)} on {context.persistent_id} result: {result.check_result}, message: {result.message}")
+            check_result = run_function(method, context, timeout)
         except Exception as e:
-            print(e)
+            logging.error(e)
             logging.error(f"Check {get_module_name(method)} could not complete in {timeout} seconds. Skipping...")
-            result.checked = False
-        finally: 
-            result.duration = time.time() - start
-        return result
+        return check_result
   
 def run_checks(persistent_id: str) -> dict[str, CheckResult]:
     logging.info(f"Running autochecks on {persistent_id}")
@@ -96,7 +90,7 @@ def run_checks(persistent_id: str) -> dict[str, CheckResult]:
         check_name = check.name
         
         try:
-            module = importlib.import_module("autochecks." + check_name)
+            module = importlib.import_module(check_name)
         except Exception as e:
             logging.error(f"Could not import '{check_name}'. Check will be skipped.")
             continue
@@ -112,6 +106,10 @@ def run_checks(persistent_id: str) -> dict[str, CheckResult]:
         
         logging.info(f"Running autocheck {check_name} on {persistent_id}...")
         check_result = perform_check(method, context, check.timeout)
+        if isinstance(check_result, Exception):
+            logging.error(check_result)
+            check_result = CheckResult(None, None)
+        logging.info(f"{get_module_name(method)} on {context.persistent_id} result: {check_result.result}, warning message: {check_result.warning}")
         result[check_name] = check_result
         
     return result    

@@ -25,7 +25,7 @@ async def async_get_datasets_details(
     )
     return datasets
 
-@router.post("/api/datasets/{persistent_identifier:path}/issues/autochecks")
+@router.post("/api/datasets/{persistent_identifier:path}/issues/autochecks/:update")
 @response_headers.inject_uid
 async def update_dataset_issues_from_autocheck(
     response: fastapi.Response,
@@ -33,23 +33,11 @@ async def update_dataset_issues_from_autocheck(
     persistent_identifier: str,
     AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
 ):
-    """Saves a list of strings, representing issues to the specified dataset."""
+    """Updates the autocheck results and returns the results."""
     issue.update_from_autochecks(persistent_identifier)
     result = await issue.get_details(persistent_identifier)
     return result
 
-@router.get("/api/datasets/{persistent_identifier:path}/issues/autochecks")
-@response_headers.inject_uid
-async def get_autocheck_results(
-    response: fastapi.Response,
-    request: fastapi.Request,
-    persistent_identifier: str,
-    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
-):
-    """Saves a list of strings, representing issues to the specified dataset."""
-    issue.get_autochecks(persistent_identifier)
-    result = await issue.get_details(persistent_identifier)
-    return result
 
 @router.post("/api/datasets/{persistent_identifier:path}/issues/checklist")
 @response_headers.inject_uid

@@ -104,8 +104,8 @@ def configure():
         api.mount(UI_BASE_HREF, StaticFiles(directory=UI_PATH, html=True), name="ui")
         
     autochecks.autochecks.path = get_setting(settings, "automationsPath", required=False)
-    if autochecks.autochecks.path and autochecks.autochecks.path not in sys.path:
-        sys.path.insert(1, autochecks.autochecks.path) 
+    if autochecks.autochecks.path and autochecks.autochecks.path + "/scripts" not in sys.path:
+        sys.path.insert(1, autochecks.autochecks.path + "/scripts") 
     autochecks.autochecks.default_timeout = get_setting(settings, "automationDefaultCheckTimeout", required=False)
     
 

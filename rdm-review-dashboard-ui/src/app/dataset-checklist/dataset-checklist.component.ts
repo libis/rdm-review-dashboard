@@ -50,7 +50,13 @@ export class DatasetChecklistComponent {
   runAutochecks() {
     this.autochecksEnabled.next(false);
     this.reviewService.runAutochecks().subscribe(
-      (autochecks) => this.updateChecklist(autochecks)
+      {
+        next:  (autochecks) => this.updateChecklist(autochecks),
+        error: (err) => {
+          this.autochecksEnabled.next(true);
+          console.log(err);
+        }
+      }
     );
   }
 
@@ -97,7 +103,6 @@ export class DatasetChecklistComponent {
     { 
         if (issues) {
           this.checklistCategories = issues.categories;
-          console.log(issues.autocheck_performed);
           this.lastAutocheck = issues.autocheck_performed;
           for (let issue of issues.details) {
             this.issueDetails.set(issue.id, issue);

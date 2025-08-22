@@ -126,14 +126,13 @@ export class ReviewService {
      * stores the values of the dataset issues checklist, set by the user.  
      */
     if (this.selectedDatasetId.value) {
-      console.log(values)
       this.apiService.updateDatasetIssuesChecklist(this.selectedDatasetId.value, values);
     }
   }
 
   runAutochecks() {
     if (this.selectedDatasetId.value) {
-      return this.apiService.retrieveAutochecks(this.selectedDatasetId.value);
+      return this.apiService.performAutochecks(this.selectedDatasetId.value);
     }
     return of(null);
   }

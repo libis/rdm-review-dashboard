@@ -121,12 +121,13 @@ export class ApiService {
     return this.http.post(url, body).subscribe();
   }
 
-  retrieveAutochecks(datasetId: string): Observable<any> {
+  performAutochecks(datasetId: string): Observable<any> {
     /* 
      * Updates the issues checklist for the dataset using the Review Dashboard API. 
      */
     let url = `${this.baseUrl}/datasets/${datasetId}/issues/autochecks`;
-    return this.http.get(url);
+    let body = null;
+    return this.http.post(url, body);
   }
 
 

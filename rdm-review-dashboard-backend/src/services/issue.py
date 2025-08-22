@@ -113,8 +113,8 @@ async def get_details(persistent_id: str):
     for name, result in autocheck_results.items():
         if result.last_checked  and (not autocheck_timestamp or result.last_checked > autocheck_timestamp):
             autocheck_timestamp = result.last_checked
-        autocheck_states[name] = result.check_result
-        autocheck_messages[name] = result.message
+        autocheck_states[name] = result.result
+        autocheck_messages[name] = result.warning
         
     result = {
         'details': [i for i in issue_definitions.values()],
@@ -152,9 +152,8 @@ def update_from_autochecks(persistent_id):
         raise Exception(f"Could not run autochecks for {persistent_id}")
     save_autocheck_results(persistent_id, autocheck_results)
     for name, check_result in autocheck_results.items():
-        
-        if check_result.check_result is not None:
-            issues.issues[name] = check_result.check_result
+        if check_result.result is not None:
+            issues.issues[name] = check_result.result
     set(issues)
     
 def get_autochecks(persistent_id):
@@ -173,7 +172,7 @@ def get_autochecks(persistent_id):
 def set(issue_dict: IssueDict, user_id: Optional[str]=None):
     '''Updates the checklist for the dataset issues. If persistent_id/issues does not exist in fs, creates the folder/file. 
         Returns True if successful.'''
-    logging.info(f"Writing issues: {issue_dict.__dict__}")
+    # logging.info(f"Writing issues: {issue_dict.__dict__}")
     if not issue_dict.persistent_id:
         logging.error(f"Error writing issues to file : No dataset id.")
         return False
