@@ -2,7 +2,7 @@
 <p>Check the following elements before approving a dataset. (automated checks are applied in grey)</p>
 <div class="flex flex-row my-2 vertical-align-end align-items-center justify-content-end" style="margin-right: 20px;">
   <button pButton [class]="isAutochecksDone() ? 'p-button p-button-info p-button-outlined' : 'p-button p-button-info'"
-    *ngIf="isAutochecksAvailable()" (click)="runAutochecks()"
+    *ngIf="autochecksAvailable" (click)="runAutochecks()"
     style="margin-right: 5px; padding: 5px; padding-right: 12px; padding-left: 12px;"
     [disabled]="!(autochecksEnabled.asObservable() | async)" pTooltip="{{ getLastAutocheck() || 'Not checked'}}"
     tooltipPosition="top">
@@ -19,7 +19,7 @@
       <b> <span> Checking ...</span> </b>
     </div>
   </button>
-  <button *ngIf="isAutochecksDone() && (autochecksEnabled.asObservable() | async)" pButton
+  <button *ngIf="autochecksAvailable  && isAutochecksDone() && (autochecksEnabled.asObservable() | async)" pButton
     [class]="(this.allSameAsAutocheck.asObservable()|async) ? 'p-button p-button-outlined' : 'p-button p-button-info'"
     style="margin-right: 5px; padding: 5px; padding-right: 12px; padding-left: 12px;" (click)="updateFromAutochecks()"
     [disabled]="(this.allSameAsAutocheck.asObservable()|async) || !(autochecksEnabled.asObservable() | async)">
@@ -40,7 +40,7 @@
     <div class="checklist border-1 border-300 border-round w-full mr-4 px-4 py-2">
       <h2>{{category.label}}</h2>
       <div>
-        <div style="padding: .5rem; display: inline-block; " *ngIf="isAutochecksDone()">
+        <div style="padding: .5rem; display: inline-block; " *ngIf="autochecksAvailable  && isAutochecksDone()">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#ADD8E6" viewBox="0 0 24 24"
             stroke-width="1.0" stroke="#ADD8E6" style="filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.01));">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -49,20 +49,16 @@
         </div>
       </div>
       <div *ngFor="let item of category.issues" style="margin-bottom: 18px;" class="flex-row">
-        <div *ngIf="isAutochecksDone()" style="padding: .5rem; display: inline;"
+        <div *ngIf="autochecksAvailable  && isAutochecksDone()" style="padding: .5rem; display: inline;"
           pTooltip="{{ getAutocheckWarning(item) }}" tooltipPosition="top">
           <i class="pi pi-check" *ngIf="getAutocheckState(item)"
             style="color: rgb(77, 255, 41); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);"></i>
           <i class="pi pi-times" *ngIf="getAutocheckState(item)==false"
             style="color: rgb(255, 0, 0); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);"></i>
-          <i class="pi pi-exclamation-triangle"
-            *ngIf="getAutocheckState(item)==null"
-            style="visibility: hidden;"></i>
-          <i class="pi pi-exclamation-triangle"
-            *ngIf="getAutocheckWarning(item)!=null"
+          <i class="pi pi-exclamation-triangle" *ngIf="getAutocheckState(item)==null" style="visibility: hidden;"></i>
+          <i class="pi pi-exclamation-triangle" *ngIf="getAutocheckWarning(item)!=null"
             style="color: rgb(255, 140, 0); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);  padding-left:5px;"></i>
-          <i class="pi pi-exclamation-triangle"
-            *ngIf="getAutocheckWarning(item)==null"
+          <i class="pi pi-exclamation-triangle" *ngIf="getAutocheckWarning(item)==null"
             style="visibility: hidden; padding-left:5px;"></i>
         </div>
         <div class="field-checkbox" style="display: inline">
