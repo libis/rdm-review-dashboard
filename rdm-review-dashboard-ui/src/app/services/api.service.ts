@@ -125,7 +125,7 @@ export class ApiService {
     /* 
      * Updates the issues checklist for the dataset using the Review Dashboard API. 
      */
-    let url = `${this.baseUrl}/datasets/${datasetId}/issues/autochecks`;
+    let url = `${this.baseUrl}/datasets/${datasetId}/issues/autochecks/:update`;
     let body = null;
     return this.http.post(url, body);
   }
