@@ -19,6 +19,7 @@ export class DatasetChecklistComponent {
   lastAutocheck!: string | null;
   autochecksEnabled: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   allSameAsAutocheck: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  autoCheckSuccess: BehaviorSubject<boolean|null> = new BehaviorSubject<boolean|null>(null);
   autochecksAvailable: boolean = false;
   constructor(public reviewService: ReviewService, private datePipe: DatePipe) {
     this.reviewService.getSelectedDatasetIssues().subscribe(
@@ -53,11 +54,14 @@ export class DatasetChecklistComponent {
 
   runAutochecks() {
     this.autochecksEnabled.next(false);
+    this.autoCheckSuccess.next(null);
     this.reviewService.runAutochecks().subscribe(
       {
         next: (autochecks) => this.updateChecklist(autochecks),
         error: (err) => {
           this.autochecksEnabled.next(true);
+          this.lastAutocheck = null;
+          this.autoCheckSuccess.next(false);
           console.log(err);
         }
       }
@@ -75,7 +79,7 @@ export class DatasetChecklistComponent {
 
   isDefaultAutocheckedState(item: string): boolean {
 
-    if (!this.isAutochecksDone()) {
+    if (this.lastAutocheck !== null) {
       return false;
     }
 
@@ -87,22 +91,34 @@ export class DatasetChecklistComponent {
     return false;
   }
 
-  getLastAutocheck(): string | null {
-    if (this.lastAutocheck == null) {
-      return null;
-    } else {
+  getAutocheckTooltip(): string | null {
+    if (this.lastAutocheck === null && this.autoCheckSuccess.value !== false) {
+      return 'Not checked';
+    } else if (this.autoCheckSuccess.value === true) {
       return "Last checked: \n" + this.datePipe.transform(this.lastAutocheck, 'medium');
+    } else if (this.autoCheckSuccess.value === false) {
+      return "Last autocheck failed. Please try again.";
+    } else {
+      return null;
     }
   }
 
-  isAutochecksDone(): boolean {
-    return this.lastAutocheck != null;
+  getAutocheckButtonClass(): string {
+    if (this.autoCheckSuccess.value === true) {
+      return this.lastAutocheck != null ? 'p-button p-button-info p-button-outlined' : 'p-button p-button-info';
+    } else if (this.autoCheckSuccess.value === false) {
+
+      return 'p-button p-button-danger';
+    } else {
+      return 'p-button p-button-info';
+    }
   }
 
   updateChecklist(issues: any) {
     if (issues) {
       this.checklistCategories = issues.categories;
       this.lastAutocheck = issues.autocheck_performed;
+      this.autoCheckSuccess.next(true);
       for (let issue of issues.details) {
         this.issueDetails.set(issue.id, issue);
         if (issues.manual_checklist[issue.id]) {
