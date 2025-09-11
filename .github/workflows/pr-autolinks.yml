@@ -1,0 +1,136 @@
+# @ai-generated: true
+# @ai-tool: Copilot
+name: PR Auto Links (/gov autofill)
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+
+jobs:
+  autolinks:
+    if: >-
+      ${{ github.event.issue.pull_request &&
+          (startsWith(github.event.comment.body || '', '/gov autofill') ||
+           startsWith(github.event.comment.body || '', '/gov links')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preview or apply autofill
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const cmd = (context.payload.comment?.body || '').trim();
+            const apply = /^\/gov\s+autofill\s+apply!?/i.test(cmd);
+            const previewOnly = /^\/gov\s+links/i.test(cmd) || /^\/gov\s+autofill\s*$/i.test(cmd);
+
+            const {owner, repo} = context.repo;
+            const prNumber = context.issue.number;
+            const {data: pr} = await github.rest.pulls.get({owner, repo, pull_number: prNumber});
+
+            // Compute change flags and latest run links
+            const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: prNumber, per_page: 100 });
+            const changed = files.map(f => f.filename);
+            const rx = {
+              userUI: /(^|\/)(ui|web|frontend|public|templates)(\/|$)|(^|\/)src\/.*\.(html|tsx?|vue)$/i,
+              sensitive: /(^|\/)(auth|authn|authz|login|acl|permissions?|access[_-]?control|secrets?|tokens?|jwt|oauth)(\/|$)|\.(policy|rego)$/i,
+              infra: /(^|\/)(k8s|kubernetes|helm|charts|deploy|ops|infra|infrastructure|manifests|terraform|ansible)(\/|$)|(^|\/)dockerfile$|docker-compose\.ya?ml$|Chart\.ya?ml$/i,
+              backend: /(^|\/)(src|api|server|backend|app)(\/|\/.*)([^\/]+)\.(js|ts|py|rb|go|java|cs)$/i,
+              media: /\.(png|jpe?g|gif|webp|svg|mp4|mp3|wav|pdf)$/i,
+              data: /(^|\/)(data|datasets|training|notebooks|scripts)(\/|$)/i
+            };
+            const has = (re) => changed.some(p => re.test(p));
+            const flags = {
+              userUI: has(rx.userUI),
+              sensitive: has(rx.sensitive),
+              infra: has(rx.infra),
+              backend: has(rx.backend),
+              media: has(rx.media),
+              data: has(rx.data)
+            };
+
+            const prBody = (pr.body || '').toString();
+            const {data} = await github.rest.actions.listWorkflowRunsForRepo({owner, repo, per_page: 100});
+            const pick = (name) => data.workflow_runs
+              .filter(r => r.head_branch === pr.head.ref && r.name === name)
+              .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+            const gov = pick('PR Governance (licenses & secrets)');
+            const tests = pick('Run Unit Tests');
+            const mkRunUrl = (r) => r ? `https://github.com/${owner}/${repo}/actions/runs/${r.id}` : '';
+            const links = {
+              governance_run: mkRunUrl(gov),
+              scancode_report: mkRunUrl(gov),
+              sbom_report: mkRunUrl(gov),
+              unit_tests: mkRunUrl(tests)
+            };
+
+            if (previewOnly && !apply) {
+              const rows = [];
+              if (links.governance_run) {
+                rows.push(`- ScanCode report: ${links.governance_run} (artifact: scancode-report)`);
+                rows.push(`- SBOM (SPDX): ${links.sbom_report} (artifact: sbom-spdx)`);
+              } else {
+                rows.push('- ScanCode/SBOM: not found yet (run PR Governance workflow)');
+              }
+              if (links.unit_tests) rows.push(`- Unit tests: ${links.unit_tests}`);
+              rows.push('- C2PA: N/A');
+              rows.push('- Accessibility statement: N/A');
+              rows.push('- Retention schedule: N/A');
+              rows.push('- Log retention policy: N/A');
+              rows.push('- Smoke test: use latest Unit tests run link above');
+
+              const body = [
+                '### Auto-links suggestions',
+                '',
+                ...rows,
+                '',
+                'Tip: Use \'/gov autofill apply\' to apply safe defaults (N/A where allowed) and add run links into the PR body.'
+              ].join('\n');
+
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+              return;
+            }
+
+            if (apply) {
+              let body = prBody;
+              const updateField = (text, label, value, opts={}) => {
+                const re = new RegExp(`(^|\n)([\t ]*)${label}[\t ]*:[\t ]*(.*)$`, 'i');
+                const m = text.match(re);
+                if (!m) return text; // line not present
+                const current = m[3].trim();
+                const isPlaceholder = current === '' || /^<.*>$/.test(current) || /^N\/?A$/i.test(current);
+                if (!isPlaceholder && !opts.force) return text;
+                const prefix = m[1] + (m[2] || '');
+                return text.replace(re, `${prefix}${label}: ${value}`);
+              };
+
+              body = updateField(body, 'C2PA', 'N/A');
+              body = updateField(body, 'Accessibility statement', 'N/A');
+              body = updateField(body, 'Retention schedule', 'N/A');
+              body = updateField(body, 'Log retention policy', 'N/A');
+              if (links.unit_tests) body = updateField(body, 'Smoke test', links.unit_tests);
+
+              if (!/##\s*Governance artifacts/i.test(body)) {
+                const extras = [];
+                extras.push('', '## Governance artifacts', '');
+                if (links.governance_run) {
+                  extras.push(`- ScanCode: ${links.governance_run} (artifact: scancode-report)`);
+                  extras.push(`- SBOM: ${links.sbom_report} (artifact: sbom-spdx)`);
+                }
+                if (links.unit_tests) extras.push(`- Unit tests: ${links.unit_tests}`);
+                body += '\n' + extras.join('\n') + '\n';
+              }
+
+              await github.rest.pulls.update({ owner, repo, pull_number: prNumber, body });
+              const msg = [
+                'Applied auto-fill updates to the PR body:',
+                '- Set N/A for C2PA, Accessibility statement, Retention schedule, Log retention policy (placeholders only).',
+                '- Filled Smoke test with latest Unit Tests run link (if available).',
+                '- Appended Governance artifacts section with run links.'
+              ].join('\n');
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body: msg });
+            }

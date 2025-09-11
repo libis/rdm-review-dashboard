@@ -1,0 +1,304 @@
+# @ai-generated: true
+# @ai-tool: Copilot
+name: AI Governance Checks
+
+on:
+  workflow_call:
+    inputs:
+      run_markdownlint:
+        required: false
+        type: boolean
+        default: true
+      run_gitleaks:
+        required: false
+        type: boolean
+        default: true
+      run_dependency_review:
+        required: false
+        type: boolean
+        default: true
+      run_scancode:
+        required: false
+        type: boolean
+        default: true
+      run_sbom:
+        required: false
+        type: boolean
+        default: true
+      run_codeql:
+        required: false
+        type: boolean
+        default: false
+      lint_command:
+        required: false
+        type: string
+        default: ''
+      test_command:
+        required: false
+        type: string
+        default: ''
+      require_ui_transparency:
+        required: false
+        type: boolean
+        default: true
+      require_dpia_for_user_facing:
+        required: false
+        type: boolean
+        default: true
+      require_eval_for_high_risk:
+        required: false
+        type: boolean
+        default: false
+      enable_post_merge_reminders:
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  security-events: write
+
+jobs:
+  policy_checks:
+    name: Policy checks (provenance, risk notes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compute changed files
+        shell: bash
+        run: |
+          base=$(jq -r '.pull_request.base.sha' "$GITHUB_EVENT_PATH")
+          head=$(jq -r '.pull_request.head.sha' "$GITHUB_EVENT_PATH")
+          git fetch --no-tags --depth=1 origin "$base" || true
+          git diff --name-only "$base" "$head" > changed_files.txt || true
+          echo "Changed files:"; cat changed_files.txt || true
+          # Heuristic: user-facing change if paths include common web/ui dirs or templates
+          if grep -Eiq '(^|/)(ui|web|frontend|public|templates|src/.+\.(html|tsx?|vue))$' changed_files.txt; then
+            echo "user_facing_change=true" >> "$GITHUB_ENV"
+          else
+            echo "user_facing_change=false" >> "$GITHUB_ENV"
+          fi
+          # Sensitive modules (authz/authn/permissions/secrets)
+          if grep -Eiq '(^|/)(auth|authn|authz|login|acl|permissions?|access[_-]?control|secrets?|tokens?|jwt|oauth)(/|$)|\.(policy|rego)$' changed_files.txt; then
+            echo "sensitive_modules=true" >> "$GITHUB_ENV"
+          else
+            echo "sensitive_modules=false" >> "$GITHUB_ENV"
+          fi
+          # Media assets changed (content provenance / labeling)
+          if grep -Eiq '\.(png|jpe?g|gif|webp|svg|mp4|mp3|wav|pdf)$' changed_files.txt; then
+            echo "media_change=true" >> "$GITHUB_ENV"
+          else
+            echo "media_change=false" >> "$GITHUB_ENV"
+          fi
+          # Infrastructure / deploy manifests changed
+          if grep -Eiq '(^|/)(k8s|kubernetes|helm|charts|deploy|ops|infra|infrastructure|manifests|terraform|ansible)(/|$)|(^|/)dockerfile$|docker-compose\.ya?ml$|Chart\.ya?ml$' changed_files.txt; then
+            echo "infra_change=true" >> "$GITHUB_ENV"
+          else
+            echo "infra_change=false" >> "$GITHUB_ENV"
+          fi
+          # Backend/API code changed
+          if grep -Eiq '(^|/)(src|api|server|backend|app)(/|/.*)([^/]+)\.(js|ts|py|rb|go|java|cs)$' changed_files.txt; then
+            echo "backend_change=true" >> "$GITHUB_ENV"
+          else
+            echo "backend_change=false" >> "$GITHUB_ENV"
+          fi
+          # Data/TDM related paths
+          if grep -Eiq '(^|/)(data|datasets|training|notebooks|scripts)(/|$)' changed_files.txt; then
+            echo "data_change=true" >> "$GITHUB_ENV"
+          else
+            echo "data_change=false" >> "$GITHUB_ENV"
+          fi
+      - name: Check PR provenance fields
+        shell: bash
+        run: |
+          body=$(jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH")
+          missing=0
+          for key in "Prompt" "Model" "Date" "Author"; do
+            echo "$body" | grep -qi "$key" || { echo "::error::Missing $key in PR body"; missing=1; }
+          done
+          if [ $missing -ne 0 ]; then
+            echo "::error::Provenance fields missing in PR body (Prompt/Model/Date/Author)."; exit 1;
+          fi
+      - name: Require explicit No PII/Secrets checkbox
+        shell: bash
+        run: |
+          body=$(jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH")
+          # Accept either '- [x] No secrets/PII' or '[x] No secrets/PII' (case-insensitive)
+          echo "$body" | grep -Eqi "\[x\].*no\s+secrets/?pii|no\s+pii/?secrets" || {
+            echo "::error::Please confirm '[x] No secrets/PII' in the PR checklist."; exit 1;
+          }
+      - name: Additional compliance (transparency, DPIA, logging, kill-switch, risk classification)
+        shell: bash
+        run: |
+          body=$(jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH")
+          # If user-facing changes and transparency required, enforce checkbox
+          if [ "${{ inputs.require_ui_transparency }}" = "true" ] && [ "$user_facing_change" = "true" ]; then
+            echo "$body" | grep -Eqi "\[x\].*transparency\s+notice" || {
+              echo "::error::For user-facing changes, check '[x] Transparency notice updated'"; exit 1; }
+          fi
+          # DPIA acknowledgement (link or N/A) for user-facing or personal-data
+          if [ "${{ inputs.require_dpia_for_user_facing }}" = "true" ] && [ "$user_facing_change" = "true" ]; then
+            echo "$body" | grep -Eqi "DPIA:\s*(https?://|N/?A)" || {
+              echo "::error::Add 'DPIA: <link or N/A>' line to PR body for user-facing changes"; exit 1; }
+          fi
+          # Logging & kill-switch acknowledgements
+          echo "$body" | grep -Eqi "\[x\].*agent\s+logging" || { echo "::error::Check '[x] Agent logging enabled]'"; exit 1; }
+          echo "$body" | grep -Eqi "\[x\].*(kill\-switch|feature\s+flag)" || { echo "::error::Check '[x] Kill-switch / feature flag present]'"; exit 1; }
+          # Risk classification (limited/high)
+          echo "$body" | grep -Eqi "Risk\s+classification:\s*(limited|high)" || { echo "::error::Add 'Risk classification: limited|high' to PR body"; exit 1; }
+          risk=$(echo "$body" | sed -n 's/.*Risk[[:space:]]\{1,\}classification:[[:space:]]*\(limited\|high\).*/\1/ip' | head -n1 | tr '[:upper:]' '[:lower:]')
+          # Personal data and ADM (automated decision-making)
+          echo "$body" | grep -Eqi "Personal\s*data:\s*(yes|no)" || { echo "::error::Add 'Personal data: yes|no'"; exit 1; }
+          personal=$(echo "$body" | sed -n 's/.*Personal[[:space:]]*data:[[:space:]]*\(yes\|no\).*/\1/ip' | head -n1 | tr '[:upper:]' '[:lower:]')
+          echo "$body" | grep -Eqi "Automated\s*decision\-?making:\s*(yes|no)" || { echo "::error::Add 'Automated decision-making: yes|no'"; exit 1; }
+          adm=$(echo "$body" | sed -n 's/.*Automated[[:space:]]*decision-\{0,1\}making:[[:space:]]*\(yes\|no\).*/\1/ip' | head -n1 | tr '[:upper:]' '[:lower:]')
+          # Agent mode used
+          echo "$body" | grep -Eqi "Agent\s*mode\s*used:\s*(yes|no)" || { echo "::error::Add 'Agent mode used: yes|no'"; exit 1; }
+          agentmode=$(echo "$body" | sed -n 's/.*Agent[[:space:]]*mode[[:space:]]*used:[[:space:]]*\(yes\|no\).*/\1/ip' | head -n1 | tr '[:upper:]' '[:lower:]')
+          # Provider vs deployer
+          echo "$body" | grep -Eqi "Role:\s*(provider|deployer)" || { echo "::error::Add 'Role: provider|deployer'"; exit 1; }
+          role=$(echo "$body" | sed -n 's/.*Role:[[:space:]]*\(provider\|deployer\).*/\1/ip' | head -n1 | tr '[:upper:]' '[:lower:]')
+          if [ "$role" = "provider" ]; then
+            echo "$body" | grep -Eqi "GPAI\s*obligations:\s*(https?://|N/?A)" || { echo "::error::Add 'GPAI obligations: <link or N/A>'"; exit 1; }
+          fi
+          if [ "$role" = "deployer" ]; then
+            echo "$body" | grep -Eqi "Vendor\s*GPAI\s*compliance\s*reviewed:\s*(https?://|N/?A)" || { echo "::error::Add 'Vendor GPAI compliance reviewed: <link or N/A>'"; exit 1; }
+          fi
+          # Prohibited practices attestation
+          echo "$body" | grep -Eqi "\[x\].*no\s+prohibited\s+practices" || { echo "::error::Confirm '[x] No prohibited practices under EU AI Act'"; exit 1; }
+          # Human oversight if agent mode used or high risk
+          if [ "$agentmode" = "yes" ] || [ "$risk" = "high" ]; then
+            echo "$body" | grep -Eqi "\[x\].*human\s+oversight" || { echo "::error::Check '[x] Human oversight retained'"; exit 1; }
+          fi
+          # If automated decision-making is yes, require high risk classification and oversight plan
+          if [ "$adm" = "yes" ]; then
+            [ "$risk" = "high" ] || { echo "::error::Automated decision-making implies 'Risk classification: high'"; exit 1; }
+            echo "$body" | grep -Eqi "Oversight\s*plan:\s*(https?://)" || { echo "::error::Add 'Oversight plan: <link>' for high-risk/ADM"; exit 1; }
+          fi
+          # If personal data yes, require DPIA link (even if not user-facing)
+          if [ "$personal" = "yes" ]; then
+            echo "$body" | grep -Eqi "DPIA:\s*(https?://)" || { echo "::error::Provide 'DPIA: <link>' when personal data is processed"; exit 1; }
+          fi
+          # High risk: require rollback plan and smoke test
+          if [ "$risk" = "high" ]; then
+            echo "$body" | grep -Eqi "Rollback\s*plan:\s*.+" || { echo "::error::Add 'Rollback plan: <summary>' for high-risk changes"; exit 1; }
+            echo "$body" | grep -Eqi "Smoke\s*test:\s*(https?://)" || { echo "::error::Add 'Smoke test: <link>' for high-risk changes"; exit 1; }
+          fi
+          # Evaluation results: optionally enforce for high-risk
+          if [ "${{ inputs.require_eval_for_high_risk }}" = "true" ] && [ "$risk" = "high" ]; then
+            echo "$body" | grep -Eqi "Eval\s*set:\s*(https?://)" || { echo "::error::Add 'Eval set: <link>' for high-risk"; exit 1; }
+            # Expect 'Error rate: 1.5%' style; must be <= 2
+            er=$(echo "$body" | sed -n 's/.*Error[[:space:]]*rate:[[:space:]]*\([0-9]*\.?[0-9]*\)%.*/\1/p' | head -n1)
+            if [ -z "$er" ]; then echo "::error::Add 'Error rate: <x%>' for high-risk"; exit 1; fi
+            awk -v er="$er" 'BEGIN { if (er+0 > 2.0) { exit 1 } }' || { echo "::error::Error rate must be <= 2% for high-risk"; exit 1; }
+          else
+            # Non-blocking warning if error rate declared > 2%
+            er=$(echo "$body" | sed -n 's/.*Error[[:space:]]*rate:[[:space:]]*\([0-9]*\.?[0-9]*\)%.*/\1/p' | head -n1)
+            if [ -n "$er" ]; then awk -v er="$er" 'BEGIN { if (er+0 > 2.0) { print "::warning::Declared error rate > 2%"; } }'; fi
+          fi
+          # Prompt injection mitigation for agented backend/data changes
+          if [ "$agentmode" = "yes" ] && { [ "$backend_change" = "true" ] || [ "$data_change" = "true" ]; }; then
+            echo "$body" | grep -Eqi "\[x\].*untrusted\s*input\s*sanitized" || { echo "::error::Confirm '[x] Untrusted input sanitized' for agent mode with backend/data changes"; exit 1; }
+          fi
+          # License/IP attestation & attribution
+          echo "$body" | grep -Eqi "\[x\].*license/?ip\s*attestation" || { echo "::error::Confirm '[x] License/IP attestation'"; exit 1; }
+          echo "$body" | grep -Eqi "Attribution:\s*(https?://|N/?A)" || { echo "::error::Add 'Attribution: <link or N/A>' if applicable"; exit 1; }
+          # Sensitive modules require security review
+          if [ "$sensitive_modules" = "true" ]; then
+            echo "$body" | grep -Eqi "\[x\].*security\s+review|Security\s*review:\s*(https?://)" || { echo "::error::Sensitive modules changed; add '[x] Security review requested' or 'Security review: <link>'"; exit 1; }
+          fi
+          # Media assets: require AI content labeling + C2PA link or N/A
+          if [ "$media_change" = "true" ]; then
+            echo "$body" | grep -Eqi "\[x\].*ai\s*content\s*labeled" || { echo "::error::Media changed; confirm '[x] AI content labeled'"; exit 1; }
+            echo "$body" | grep -Eqi "C2PA:\s*(https?://|N/?A)" || { echo "::error::Add 'C2PA: <link or N/A>' for media provenance"; exit 1; }
+          fi
+          # UI/Accessibility: require accessibility review + statement link when UI changed
+          if [ "$user_facing_change" = "true" ]; then
+            echo "$body" | grep -Eqi "\[x\].*accessibility\s+(review|check)" || { echo "::error::UI changed; confirm '[x] Accessibility review (EN 301 549/WCAG)'"; exit 1; }
+            echo "$body" | grep -Eqi "Accessibility\s*statement:\s*(https?://|N/?A)" || { echo "::error::Add 'Accessibility statement: <link or N/A>'"; exit 1; }
+          fi
+          # Infra/deploy changes: require privacy notice, lawful basis, retention schedule, NIS2 applicability and incident plan if yes
+          if [ "$infra_change" = "true" ]; then
+            echo "$body" | grep -Eqi "Privacy\s*notice:\s*(https?://)" || { echo "::error::Add 'Privacy notice: <link>' for deploying changes"; exit 1; }
+            echo "$body" | grep -Eqi "Lawful\s*basis:\s*[A-Za-z]+|N/?A" || { echo "::error::Add 'Lawful basis: <e.g., public task/consent/contract or N/A>'"; exit 1; }
+            echo "$body" | grep -Eqi "Retention\s*schedule:\s*(https?://|N/?A)" || { echo "::error::Add 'Retention schedule: <link or N/A>'"; exit 1; }
+            echo "$body" | grep -Eqi "NIS2\s*applicability:\s*(yes|no|N/?A)" || { echo "::error::Add 'NIS2 applicability: yes|no|N/A'"; exit 1; }
+            nis=$(echo "$body" | sed -n 's/.*NIS2[[:space:]]*applicability:[[:space:]]*\(yes\|no\|N\/?A\).*/\1/ip' | head -n1 | tr '[:upper:]' '[:lower:]')
+            if [ "$nis" = "yes" ]; then
+              echo "$body" | grep -Eqi "Incident\s*response\s*plan:\s*(https?://)" || { echo "::error::Provide 'Incident response plan: <link>' for NIS2"; exit 1; }
+            fi
+          fi
+          # Backend/API changes: require OWASP ASVS review link or checkbox
+          if [ "$backend_change" = "true" ]; then
+            echo "$body" | grep -Eqi "\[x\].*owasp\s*asvs|ASVS:\s*(https?://)" || { echo "::error::Backend/API changed; confirm '[x] OWASP ASVS review' or add 'ASVS: <link>'"; exit 1; }
+          fi
+          # Log retention: if personal data yes, high risk, or infra_change, require a log retention policy link or N/A
+          if [ "$personal" = "yes" ] || [ "$risk" = "high" ] || [ "$infra_change" = "true" ]; then
+            echo "$body" | grep -Eqi "Log\s*retention\s*policy:\s*(https?://|N/?A)" || { echo "::error::Add 'Log retention policy: <link or N/A>'"; exit 1; }
+          fi
+          # TDM compliance if data paths changed
+          if [ "$data_change" = "true" ]; then
+            echo "$body" | grep -Eqi "TDM:\s*(yes|no|N/?A)" || { echo "::error::Add 'TDM: yes|no|N/A'"; exit 1; }
+            tdm=$(echo "$body" | sed -n 's/.*TDM:[[:space:]]*\(yes\|no\|N\/?A\).*/\1/ip' | head -n1 | tr '[:upper:]' '[:lower:]')
+            if [ "$tdm" = "yes" ]; then
+              echo "$body" | grep -Eqi "TDM\s*compliance:\s*(https?://)" || { echo "::error::Provide 'TDM compliance: <link>' (dataset/source register)"; exit 1; }
+            fi
+          fi
+      - name: Upload ScanCode report
+        uses: actions/upload-artifact@v4
+        with:
+          name: scancode-report
+          path: scancode.json
+
+  sbom:
+    if: ${{ inputs.run_sbom }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate SBOM (SPDX)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom.spdx.json
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-spdx
+          path: sbom.spdx.json
+
+  codeql:
+    if: ${{ inputs.run_codeql }}
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript, python, ruby, go, java, cpp
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  lint:
+    if: ${{ inputs.lint_command != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run linter
+        run: ${{ inputs.lint_command }}
+
+  tests:
+    if: ${{ inputs.test_command != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: ${{ inputs.test_command }}

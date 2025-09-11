@@ -1,0 +1,32 @@
+# @ai-generated: true
+# @ai-tool: Copilot
+name: PR Governance (licenses & secrets)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+  issues: write
+  security-events: write
+
+jobs:
+  governance:
+    name: Reusable AI governance checks
+    uses: libis/ai-transition/.github/workflows/ai-governance.yml@main
+    with:
+      run_markdownlint: true
+      run_gitleaks: false
+      run_dependency_review: false
+      run_scancode: true
+      run_sbom: true
+      run_codeql: false
+      lint_command: ''
+      test_command: ''
+      require_ui_transparency: true
+      require_dpia_for_user_facing: true
+      require_eval_for_high_risk: false
+      enable_post_merge_reminders: true

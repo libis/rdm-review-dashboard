@@ -1,0 +1,136 @@
+# @ai-generated: true
+# @ai-tool: Copilot
+name: AI Governance Agent (ChatOps)
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  respond:
+    name: Respond to /gov commands on PRs
+    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '/gov') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Handle /gov command
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = context.payload.comment.body.trim();
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.payload.issue.number;
+
+            const helpText = 
+              'AI Governance Agent commands:\n\n\n' +
+              `- /gov help — show this help\n` +
+              `- /gov check — scan this PR for missing governance checklist items and summarize changes\n` +
+              `- /gov copilot — ask GitHub Copilot to review this PR\n` +
+              `- /gov links — preview suggested links (governance/test runs) for the PR template\n` +
+              `- /gov autofill apply — auto-fill safe N/A defaults and add run links into the PR body\n` +
+              `- /gov — run default check, trigger Copilot review, preview links, and auto-apply autofill\n`;
+
+            const isHelp = body.match(/^\/gov\s+help\b/i);
+            const isCheck = body.match(/^\/gov\s+check\b/i);
+            const isBare = body.match(/^\/gov\s*$/i);
+
+            if (!isHelp && !isCheck && !isBare) {
+              return; // Ignore other /gov variants for now
+            }
+
+            if (isHelp) {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body: helpText });
+              return;
+            }
+
+            // Fetch PR details and changed files (treat bare /gov as /gov check)
+            const doCheck = isCheck || isBare;
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: issue_number });
+            const prBody = (pr.body || '').toString();
+            const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: issue_number, per_page: 100 });
+
+            // Heuristics for change types
+            const changedPaths = files.map(f => f.filename);
+            const rx = {
+              userUI: /(^|\/)(ui|web|frontend|public|templates)(\/|$)|(^|\/)src\/.*\.(html|tsx?|vue)$/i,
+              sensitive: /(^|\/)(auth|authn|authz|login|acl|permissions?|access[_-]?control|secrets?|tokens?|jwt|oauth)(\/|$)|\.(policy|rego)$/i,
+              infra: /(^|\/)(k8s|kubernetes|helm|charts|deploy|ops|infra|infrastructure|manifests|terraform|ansible)(\/|$)|(^|\/)dockerfile$|docker-compose\.ya?ml$|Chart\.ya?ml$/i,
+              backend: /(^|\/)(src|api|server|backend|app)(\/|\/.*)([^\/]+)\.(js|ts|py|rb|go|java|cs)$/i,
+              media: /\.(png|jpe?g|gif|webp|svg|mp4|mp3|wav|pdf)$/i,
+              data: /(^|\/)(data|datasets|training|notebooks|scripts)(\/|$)/i
+            };
+            const has = (re) => changedPaths.some(p => re.test(p));
+            const flags = {
+              userUI: has(rx.userUI),
+              sensitive: has(rx.sensitive),
+              infra: has(rx.infra),
+              backend: has(rx.backend),
+              media: has(rx.media),
+              data: has(rx.data)
+            };
+
+            // Simple PR body checks mirroring the reusable workflow
+            const missing = [];
+            const need = (label, ok) => { if (!ok) missing.push(label); };
+
+            need('Prompt', /Prompt/i.test(prBody));
+            need('Model', /Model/i.test(prBody));
+            need('Date', /Date/i.test(prBody));
+            need('Author', /Author/i.test(prBody));
+            need('[x] No secrets/PII', /\[x\].*no\s+secrets\/?pii|no\s+pii\/?secrets/i.test(prBody));
+            need('Risk classification: limited|high', /Risk\s*classification:\s*(limited|high)/i.test(prBody));
+            need('Personal data: yes|no', /Personal\s*data:\s*(yes|no)/i.test(prBody));
+            need('Automated decision-making: yes|no', /Automated\s*decision-?making:\s*(yes|no)/i.test(prBody));
+            need('Agent mode used: yes|no', /Agent\s*mode\s*used:\s*(yes|no)/i.test(prBody));
+
+            if (flags.userUI) {
+              need('[x] Transparency notice updated', /\[x\].*transparency\s+notice/i.test(prBody));
+              need('Accessibility statement: <link or N/A>', /Accessibility\s*statement:\s*(https?:\/\/|N\/?A)/i.test(prBody));
+            }
+            if (flags.media) {
+              need('[x] AI content labeled', /\[x\].*ai\s*content\s*labeled/i.test(prBody));
+              need('C2PA: <link or N/A>', /C2PA:\s*(https?:\/\/|N\/?A)/i.test(prBody));
+            }
+            if (flags.infra) {
+              need('Privacy notice: <link>', /Privacy\s*notice:\s*(https?:\/\/)/i.test(prBody));
+              need('Lawful basis: <text or N/A>', /Lawful\s*basis:\s*([A-Za-z]+|N\/?A)/i.test(prBody));
+              need('Retention schedule: <link or N/A>', /Retention\s*schedule:\s*(https?:\/\/|N\/?A)/i.test(prBody));
+            }
+            if (flags.backend) {
+              need('[x] OWASP ASVS review or ASVS: <link>', /\[x\].*owasp\s*asvs|ASVS:\s*(https?:\/\/)/i.test(prBody));
+            }
+
+            // Build a concise response
+            const bullet = (b) => `- ${b}`;
+            const filesList = changedPaths.slice(0, 50).map(bullet).join('\n');
+            const missingList = missing.length ? missing.map(bullet).join('\n') : '- None (looks good)';
+            const flagsList = Object.entries(flags).filter(([,v]) => v).map(([k]) => `
+            - ${k}`).join('') || '\n            - none detected';
+
+            const reply = 
+              '### Governance Agent Report\n\n\n' +
+              `PR: #${issue_number} by @${pr.user.login}\n\n` +
+              `Changed files (${changedPaths.length}):\n${filesList}\n\n` +
+              `Detected change types:${flagsList}\n\n` +
+              `Missing or incomplete items:\n${missingList}\n\n` +
+              `Tip: Use the PR template fields to satisfy these checks.\n\n` +
+              `Run /gov help for commands. Also try: /gov links and /gov autofill apply.`;
+
+            if (doCheck) {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body: reply });
+            }
+
+            // If the command was bare /gov, also trigger Copilot review, links preview, and auto-apply autofill
+            if (isBare) {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body: '/gov copilot' });
+              // And trigger auto-links preview so contributors can quickly fill PR fields
+              await github.rest.issues.createComment({ owner, repo, issue_number, body: '/gov links' });
+              // Finally, auto-apply link autofill (safe defaults + run links)
+              await github.rest.issues.createComment({ owner, repo, issue_number, body: '/gov autofill apply' });
+            }

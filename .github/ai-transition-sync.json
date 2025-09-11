@@ -1,0 +1,20 @@
+{
+  "source_repo": "libis/ai-transition",
+  "source_ref": "main",
+  "synced_at": "2025-09-11T00:00:00Z",
+  "files_copied": [
+    ".github/CODEOWNERS",
+    ".github/pull_request_template.md",
+    ".github/workflows/ai-agent.yml",
+    ".github/workflows/ai-governance.yml",
+    ".github/workflows/code-review-agent.yml",
+    ".github/workflows/copilot-pr-review.yml",
+    ".github/workflows/gov-review.yml",
+    ".github/workflows/governance-smoke.yml",
+    ".github/workflows/pr-autolinks.yml",
+    ".github/workflows/pr-governance.yml",
+    ".github/workflows/run-unit-tests.yml",
+    ".github/workflows/workflow-lint.yml"
+  ],
+  "upstream_commit": "210999712867f5e2382f084038debd7488c7d482"
+}
