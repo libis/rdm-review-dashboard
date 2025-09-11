@@ -41,8 +41,23 @@ def get_connection():
     conn = None
     try:
         conn = psycopg2.connect(
-        host=HOST, port=PORT, database=DATABASE, user=USER, password=get_password()
-    )
+            host=HOST,
+            port=PORT,
+            database=DATABASE,
+            user=USER,
+            password=get_password(),
+            connect_timeout=10,
+        )
+        # Avoid idle-in-transaction sessions blocking DDL by defaulting to autocommit
+        conn.autocommit = True
+        # Apply conservative timeouts to minimize long blocking
+        with conn.cursor() as _cur:
+            try:
+                _cur.execute("SET lock_timeout TO '5s';")
+                _cur.execute("SET statement_timeout TO '60s';")
+            except Exception as e:
+                # Non-fatal: log and proceed; some roles may not allow SET
+                logging.debug(f"Could not set connection timeouts: {e}")
     except Exception as e:
         logging.info(f"Could not connect to PostgresSQL: {e}")
         raise
@@ -61,19 +76,28 @@ def query_locks():
 def run_query(query):
     """Establishes a connection to the database, runs the query and closes the connection. 
     Returns the results in a list of dictionaries, consisting of column name and data. """
-    conn = get_connection()
+    conn = None
     result = []
-    with conn.cursor() as cur:
-        cur.execute(query)
-        row = cur.fetchone()
-        while row:
-            cols = [description_item[0] for description_item in cur.description]
-            if row:     
-                new_record = {col:content for col, content in zip(cols, row)}
-                result.append(new_record)
+    try:
+        conn = get_connection()
+        with conn.cursor() as cur:
+            cur.execute(query)
             row = cur.fetchone()
-    if conn:
-        conn.close()
+            while row:
+                cols = [description_item[0] for description_item in cur.description]
+                if row:
+                    new_record = {col: content for col, content in zip(cols, row)}
+                    result.append(new_record)
+                row = cur.fetchone()
+    except Exception as e:
+        logging.error(f"PostgreSQL query failed: {e}")
+        raise
+    finally:
+        if conn:
+            try:
+                conn.close()
+            except Exception:
+                pass
     return result
 
 def query_dataset_metadata(authority=None, identifier=None):
@@ -222,18 +246,26 @@ def view_exists(view_name):
                 WHERE table_name = '{view_name}'
                 );"""
     result = None
-    conn = get_connection()
-    with conn.cursor() as cur:
-        cur.execute(query)
-        postgres_result = cur.fetchone()
-        try:
-            result = postgres_result[0]
-        except:
-            result = None
-            raise Exception(f"View check in postgres returned: {postgres_result}")
-        finally:
-            if conn:
+    conn = None
+    try:
+        conn = get_connection()
+        with conn.cursor() as cur:
+            cur.execute(query)
+            postgres_result = cur.fetchone()
+            try:
+                result = postgres_result[0]
+            except Exception:
+                result = None
+                raise Exception(f"View check in postgres returned: {postgres_result}")
+    except Exception as e:
+        logging.error(f"Failed to check view existence for {view_name}: {e}")
+        raise
+    finally:
+        if conn:
+            try:
                 conn.close()
+            except Exception:
+                pass
     return result
 
 
@@ -251,17 +283,26 @@ def add_view(view_name):
     if not query:
         raise Exception(f"Could not read query {file_path}")
     query = query.replace("__db_username__", USER)
-    conn = get_connection()
-    with conn.cursor() as cur:
-        try:
+    conn = None
+    try:
+        conn = get_connection()
+        with conn.cursor() as cur:
             logging.debug(f"Adding view: {view_name} with query: {query}")
             cur.execute(query)
-            conn.commit()
-        except Exception as e:
-            logging.critical(f"{view_name} could not be added: {e}")
-        finally:
-            if conn:
+            # autocommit is enabled; explicit commit is a no-op but harmless
+            try:
+                conn.commit()
+            except Exception:
+                pass
+    except Exception as e:
+        logging.critical(f"{view_name} could not be added: {e}")
+        raise
+    finally:
+        if conn:
+            try:
                 conn.close()
+            except Exception:
+                pass
 
     if not view_exists(view_name):
         raise Exception(f"PostgreSQL view {view_name} could not be added.")

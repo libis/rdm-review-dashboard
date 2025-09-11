@@ -14,9 +14,15 @@ permissions:
   security-events: write
 
 jobs:
+  precheck:
+    name: Governance workflow precheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo kickoff
+        run: echo "PR Governance workflow triggered"
   governance:
     name: Reusable AI governance checks
-    uses: libis/ai-transition/.github/workflows/ai-governance.yml@main
+    uses: ./.github/workflows/ai-governance.yml
     with:
       run_markdownlint: true
       run_gitleaks: false

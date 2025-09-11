@@ -21,4 +21,4 @@ def make_dir_if_not_exists(file_path:List[str]):
     return new_dirs_made
 
 def file_exists(file_path: List[str]):
-    return Path(os.path.join(file_path)).absolute().exists()
+    return Path(os.path.join(*file_path)).absolute().exists()
