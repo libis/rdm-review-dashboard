@@ -1,28 +1,8 @@
-// Governance smoke tests: combine file presence checks with regex logic checks.
-// Run via: node tests/governance/smoke.test.js
+// Minimal smoke tests for governance regex logic (no external deps)
+// Run via node tests/governance/smoke.test.js
 
-const fs = require('fs');
-const path = require('path');
+function has(body, re) { return re.test(body); }
 
-let failures = 0;
-function assert(name, cond) {
-  if (!cond) { console.error(`FAIL: ${name}`); failures++; } else { console.log(`PASS: ${name}`); }
-}
-function exists(p) { return fs.existsSync(path.resolve(process.cwd(), p)); }
-
-// 1) Repo file presence checks (ensures governance scaffolding exists)
-const files = [
-  '.github/workflows/ai-governance.yml',
-  '.github/workflows/pr-governance.yml',
-  '.github/workflows/workflow-lint.yml',
-  '.github/pull_request_template.md',
-  'ai-context.md',
-];
-for (const f of files) {
-  assert(`File present: ${f}`, exists(f));
-}
-
-// 2) Governance regex logic checks (simulate PR body validation patterns)
 const sample = {
   good: `Prompt: link\nModel: gpt-4o mini\nDate: 2025-09-08\nAuthor: tester\n\n[x] No secrets/PII\nRisk classification: limited\nPersonal data: no\nAutomated decision-making: no\nAgent mode used: no\nRole: deployer\n`,
   highRisk: `Prompt: link\nModel: gpt-4o\nDate: 2025-09-08\nAuthor: tester\n\n[x] No secrets/PII\nRisk classification: high\nPersonal data: yes\nAutomated decision-making: yes\nAgent mode used: yes\nRole: provider\nDPIA: https://example.com/dpia\nOversight plan: https://example.com/oversight\nRollback plan: do X\nSmoke test: https://example.com/smoke\nEval set: https://example.com/eval\nError rate: 1.9%\n`,
@@ -49,14 +29,14 @@ function checkRisk(body) {
   return errors;
 }
 
+function assert(name, cond) {
+  if (!cond) { console.error(`FAIL: ${name}`); process.exitCode = 1; } else { console.log(`PASS: ${name}`); }
+}
+
+// Tests
 assert('Provenance good', checkProvenance(sample.good).length === 0);
 assert('Risk fields good', checkRisk(sample.good).length === 0);
 assert('High-risk has all base fields', checkProvenance(sample.highRisk).length === 0 && checkRisk(sample.highRisk).length === 0);
 assert('Missing provenance detected', checkProvenance(sample.missingProvenance).length > 0);
 
-if (failures > 0) {
-  console.error(`Smoke tests completed with ${failures} failure(s)`);
-  process.exit(1);
-} else {
-  console.log('Governance smoke test passed.');
-}
+console.log('Smoke tests completed');
