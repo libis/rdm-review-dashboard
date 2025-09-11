@@ -1,0 +1,7 @@
+[tool.bandit]
+# Exclude tests from Bandit scans and ignore shelve usage warnings in trusted local services.
+skips = ["B101"]
+exclude = [
+  "tests/*"
+]
+# Note: We use targeted # nosec comments for B301/B403 where appropriate.

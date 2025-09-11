@@ -17,7 +17,8 @@ RDM_HELPDESK_EMAILS = []
 TEST_EMAIL = ""
 SMTP_HOST = ""
 SMTP_PORT = ""
-SMTP_PASSWORD = ""
+# Password is provided via config file; default None to avoid hardcoded secret.
+SMTP_PASSWORD = None  # nosec B105
 DATAVERSE_URL = ""
 
 

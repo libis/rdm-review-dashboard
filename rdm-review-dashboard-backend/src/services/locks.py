@@ -1,5 +1,5 @@
 from persistence import filesystem
-import shelve
+import shelve  # nosec B403: local, trusted storage
 import os 
 from utils.logging import logging
 from services.dataverse.dataset import metadata
@@ -13,7 +13,8 @@ def update(unit_id, lock_type, new_value):
     locks = None
     try:
         # modified = False
-        locks = shelve.open(file_path)
+        # Local, trusted shelve storage; acceptable risk for Bandit.
+        locks = shelve.open(file_path)  # nosec
         try:
             unit_locks = locks[unit_id]
         except KeyError:
@@ -47,8 +48,8 @@ def update(unit_id, lock_type, new_value):
         if locks is not None:
             try:
                 locks.close()
-            except Exception:
-                pass
+            except Exception as close_err:
+                logging.debug(f"Error closing locks shelve: {close_err}")
     return True
 
 def add(dataset_id, lock_type):
@@ -63,7 +64,7 @@ def get():
     file_path = os.path.join(*filesystem.BASE_DIR, 'locks')
 
     try:
-        locks = shelve.open(file_path, flag='r')
+        locks = shelve.open(file_path, flag='r')  # nosec
         result = dict(locks)
         locks.close()
     except Exception as e:

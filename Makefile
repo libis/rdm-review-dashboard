@@ -43,3 +43,15 @@ test: venv ## Run backend unit tests in .venv
 	. .venv/bin/activate \
 		&& python -m pip install -r rdm-review-dashboard-backend/requirements.txt -r rdm-review-dashboard-backend/requirements-dev.txt \
 		&& python -m pytest -q rdm-review-dashboard-backend/tests
+
+.PHONY: bandit
+bandit: venv ## Run Bandit (non-strict) and always exit 0; use 'make bandit-strict' to fail on findings
+	. .venv/bin/activate \
+		&& python -m pip install -r rdm-review-dashboard-backend/requirements-dev.txt \
+		&& bandit --exit-zero -q -r rdm-review-dashboard-backend/src -x rdm-review-dashboard-backend/tests
+
+.PHONY: bandit-strict
+bandit-strict: venv ## Run Bandit and fail on any findings
+	. .venv/bin/activate \
+		&& python -m pip install -r rdm-review-dashboard-backend/requirements-dev.txt \
+		&& bandit -q -r rdm-review-dashboard-backend/src -x rdm-review-dashboard-backend/tests
