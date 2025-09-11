@@ -22,11 +22,9 @@ jobs:
         shell: bash
         run: |
           set -e
-          ran=0
           if [ -f package.json ]; then
             echo "Installing root Node deps...";
             if [ -f package-lock.json ]; then npm ci; else npm install; fi
-            ran=1
           fi
           if [ -f rdm-review-dashboard-ui/package.json ]; then
             echo "Installing UI deps...";
