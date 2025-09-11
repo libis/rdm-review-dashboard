@@ -1,6 +1,6 @@
+# @ai-generated: true
+# @ai-tool: Copilot
 name: Governance Smoke Tests
-  # @ai-generated: true
-  # @ai-tool: Copilot
 
 on:
   pull_request:

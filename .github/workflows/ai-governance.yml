@@ -246,6 +246,21 @@ jobs:
               echo "$body" | grep -Eqi "TDM\s*compliance:\s*(https?://)" || { echo "::error::Provide 'TDM compliance: <link>' (dataset/source register)"; exit 1; }
             fi
           fi
+  scancode:
+    if: ${{ inputs.run_scancode }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ScanCode
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install scancode-toolkit
+      - name: Run ScanCode (JSON)
+        shell: bash
+        run: |
+          scancode --json-pp scancode.json --license --copyright --info . || true
+          test -s scancode.json || { echo '{}' > scancode.json; }
       - name: Upload ScanCode report
         uses: actions/upload-artifact@v4
         with:

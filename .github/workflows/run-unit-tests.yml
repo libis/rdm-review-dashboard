@@ -59,7 +59,7 @@ jobs:
       - name: Run pytest (if tests exist)
         shell: bash
         run: |
-          if ls -1 tests/**/*.py tests/*.py >/dev/null 2>&1; then
+          if find tests -type f -name '*.py' | grep -q .; then
             pytest -q || (echo "::error::pytest failed"; exit 1)
           else
             echo "No Python tests found; skipping"
