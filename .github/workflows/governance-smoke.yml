@@ -1,0 +1,33 @@
+# @ai-generated: true
+# @ai-tool: Copilot
+name: Governance Smoke Tests
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'tests/governance/**'
+  push:
+    paths:
+      - '.github/workflows/**'
+      - 'tests/governance/**'
+
+permissions:
+  contents: read
+
+jobs:
+  node-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run governance smoke tests (if present)
+        shell: bash
+        run: |
+          if [ -f tests/governance/smoke.test.js ]; then
+            node tests/governance/smoke.test.js
+          else
+            echo "No governance smoke test found; skipping"
+          fi

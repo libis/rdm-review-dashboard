@@ -1,0 +1,153 @@
+ # @ai-generated: true
+ # @ai-tool: Copilot
+name: AI Code Review Agent (Python)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  python_review:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine changed Python files
+        id: diff
+        shell: bash
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then sudo apt-get update && sudo apt-get install -y jq; fi
+          base=$(jq -r '.pull_request.base.sha' "$GITHUB_EVENT_PATH")
+          head=$(jq -r '.pull_request.head.sha' "$GITHUB_EVENT_PATH")
+          git fetch --no-tags --depth=1 origin "$base" || true
+          git diff --name-only "$base" "$head" | grep -E '\.py$' > py_changed.txt || true
+          count=$(wc -l < py_changed.txt | tr -d ' ')
+          echo "Changed Python files ($count):"
+          cat py_changed.txt || true
+          if [ "$count" -eq 0 ]; then
+            echo "has_py=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_py=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.diff.outputs.has_py == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install linters (ruff, bandit)
+        if: steps.diff.outputs.has_py == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff==0.5.7 bandit==1.7.9
+
+      - name: Run Ruff (style/quality)
+        if: steps.diff.outputs.has_py == 'true'
+        shell: bash
+        run: |
+          mapfile -t files < py_changed.txt || true
+          if [ ${#files[@]} -gt 0 ]; then
+            ruff check "${files[@]}" --output-format=json > ruff.json || true
+          else
+            echo '[]' > ruff.json
+          fi
+
+      - name: Run Bandit (security)
+        if: steps.diff.outputs.has_py == 'true'
+        shell: bash
+        run: |
+          mapfile -t files < py_changed.txt || true
+          if [ ${#files[@]} -gt 0 ]; then
+            bandit -q -f json -o bandit.json "${files[@]}" || true
+          else
+            echo '{"results":[]}' > bandit.json
+          fi
+
+      - name: Comment review summary
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.payload.pull_request.number;
+
+            function readJsonSafe(path, fallback) {
+              try { return JSON.parse(fs.readFileSync(path, 'utf8')); } catch { return fallback; }
+            }
+
+            const hasPy = fs.existsSync('py_changed.txt') && fs.readFileSync('py_changed.txt','utf8').trim().length > 0;
+            const pyFiles = hasPy ? fs.readFileSync('py_changed.txt','utf8').trim().split('\n') : [];
+            const ruff = readJsonSafe('ruff.json', []);
+            const bandit = readJsonSafe('bandit.json', { results: [] });
+
+            // Normalize Ruff findings
+            const ruffByFile = new Map();
+            for (const f of ruff) {
+              // Ruff json entries may include filename and diagnostics array or directly as list; handle both
+              if (f && f.filename && Array.isArray(f.diagnostics)) {
+                for (const d of f.diagnostics) {
+                  const k = f.filename;
+                  const arr = ruffByFile.get(k) || [];
+                  arr.push({
+                    line: d.range?.start?.line ?? d.location?.row ?? 0,
+                    col: d.range?.start?.column ?? d.location?.column ?? 0,
+                    code: d.code || d.rule || 'RUFF',
+                    msg: d.message || ''
+                  });
+                  ruffByFile.set(k, arr);
+                }
+              } else if (f && f.filename && f.rule && f.message) {
+                const arr = ruffByFile.get(f.filename) || [];
+                arr.push({ line: f.location?.row ?? 0, col: f.location?.column ?? 0, code: f.rule, msg: f.message });
+                ruffByFile.set(f.filename, arr);
+              }
+            }
+
+            // Normalize Bandit findings
+            const banditByFile = new Map();
+            for (const r of bandit.results || []) {
+              const fn = r.filename || 'unknown';
+              const arr = banditByFile.get(fn) || [];
+              arr.push({ line: r.line_number || 0, sev: r.issue_severity || 'MEDIUM', conf: r.issue_confidence || 'MEDIUM', msg: r.issue_text || '' });
+              banditByFile.set(fn, arr);
+            }
+
+            const mk = (arr) => arr.map(x => `- L${x.line}${x.col?':C'+x.col:''} ${x.code? '['+x.code+'] ':''}${x.msg}`).join('\n');
+            const mkb = (arr) => arr.map(x => `- L${x.line} [${x.sev}/${x.conf}] ${x.msg}`).join('\n');
+
+            const ruffCount = Array.from(ruffByFile.values()).reduce((a,b)=>a+b.length,0);
+            const banditCount = Array.from(banditByFile.values()).reduce((a,b)=>a+b.length,0);
+
+            let body = 
+              '### Code Review Agent (Python)\n\n';
+            if (!hasPy) {
+              body += `No Python files changed. Skipping analysis.`;
+            } else {
+              body += `Analyzed ${pyFiles.length} Python file(s).\n\n`;
+              body += `Ruff findings: ${ruffCount}\n`;
+              for (const [file, items] of ruffByFile.entries()) {
+                body += `\n${file}\n${mk(items)}\n`;
+              }
+              body += `\nBandit findings: ${banditCount}\n`;
+              for (const [file, items] of banditByFile.entries()) {
+                body += `\n${file}\n${mkb(items)}\n`;
+              }
+              if (ruffCount === 0 && banditCount === 0) {
+                body += `\nNo issues found. ✅`;
+              } else {
+                body += `\nNote: This is advisory and does not block the PR. Consider addressing issues above.`;
+              }
+            }
+
+            await github.rest.issues.createComment({ owner, repo, issue_number, body });
