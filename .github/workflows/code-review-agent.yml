@@ -87,7 +87,16 @@ jobs:
             echo '{"results":[]}' > bandit.json
           fi
 
-      - name: Comment review summary
+      - name: Upload analysis artifacts
+        if: steps.diff.outputs.has_py == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-review-artifacts
+          path: |
+            ruff.json
+            bandit.json
+
+      - name: Comment review summary (truncated)
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -138,6 +147,8 @@ jobs:
               banditByFile.set(fn, arr);
             }
 
+            const FILE_LIMIT = 10;        // max files to show per tool
+            const PER_FILE_LIMIT = 5;     // max findings per file
             const mk = (arr) => arr.map(x => `- L${x.line}${x.col?':C'+x.col:''} ${x.code? '['+x.code+'] ':''}${x.msg}`).join('\n');
             const mkb = (arr) => arr.map(x => `- L${x.line} [${x.sev}/${x.conf}] ${x.msg}`).join('\n');
 
@@ -151,13 +162,30 @@ jobs:
             } else {
               body += `Analyzed ${pyFiles.length} Python file(s).\n\n`;
               body += `Ruff findings: ${ruffCount}\n`;
+              let printedFiles = 0;
               for (const [file, items] of ruffByFile.entries()) {
-                body += `\n${file}\n${mk(items)}\n`;
+                if (printedFiles >= FILE_LIMIT) { break; }
+                const shown = items.slice(0, PER_FILE_LIMIT);
+                const rest = items.length - shown.length;
+                body += `\n${file}\n${mk(shown)}\n`;
+                if (rest > 0) body += `… and ${rest} more in this file\n`;
+                printedFiles++;
               }
+              const moreFilesR = ruffByFile.size - printedFiles;
+              if (moreFilesR > 0) body += `… and ${moreFilesR} more files (see artifacts)\n`;
+
               body += `\nBandit findings: ${banditCount}\n`;
+              printedFiles = 0;
               for (const [file, items] of banditByFile.entries()) {
-                body += `\n${file}\n${mkb(items)}\n`;
+                if (printedFiles >= FILE_LIMIT) { break; }
+                const shown = items.slice(0, PER_FILE_LIMIT);
+                const rest = items.length - shown.length;
+                body += `\n${file}\n${mkb(shown)}\n`;
+                if (rest > 0) body += `… and ${rest} more in this file\n`;
+                printedFiles++;
               }
+              const moreFilesB = banditByFile.size - printedFiles;
+              if (moreFilesB > 0) body += `… and ${moreFilesB} more files (see artifacts)\n`;
               if (ruffCount === 0 && banditCount === 0) {
                 body += `\nNo issues found. ✅`;
               } else {
