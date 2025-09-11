@@ -18,25 +18,48 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install dependencies (if package.json exists)
+      - name: Install dependencies (root and UI, if present)
         shell: bash
         run: |
+          set -e
+          ran=0
           if [ -f package.json ]; then
+            echo "Installing root Node deps...";
             if [ -f package-lock.json ]; then npm ci; else npm install; fi
-          else
-            echo "No package.json; skipping Node setup"; exit 0
+            ran=1
           fi
-      - name: Run npm test (if defined)
+          if [ -f rdm-review-dashboard-ui/package.json ]; then
+            echo "Installing UI deps...";
+            cd rdm-review-dashboard-ui
+            if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          fi
+      - name: Run npm test (root/UI if defined)
         shell: bash
         run: |
+          set -e
+          ran_any=0
           if [ -f package.json ]; then
             if node -e "const p=require('./package.json');process.exit(p.scripts&&p.scripts.test?0:1)"; then
+              echo "Running root npm test...";
               npm test --silent || (echo "::error::npm test failed"; exit 1)
+              ran_any=1
             else
-              echo "No test script defined; skipping Node tests";
+              echo "No test script in root package.json; skipping";
             fi
-          else
-            echo "No package.json; skipping";
+          fi
+          if [ -f rdm-review-dashboard-ui/package.json ]; then
+            pushd rdm-review-dashboard-ui >/dev/null
+            if node -e "const p=require('./package.json');process.exit(p.scripts&&p.scripts.test?0:1)"; then
+              echo "Running UI npm test...";
+              npm test --silent || (echo "::error::UI npm test failed"; exit 1)
+              ran_any=1
+            else
+              echo "No test script in UI; skipping";
+            fi
+            popd >/dev/null
+          fi
+          if [ "$ran_any" -eq 0 ]; then
+            echo "No Node tests found; skipping";
           fi
 
   python_tests:
@@ -47,20 +70,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install dependencies
+      - name: Install backend dependencies (if present)
         shell: bash
         run: |
+          set -e
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt || true
+          if [ -f rdm-review-dashboard-backend/requirements.txt ]; then
+            pip install -r rdm-review-dashboard-backend/requirements.txt || true
           fi
-          # Ensure pytest available
-          pip install pytest || true
-      - name: Run pytest (if tests exist)
+          if [ -f rdm-review-dashboard-backend/requirements-dev.txt ]; then
+            pip install -r rdm-review-dashboard-backend/requirements-dev.txt || true
+          else
+            pip install pytest || true
+          fi
+      - name: Run pytest (backend if tests exist)
         shell: bash
         run: |
-          if find tests -type f -name '*.py' | grep -q .; then
-            pytest -q || (echo "::error::pytest failed"; exit 1)
+          if find rdm-review-dashboard-backend/tests -type f -name '*.py' 2>/dev/null | grep -q .; then
+            echo "Running backend pytest...";
+            (cd rdm-review-dashboard-backend && pytest -q) || (echo "::error::pytest failed"; exit 1)
           else
-            echo "No Python tests found; skipping"
+            echo "No backend Python tests found; skipping"
           fi
