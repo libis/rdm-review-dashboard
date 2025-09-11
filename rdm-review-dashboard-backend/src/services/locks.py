@@ -16,7 +16,7 @@ def update(unit_id, lock_type, new_value):
         locks = shelve.open(file_path)
         try:
             unit_locks = locks[unit_id]
-        except Exception:
+        except KeyError:
             unit_locks = {}
         if new_value:
             # if new value: update the lock for dataset
@@ -33,7 +33,7 @@ def update(unit_id, lock_type, new_value):
             # if not -> remove the dataset from the file (ignore if absent)
             try:
                 del locks[unit_id]
-            except Exception:
+            except KeyError:
                 pass
         try:
             locks.update()
