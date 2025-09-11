@@ -50,9 +50,14 @@ jobs:
           if [ -f rdm-review-dashboard-ui/package.json ]; then
             pushd rdm-review-dashboard-ui >/dev/null
             if node -e "const p=require('./package.json');process.exit(p.scripts&&p.scripts.test?0:1)"; then
-              echo "Running UI npm test...";
-              npm test --silent || (echo "::error::UI npm test failed"; exit 1)
-              ran_any=1
+              echo "Preparing to run UI npm test...";
+              if command -v google-chrome >/dev/null 2>&1 || command -v chromium >/dev/null 2>&1 || command -v chromium-browser >/dev/null 2>&1; then
+                echo "Running UI npm test with ChromeHeadless...";
+                npm test --silent -- --watch=false --browsers=ChromeHeadless || (echo "::error::UI npm test failed"; exit 1)
+                ran_any=1
+              else
+                echo "Chrome/Chromium not available on runner; skipping UI tests";
+              fi
             else
               echo "No test script in UI; skipping";
             fi
