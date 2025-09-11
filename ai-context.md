@@ -302,6 +302,17 @@ If any expected file is absent upstream when bootstrapping, warn and proceed wit
   - Update README or inline docs when behavior or interfaces change.
   - Use `log_provenance` to append AI-Assistance details to the PR body.
 
+- Comments policy
+
+  - Prefer self-explanatory code over comments: clear names, small functions, and tests that document behavior.
+  - Avoid inline comments unless strictly necessary. Acceptable cases:
+    - Required license/attribution headers.
+    - Public API docstrings and deprecation notes (concise and actionable).
+    - Temporary workarounds linked to an upstream issue or ticket (include TODO to remove).
+    - Security annotations only when a vetted false positive cannot be refactored away (link to rationale/issue).
+  - Don’t restate the obvious; remove stale or misleading comments when editing nearby code.
+  - Prefer brief module/class/function docstrings for public surfaces over scattered inline remarks.
+
 - Security, privacy, and IP
 
   - Never include secrets/PII; scrub logs; avoid leaking tokens.
@@ -381,6 +392,11 @@ If any expected file is absent upstream when bootstrapping, warn and proceed wit
 - PR review resolution:
   - Addressed Copilot nit by replacing broad `Exception` with `KeyError` for dict-like access and deletion in `services/locks.py`.
   - Resolved the two Copilot review threads (locks nit addressed; filesystem note acknowledged).
+- Security annotations policy:
+  - Avoid inline `# nosec` comments unless strictly necessary (e.g., a vetted false positive that cannot be refactored away). Prefer:
+    - Parameterization and safe construction patterns (SQL placeholders, constant-only clause assembly).
+    - Tool configuration or non-strict runs locally (`make bandit`) and strict in CI (`make bandit-strict`) when needed.
+    - Tests that assert safety properties (e.g., correct SQL placeholders, timeouts applied) to prevent regression.
 - Follow-ups (optional):
   - Consider pinning reusable governance workflow to a stable tag/SHA for regulated environments.
   - Add real UI unit tests under `rdm-review-dashboard-ui/src/**/*.spec.ts` to enable meaningful UI CI coverage instead of skipping/empty-suite handling.

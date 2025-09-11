@@ -2,6 +2,8 @@ import requests
 import httpx 
 from utils.logging import logging 
 
+DEFAULT_TIMEOUT = 30  # seconds
+
 async def async_get_request(request_url, key=None, headers=None, verify= None, **kwargs):
     params = {}
     verify = verify or False
@@ -11,8 +13,8 @@ async def async_get_request(request_url, key=None, headers=None, verify= None, *
     if kwargs:
         params.update(kwargs)
     logging.info(f'async get request: {request_url}')
-    async with httpx.AsyncClient(verify=verify, timeout=None) as client:
-        res = await client.get(request_url, params=params, timeout=None)
+    async with httpx.AsyncClient(verify=verify, timeout=DEFAULT_TIMEOUT) as client:
+        res = await client.get(request_url, params=params, timeout=DEFAULT_TIMEOUT)
         logging.info(f'response {request_url, res.status_code}')
         if res.status_code != 200:
             logging.info(res.text)
@@ -31,7 +33,7 @@ def get_request(request_url, key=None, headers=None, verify= None, **kwargs):
     if kwargs:
         params.update(kwargs)
     logging.info(f'sync get request: {request_url}')
-    res = requests.get(request_url, params=params, verify=verify, timeout=None)
+    res = requests.get(request_url, params=params, verify=verify, timeout=DEFAULT_TIMEOUT)
     logging.info(f'response {request_url, res.status_code}')
     if res.status_code != 200:
         logging.info(res.text)
@@ -50,8 +52,8 @@ async def async_post_request(request_url, key, headers=None, data=None, json_dic
             request_url_params.append(f'{k}={v}') 
         request_url = f'{request_url}?{"&".join(request_url_params)}'
     logging.info(f'async post request: {request_url}')
-    async with httpx.AsyncClient(verify=verify, timeout=None) as client:
-        res = await client.post(request_url, data=data, headers=headers, json=json_dict)
+    async with httpx.AsyncClient(verify=verify, timeout=DEFAULT_TIMEOUT) as client:
+        res = await client.post(request_url, data=data, headers=headers, json=json_dict, timeout=DEFAULT_TIMEOUT)
         logging.info(f'response {request_url, res.status_code}')
         if res.status_code != 200:
             logging.info(res.text)
@@ -71,7 +73,7 @@ def post_request(request_url, key, headers=None, data=None, json_dict=None, veri
             request_url_params.append(f'{k}={v}') 
         request_url = f'{request_url}?{"&".join(request_url_params)}'
     logging.info(f'sync post request: {request_url}')
-    res = requests.post(request_url, data=data, json=json_dict, headers=headers, verify=verify, timeout=None)
+    res = requests.post(request_url, data=data, json=json_dict, headers=headers, verify=verify, timeout=DEFAULT_TIMEOUT)
     logging.info(f'response {request_url, res.status_code}')
     if res.status_code != 200:
         logging.info(res.text)
@@ -86,7 +88,7 @@ def delete_request(request_url, key=None, headers=None, verify=None):
         else:
             request_url = f'{request_url}&key={key}'
     logging.info(f'sync delete request: {request_url}')
-    res = requests.delete(request_url, verify=verify, timeout=None)
+    res = requests.delete(request_url, verify=verify, timeout=DEFAULT_TIMEOUT)
     logging.info(f'response {request_url, res.status_code}')
     if res.status_code != 200:
         logging.info(res.text)

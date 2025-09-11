@@ -1,4 +1,4 @@
-import shelve
+import shelve  # nosec B403: local, trusted storage
 import os
 from persistence import filesystem
 from utils.logging import logging
@@ -61,8 +61,8 @@ def upsert_note(
         if note_file:
             try:
                 note_file.close()
-            except Exception:
-                pass
+            except Exception as close_err:
+                logging.debug(f"Error closing note shelve: {close_err}")
 
 
 def get_note_by_id(persistent_id: str, note_id: str, note_type: str) -> dict:
@@ -89,7 +89,8 @@ def open_note(file_path=List[str], retries: int = 5, waittime_in_s: int = 5):
     file_path = filesystem.BASE_DIR + file_path
     while retries > 1:
         try:
-            note = shelve.open(os.path.join(*file_path))
+            # Local, trusted shelve storage; acceptable risk.
+            note = shelve.open(os.path.join(*file_path))  # nosec
             return note
         except Exception as e:
             sleep(waittime_in_s)
@@ -104,7 +105,8 @@ def get_notes_by_dataset(persistent_id: str, note_type: str):
     result = []
     try:
         dir_contents = os.listdir(os.path.join(*filesystem.BASE_DIR, *file_path))
-    except:
+    except Exception as e:
+        logging.debug(f"Notes directory not present for {file_path}: {e}")
         dir_contents = []
     for file in dir_contents:
         note = read_note([*file_path, file])

@@ -189,6 +189,9 @@ def configure_users(settings):
 
 if __name__ == "__main__":
     configure()
-    uvicorn.run(api, port=8000, host="0.0.0.0")
+    # Bind host is configurable; default to loopback for local safety.
+    _host = os.getenv("UVICORN_HOST", "127.0.0.1")
+    _port = int(os.getenv("UVICORN_PORT", "8000"))
+    uvicorn.run(api, port=_port, host=_host)
 else:
     configure()

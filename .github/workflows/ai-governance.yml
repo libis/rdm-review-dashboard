@@ -246,6 +246,27 @@ jobs:
               echo "$body" | grep -Eqi "TDM\s*compliance:\s*(https?://)" || { echo "::error::Provide 'TDM compliance: <link>' (dataset/source register)"; exit 1; }
             fi
           fi
+      - name: Run Bandit (respect backend config; exclude tests)
+        shell: bash
+        run: |
+          set -e
+          python -m pip install --upgrade pip
+          pip install bandit==1.8.6
+          # Scan backend Python code; honor backend pyproject.toml and exclude tests as per local config
+          if [ -d rdm-review-dashboard-backend/src ]; then
+            if [ -f rdm-review-dashboard-backend/pyproject.toml ]; then
+              bandit -q -r rdm-review-dashboard-backend/src -c rdm-review-dashboard-backend/pyproject.toml -f json -o bandit.json || true
+            else
+              bandit -q -r rdm-review-dashboard-backend/src -x rdm-review-dashboard-backend/tests -f json -o bandit.json || true
+            fi
+          else
+            echo '{"results":[]}' > bandit.json
+          fi
+      - name: Upload Bandit report (artifact only)
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit.json
   scancode:
     if: ${{ inputs.run_scancode }}
     runs-on: ubuntu-latest

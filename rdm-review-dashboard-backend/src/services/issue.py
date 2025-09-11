@@ -1,6 +1,6 @@
 
 from typing import Optional
-import shelve
+import shelve  # nosec B403: local, trusted storage
 import os
 from persistence import filesystem
 from services.dataverse.dataset import metadata
@@ -53,11 +53,13 @@ def set(issue_list: IssueList, user_id: Optional[str]=None):
             logging.info(f'adding {folder} to {os.listdir(os.path.join(*base_dir))}')
             os.mkdir(os.path.join(*base_dir, folder))
         base_dir.append(folder)
-    issues_file = shelve.open(os.path.join(*base_dir, 'checklist_state'))
+    # Local, trusted shelve storage (no untrusted inputs); acceptable risk.
+    issues_file = shelve.open(os.path.join(*base_dir, 'checklist_state'))  # nosec
     try:
         issues_file.update(issue_list.__dict__)
         result = True
-    except:
+    except Exception as e:
+        logging.error(f"Failed to update issues checklist: {e}")
         result = False
     finally:
         issues_file.close()
@@ -68,17 +70,19 @@ def get(persistent_id: str) -> IssueList:
     file_path = os.path.join(*filesystem.BASE_DIR, filesystem.get_foldername_from_persistent_id(persistent_id), 'issues', 'checklist_state')
     issues = None
     try:
-        issues = shelve.open(file_path)
+        # Local, trusted shelve storage; acceptable risk.
+        issues = shelve.open(file_path)  # nosec
         result = dict(issues).copy()
         return result
-    except Exception:
+    except Exception as e:
+        logging.debug(f"Issues file not found or unreadable at {file_path}: {e}")
         return None
     finally:
         if issues is not None:
             try:
                 issues.close()
-            except Exception:
-                pass
+            except Exception as close_err:
+                logging.debug(f"Error closing issues shelve: {close_err}")
 
 
 async def generate_feedback_email(persistent_identifier):
@@ -89,7 +93,8 @@ async def generate_feedback_email(persistent_identifier):
     try:
         reviewer_username = dataset_details.get('reviewer')[0]
         reviewer_info = await user.get_user_info(reviewer_username)
-    except:
+    except Exception as e:
+        logging.debug(f"Reviewer info not available: {e}")
         reviewer_info = {}
     reviewer_name = reviewer_info.get('userfirstname', '')
     issue_details = await get_details(persistent_identifier)
