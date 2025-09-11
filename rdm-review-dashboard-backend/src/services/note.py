@@ -47,16 +47,22 @@ def upsert_note(
     # to be saved as persistent_id/note_type/note_id
     file_path = [dataset_foldername, note.noteType] 
     note_file = open_note([*file_path, note.noteId])
-    if not note_file:
-        note.created = note.modified
-        logging.info(
-            f"Creating new note in file {os.path.join(*file_path, note.noteId)}"
-        )
-    else:
-        note.created = note_file.get("created")
-        logging.info(f"Updating note in file {os.path.join(*file_path, note.noteId)}")
-    note_file.update(note.dict())
-    note_file.close()
+    try:
+        if not note_file:
+            note.created = note.modified
+            logging.info(
+                f"Creating new note in file {os.path.join(*file_path, note.noteId)}"
+            )
+        else:
+            note.created = note_file.get("created")
+            logging.info(f"Updating note in file {os.path.join(*file_path, note.noteId)}")
+        note_file.update(note.dict())
+    finally:
+        if note_file:
+            try:
+                note_file.close()
+            except Exception:
+                pass
 
 
 def get_note_by_id(persistent_id: str, note_id: str, note_type: str) -> dict:

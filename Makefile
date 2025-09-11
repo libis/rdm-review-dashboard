@@ -32,3 +32,14 @@ build-container: ## Build Docker image
 
 run:
 	cd ./rdm-review-dashboard-backend/src && uvicorn main:api --proxy-headers --host 0.0.0.0 --port 8000 --workers 4
+
+.PHONY: venv
+venv: ## Create a Python virtual environment in .venv
+	python3 -m venv .venv
+	. .venv/bin/activate && python -m pip install --upgrade pip
+
+.PHONY: test
+test: venv ## Run backend unit tests in .venv
+	. .venv/bin/activate \
+		&& python -m pip install -r rdm-review-dashboard-backend/requirements.txt -r rdm-review-dashboard-backend/requirements-dev.txt \
+		&& python -m pytest -q rdm-review-dashboard-backend/tests
