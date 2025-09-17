@@ -2,7 +2,6 @@ import { Component, Input } from '@angular/core';
 import { IssueDetail, ReviewService } from '../services/review.service';
 import { DatePipe } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
-import { ColdObservable } from 'rxjs/internal/testing/ColdObservable';
 
 @Component({
   selector: 'app-dataset-checklist',
@@ -21,6 +20,7 @@ export class DatasetChecklistComponent {
   allSameAsAutocheck: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   autoCheckSuccess: BehaviorSubject<boolean|null> = new BehaviorSubject<boolean|null>(null);
   autochecksAvailable: boolean = false;
+
   constructor(public reviewService: ReviewService, private datePipe: DatePipe) {
     this.reviewService.getSelectedDatasetIssues().subscribe(
       (issues) => {
@@ -67,6 +67,24 @@ export class DatasetChecklistComponent {
       }
     );
   }
+  
+  isChecked(item: string): boolean {
+    return this.checklist.includes(item);
+  }
+ 
+  onCheckedChange(event : {id: string, checked: boolean}) {
+    console.log("on checked change", event);
+    if (event.checked) {
+      if (!this.checklist.includes(event.id)) {
+        this.checklist.push(event.id);
+      }
+    } else {
+      this.checklist = this.checklist.filter(i => i !== event.id);
+    }
+    console.log(this.checklist);
+
+    this.onChecklistChange();
+  }
 
   getAutocheckState(item: string) {
     let result = this.autoChecklist.get(item);
@@ -91,6 +109,7 @@ export class DatasetChecklistComponent {
     return false;
   }
 
+  // TODO: move to a pipe? or a util function 
   getAutocheckTooltip(): string | null {
     if (this.lastAutocheck === null && this.autoCheckSuccess.value !== false) {
       return 'Not checked';
@@ -103,7 +122,7 @@ export class DatasetChecklistComponent {
     }
   }
 
-  getAutocheckButtonClass(): string {
+  getAutocheckButtonClass(): string { //  TODO: refactor, move to a getter or a util function
     if (this.autoCheckSuccess.value === true) {
       return this.lastAutocheck != null ? 'p-button p-button-info p-button-outlined' : 'p-button p-button-info';
     } else if (this.autoCheckSuccess.value === false) {
@@ -136,7 +155,8 @@ export class DatasetChecklistComponent {
     }
     this.allSameAsAutocheck.next(this.allChecksSameAsAutocheck());
   }
-  updateFromAutochecks() {
+
+  updateFromAutochecks() { 
     let checklist = [];
     for (let issuename of this.autoChecklist.keys()) {
       let currentIssue = this.autoChecklist.get(issuename);

@@ -57,6 +57,7 @@ import { TopBannerComponent } from './top-banner/top-banner.component';
 
 // 
 import { ReviewHistoryComponent } from './review-history/review-history.component';
+import { DatasetChecklistItemComponent } from './dataset-checklist-item/dataset-checklist-item.component';
 
 
 @NgModule({
@@ -77,7 +78,8 @@ import { ReviewHistoryComponent } from './review-history/review-history.componen
     SelectionListComponent,
     TagComponent,
     TopBannerComponent,
-    ReviewHistoryComponent],
+    ReviewHistoryComponent,
+    DatasetChecklistItemComponent],
   imports: [
     AppRoutingModule,
     AvatarModule,

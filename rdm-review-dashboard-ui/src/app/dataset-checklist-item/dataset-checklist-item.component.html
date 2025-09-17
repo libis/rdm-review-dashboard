@@ -1,0 +1,17 @@
+<div *ngIf="showAutochecks" style="padding: .5rem; display: inline;"
+    pTooltip="{{ warning }}" tooltipPosition="top">
+    <i class="pi pi-check" *ngIf="autocheckState === true"
+    style="color: rgb(77, 255, 41); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);"></i>
+    <i class="pi pi-times" *ngIf="autocheckState === false"
+    style="color: rgb(255, 0, 0); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);"></i>
+    <i class="pi pi-exclamation-triangle" *ngIf="autocheckState === null" style="visibility: hidden;"></i>
+    <i class="pi pi-exclamation-triangle" *ngIf="warning != null"
+    style="color: rgb(255, 140, 0); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);  padding-left:5px;"></i>
+    <i class="pi pi-exclamation-triangle" *ngIf="warning == null"
+    style="visibility: hidden; padding-left:5px;"></i>
+</div>
+<div class="field-checkbox" style="display: inline">
+<p-checkbox [binary]="true" [(ngModel)]="checked" (onChange)="onCheckboxChange()"></p-checkbox>   
+<label [for]="id"
+    [style]="!sameAsAutocheck ? 'font-style: normal; ' : 'font-style: italic; color: grey;'">{{label}}</label>
+</div>
