@@ -73,7 +73,6 @@ export class DatasetChecklistComponent {
   }
  
   onCheckedChange(event : {id: string, checked: boolean}) {
-    console.log("on checked change", event);
     if (event.checked) {
       if (!this.checklist.includes(event.id)) {
         this.checklist.push(event.id);
@@ -109,7 +108,6 @@ export class DatasetChecklistComponent {
     return false;
   }
 
-  // TODO: move to a pipe? or a util function 
   getAutocheckTooltip(): string | null {
     if (this.lastAutocheck === null && this.autoCheckSuccess.value !== false) {
       return 'Not checked';
@@ -122,7 +120,7 @@ export class DatasetChecklistComponent {
     }
   }
 
-  getAutocheckButtonClass(): string { //  TODO: refactor, move to a getter or a util function
+  getAutocheckButtonClass(): string { 
     if (this.autoCheckSuccess.value === true) {
       return this.lastAutocheck != null ? 'p-button p-button-info p-button-outlined' : 'p-button p-button-info';
     } else if (this.autoCheckSuccess.value === false) {

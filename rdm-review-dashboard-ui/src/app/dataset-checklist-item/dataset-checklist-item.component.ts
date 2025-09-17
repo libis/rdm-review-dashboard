@@ -29,6 +29,5 @@ export class DatasetChecklistItemComponent implements OnInit {
 
   onCheckboxChange() {
     this.checkedChange.emit({id: this.id, checked: this.checked});
-    console.log('Checkbox changed:', this.id, this.checked);
   }
 }
