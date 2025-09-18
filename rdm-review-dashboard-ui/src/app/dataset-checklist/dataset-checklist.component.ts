@@ -29,6 +29,31 @@ export class DatasetChecklistComponent {
       }
     )
   }
+
+  get autocheckButtonTooltip(): string | null {
+    if (this.lastAutocheck === null && this.autoCheckSuccess.value !== false) {
+      return 'Not checked';
+    } else if (this.autoCheckSuccess.value === true) {
+      return "Last checked: \n" + this.datePipe.transform(this.lastAutocheck, 'medium');
+    } else if (this.autoCheckSuccess.value === false) {
+      return "Last autocheck failed. Please try again.";
+    } else {
+      return null;
+    }
+  }
+
+    get autocheckButtonClass(): string { 
+    if (this.autoCheckSuccess.value === true) {
+      return this.lastAutocheck != null ? 'p-button p-button-info p-button-outlined' : 'p-button p-button-info';
+    } else if (this.autoCheckSuccess.value === false) {
+      return 'p-button p-button-danger';
+    } else {
+      return 'p-button p-button-info';
+    }
+  }
+
+
+
   allChecksSameAsAutocheck() {
     for (let issueName of this.issueDetails.keys()) {
       if (this.autoChecklist.get(issueName) === undefined || this.autoChecklist.get(issueName) === null) {
@@ -108,28 +133,7 @@ export class DatasetChecklistComponent {
     return false;
   }
 
-  getAutocheckTooltip(): string | null {
-    if (this.lastAutocheck === null && this.autoCheckSuccess.value !== false) {
-      return 'Not checked';
-    } else if (this.autoCheckSuccess.value === true) {
-      return "Last checked: \n" + this.datePipe.transform(this.lastAutocheck, 'medium');
-    } else if (this.autoCheckSuccess.value === false) {
-      return "Last autocheck failed. Please try again.";
-    } else {
-      return null;
-    }
-  }
 
-  getAutocheckButtonClass(): string { 
-    if (this.autoCheckSuccess.value === true) {
-      return this.lastAutocheck != null ? 'p-button p-button-info p-button-outlined' : 'p-button p-button-info';
-    } else if (this.autoCheckSuccess.value === false) {
-
-      return 'p-button p-button-danger';
-    } else {
-      return 'p-button p-button-info';
-    }
-  }
 
   updateChecklist(issues: any) {
     if (issues) {

@@ -6,21 +6,22 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
   styleUrls: ['./dataset-checklist-item.component.scss']
 })
 export class DatasetChecklistItemComponent implements OnInit {
-  @Input() id!: string;
-  @Input() checked!: boolean;
+  @Input() checkboxId!: string;
+  @Input() checkboxLabel!: string;
+  @Input() checkboxEnabled: boolean = true;
+  @Input() checkboxChecked!: boolean;
   @Input() showAutochecks: boolean = false;
-  @Input() enabled: boolean = true;
-  @Input() label!: string;
-  @Input() warning!: string | null;
-  @Input() autocheckState: boolean | null = null;
+  @Input() autocheckResultChecked: boolean | null = null;
+  @Input() autocheckResultMessages!: {warning: string | null};
   @Output() checkedChange = new EventEmitter<{id: string, checked: boolean}>();
 
-  get sameAsAutocheck(): boolean | null {
-    if (this.autocheckState === null) {
+  get checkboxSameAsAutocheck(): boolean | null {
+    if (this.autocheckResultChecked === null) {
       return null;
     }
-    return this.checked === this.autocheckState;
+    return this.checkboxChecked === this.autocheckResultChecked;
   }
+
   constructor() { }
 
   ngOnInit(): void {
@@ -28,6 +29,6 @@ export class DatasetChecklistItemComponent implements OnInit {
 
 
   onCheckboxChange() {
-    this.checkedChange.emit({id: this.id, checked: this.checked});
+    this.checkedChange.emit({id: this.checkboxId, checked: this.checkboxChecked});
   }
 }

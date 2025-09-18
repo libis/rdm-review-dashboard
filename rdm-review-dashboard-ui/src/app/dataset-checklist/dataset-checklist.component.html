@@ -1,10 +1,10 @@
 <h1>Review checklist </h1>
 <p>Check the following elements before approving a dataset. (automated checks are applied in grey)</p>
 <div class="flex flex-row my-2 vertical-align-end align-items-center justify-content-end" style="margin-right: 20px;">
-  <button pButton [class]="getAutocheckButtonClass()"
+  <button pButton [class]="autocheckButtonClass"
     *ngIf="autochecksAvailable" (click)="runAutochecks()"
     style="margin-right: 5px; padding: 5px; padding-right: 12px; padding-left: 12px;"
-    [disabled]="!(autochecksEnabled.asObservable() | async)" pTooltip="{{ getAutocheckTooltip()}}"
+    [disabled]="!(autochecksEnabled.asObservable() | async)" pTooltip="{{ autocheckButtonTooltip }}"
     tooltipPosition="top">
     <div [style]="(autochecksEnabled.asObservable() | async) ? 'display: contents;' :'display: none;'">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24" stroke-width="1.0"
@@ -49,13 +49,14 @@
         </div>
       </div>
       <div *ngFor="let item of category.issues" style="margin-bottom: 18px;" class="flex-row">
-        <app-dataset-checklist-item [id]="item" 
+        <app-dataset-checklist-item 
+        [checkboxId]="item" 
         [showAutochecks]="autochecksAvailable  && (lastAutocheck !== null)" 
-        [enabled]="true" 
-        [checked]="isChecked(item)"
-        [label]="issueDetails.get(item)?.condition || ''"
-        [autocheckState]="getAutocheckState(item) || null"
-        [warning]="getAutocheckWarning(item) || null" 
+        [checkboxEnabled]="true" 
+        [checkboxChecked]="isChecked(item)"
+        [checkboxLabel]="issueDetails.get(item)?.condition || ''"
+        [autocheckResultChecked]="getAutocheckState(item) || null"
+        [autocheckResultMessages]="{ warning: issueDetails.get(item)?.warning || null}"
         (checkedChange)="onCheckedChange($event)"></app-dataset-checklist-item>
       </div>
     </div>
