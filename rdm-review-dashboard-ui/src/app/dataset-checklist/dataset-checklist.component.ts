@@ -112,6 +112,9 @@ export class DatasetChecklistComponent {
 
   getAutocheckState(item: string) {
     let result = this.autoChecklist.get(item);
+    if (result === undefined) {
+      return null;
+    }
     return result;
   }
 
@@ -153,7 +156,7 @@ export class DatasetChecklistComponent {
         this.autoCheckWarnings.set(key, value);
       }
       this.autochecksEnabled.next(true);
-
+      console.log(this.autoChecklist);
     }
     this.allSameAsAutocheck.next(this.allChecksSameAsAutocheck());
   }

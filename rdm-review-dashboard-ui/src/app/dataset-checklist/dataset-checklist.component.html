@@ -55,7 +55,7 @@
         [checkboxEnabled]="true" 
         [checkboxChecked]="isChecked(item)"
         [checkboxLabel]="issueDetails.get(item)?.condition || ''"
-        [autocheckResultChecked]="getAutocheckState(item) || null"
+        [autocheckResultChecked]="getAutocheckState(item)"
         [autocheckResultMessages]="{ warning: getAutocheckWarning(item) || null}"
         (checkedChange)="onCheckedChange($event)"></app-dataset-checklist-item>
       </div>
