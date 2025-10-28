@@ -34,7 +34,7 @@ async def update_dataset_issues_from_autocheck(
     AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
 ):
     """Updates the autocheck results and returns the results."""
-    issue.update_from_autochecks(persistent_identifier)
+    issue.get_autochecks(persistent_identifier)
     result = await issue.get_details(persistent_identifier)
     return result
 
