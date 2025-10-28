@@ -1,19 +1,32 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { DialogModule } from 'primeng/dialog';
+
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-dataset-checklist-item',
   templateUrl: './dataset-checklist-item.component.html',
-  styleUrls: ['./dataset-checklist-item.component.scss']
+  styleUrls: ['./dataset-checklist-item.component.scss'],
 })
 export class DatasetChecklistItemComponent implements OnInit {
   @Input() checkboxId!: string;
   @Input() checkboxLabel!: string;
+  @Input() checkboxTitle!: string;
   @Input() checkboxEnabled: boolean = true;
   @Input() checkboxChecked!: boolean;
   @Input() showAutochecks: boolean = false;
   @Input() autocheckResultChecked: boolean | null = null;
-  @Input() autocheckResultMessages!: {warning: string | null};
-  @Output() checkedChange = new EventEmitter<{id: string, checked: boolean}>();
+  @Input() autocheckResultMessages!: {
+    warning: string | null;
+    definition: string | null;
+  };
+  @Input() hasAutocheck: boolean = false;
+
+  @Output() checkedChange = new EventEmitter<{
+    id: string;
+    checked: boolean;
+  }>();
+  helpVisible: boolean = false;
 
   get checkboxSameAsAutocheck(): boolean | null {
     if (this.autocheckResultChecked === null) {
@@ -22,13 +35,18 @@ export class DatasetChecklistItemComponent implements OnInit {
     return this.checkboxChecked === this.autocheckResultChecked;
   }
 
-  constructor() { }
+  constructor() {}
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
+
+  showHelp() {
+    this.helpVisible = true;
   }
 
-
   onCheckboxChange() {
-    this.checkedChange.emit({id: this.checkboxId, checked: this.checkboxChecked});
+    this.checkedChange.emit({
+      id: this.checkboxId,
+      checked: this.checkboxChecked,
+    });
   }
 }

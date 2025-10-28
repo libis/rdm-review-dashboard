@@ -1,18 +1,73 @@
-<div *ngIf="showAutochecks" style="padding: .5rem; display: inline;"
-    pTooltip="{{ autocheckResultMessages.warning }}" tooltipPosition="top">
-    <i class="pi pi-check" *ngIf="autocheckResultChecked === true"
-    style="color: rgb(77, 255, 41); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);"></i>
-    <i class="pi pi-times" *ngIf="autocheckResultChecked === false"
-    style="color: rgb(255, 0, 0); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);"></i>
-    <i class="pi pi-exclamation-triangle" *ngIf="autocheckResultChecked === null" style="visibility: hidden;"></i>
-    <i class="pi pi-exclamation-triangle" *ngIf="autocheckResultMessages.warning != null"
-    style="color: rgb(255, 140, 0); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);  padding-left:5px;"></i>
-    <i class="pi pi-exclamation-triangle" *ngIf="autocheckResultMessages.warning == null"
-    style="visibility: hidden; padding-left:5px;"></i>
+<p-dialog [header]="this.checkboxTitle" [modal]="true" [(visible)]="helpVisible" [style]="{ width: '25rem' }">
+<div [innerHTML]="this.autocheckResultMessages.definition"></div>
+</p-dialog>
+<div
+  *ngIf="showAutochecks"
+  style="padding: 0.5rem; display: inline"
+>
+  <i
+    class="pi pi-question-circle"
+    style="
+      color: rgb(41, 159, 255);
+      text-shadow: 1px 1px 1px rgba(54, 138, 255, 0.03);
+      padding-right: 7px;
+    "
+     pTooltip="Click to see the autocheck rules for this item"
+    tooltipPosition="top"
+
+    [style]="hasAutocheck ? 'visibility: visible;' : 'visibility: hidden;'"
+    (click) = "showHelp()"
+  ></i>
 </div>
+<i
+  class="pi pi-check"
+  *ngIf="autocheckResultChecked === true"
+  style="color: rgb(77, 255, 41); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03)"
+></i>
+<i
+  class="pi pi-times"
+  *ngIf="autocheckResultChecked === false"
+  style="color: rgb(255, 0, 0); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03)"
+></i>
+<i
+  class="pi pi-exclamation-triangle"
+  *ngIf="autocheckResultChecked === null"
+  style="visibility: hidden"
+></i>
+<div
+  *ngIf="showAutochecks"
+  style="padding: 0.5rem; display: inline"
+  pTooltip="{{ this.autocheckResultMessages.warning || '' }}"
+  tooltipPosition="top"
+>
+  <i
+    class="pi pi-exclamation-triangle"
+    *ngIf="autocheckResultMessages.warning != null"
+    style="
+      color: rgb(255, 140, 0);
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);
+      padding-left: 5px;
+    "
+  ></i>
+</div>
+<i
+  class="pi pi-exclamation-triangle"
+  *ngIf="autocheckResultMessages.warning == null"
+  style="visibility: hidden; padding-left: 5px"
+></i>
+
 <div class="field-checkbox" style="display: inline">
-    <p-checkbox [binary]="true" [(ngModel)]="checkboxChecked" (onChange)="onCheckboxChange()"></p-checkbox>
-    <label [for]="checkboxId"
-        [style]="!checkboxSameAsAutocheck ? 'font-style: normal; ' : 'font-style: italic; color: grey;'"> {{
-        checkboxLabel }} </label>
+  <p-checkbox
+    [binary]="true"
+    [(ngModel)]="checkboxChecked"
+    (onChange)="onCheckboxChange()"
+  ></p-checkbox>
+  <div *ngIf="checkboxSameAsAutocheck" style="display: inline; font-style: italic; padding-left: 9px; margin-bottom: 5px; margin-right: -7px;"> 
+    [Autocheck applied]
+  </div>
+  <label
+    [for]="checkboxId"
+  >
+    {{ checkboxLabel }}
+  </label>
 </div>
