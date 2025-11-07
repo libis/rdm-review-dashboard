@@ -12,12 +12,6 @@
     [class]="autocheckButtonClass"
     *ngIf="autochecksAvailable"
     (click)="runAutochecks()"
-    style="
-      margin-right: 5px;
-      padding: 5px;
-      padding-right: 12px;
-      padding-left: 12px;
-    "
     [disabled]="!(autochecksEnabled.asObservable() | async)"
     pTooltip="{{ autocheckButtonTooltip }}"
     tooltipPosition="top"
@@ -70,12 +64,6 @@
         ? 'p-button p-button-outlined'
         : 'p-button p-button-info'
     "
-    style="
-      margin-right: 5px;
-      padding: 5px;
-      padding-right: 12px;
-      padding-left: 12px;
-    "
     (click)="updateFromAutochecks()"
     [disabled]="
       (this.allSameAsAutocheck.asObservable() | async) ||
@@ -101,6 +89,7 @@
     <b> <span>Apply all autochecks</span> </b>
   </button>
 </div>
+
 <div *ngFor="let category of checklistCategories">
   <div class="flex flex-row my-2">
     <div class="flex flex-column align-items-center mx-4">
@@ -117,35 +106,39 @@
       class="checklist border-1 border-300 border-round w-full mr-4 px-4 py-2"
     >
       <h2>{{ category.label }}</h2>
-      <div>
-        <div
-          style="padding: 0.5rem; display: inline-block"
-          *ngIf="autochecksAvailable && lastAutocheck !== null"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="#ADD8E6"
-            viewBox="0 0 24 24"
-            stroke-width="1.0"
-            stroke="#ADD8E6"
-            style="filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.01))"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
-            />
-          </svg>
-        </div>
-      </div>
+      <table>
+        <tr>
+          <td>
+            <div
+              class="autocheck-icon-container"
+              *ngIf="autochecksAvailable && lastAutocheck !== null"
+            >
+              <svg
+                class="dropshadow"
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="#ADD8E6"
+                viewBox="0 0 24 24"
+                stroke-width="1.0"
+                stroke="#ADD8E6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
+                />
+              </svg>
+            </div>
+          </td>
+        </tr>
+      </table>
       <div
         *ngFor="let item of category.issues"
-        style="padding: 9px; margin-bottom: 1px"
-        class="flex-row"
+        class="flex-row category-name-container"
         [style]="
-          autoChecklist.has(item) ? 'background-color: rgb(243, 243, 243);' : ''"
+          autoChecklist.has(item) ? 'background-color: rgb(243, 243, 243);' : ''
+        "
       >
         <app-dataset-checklist-item
           [checkboxId]="item"
@@ -157,7 +150,7 @@
           [autocheckResultChecked]="getAutocheckState(item)"
           [autocheckResultMessages]="{
             warning: getAutocheckWarning(item) || null,
-            definition: autoCheckDefinitions.get(item) || null
+            helpText: autocheckHelpTexts.get(item) || null
           }"
           [hasAutocheck]="autoChecklist.has(item)"
           (checkedChange)="onCheckedChange($event)"

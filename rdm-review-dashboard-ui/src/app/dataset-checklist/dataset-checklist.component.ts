@@ -15,7 +15,7 @@ export class DatasetChecklistComponent {
   checklistCategories: any[] = [];
   autoChecklist: Map<string, boolean | null> = new Map<string, boolean | null>();
   autoCheckWarnings: Map<string, string | null> = new Map<string, string | null>();
-  autoCheckDefinitions: Map<string, string | null> = new Map<string, string | null>();
+  autocheckHelpTexts: Map<string, string | null> = new Map<string, string | null>();
   lastAutocheck!: string | null;
   autochecksEnabled: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   allSameAsAutocheck: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
@@ -26,7 +26,7 @@ export class DatasetChecklistComponent {
     this.reviewService.getSelectedDatasetIssues().subscribe(
       (issues) => {
         this.updateChecklist(issues);
-        this.autochecksAvailable = issues.autochecks_available != null && issues.autochecks_available > 0;
+        this.autochecksAvailable = issues.autochecks_available != null;
       }
     )
   }
@@ -52,7 +52,6 @@ export class DatasetChecklistComponent {
       return 'p-button p-button-info';
     }
   }
-
 
 
   allChecksSameAsAutocheck() {
@@ -137,8 +136,6 @@ export class DatasetChecklistComponent {
     return false;
   }
 
-
-
   updateChecklist(issues: any) {
     if (issues) {
       this.checklistCategories = issues.categories;
@@ -156,12 +153,10 @@ export class DatasetChecklistComponent {
       for (const [key, value] of Object.entries(issues.auto_checklist_messages as { [key: string]: string | null })) {
         this.autoCheckWarnings.set(key, value);
       }
-      for (const [key, value] of Object.entries(issues.autocheck_definitions as { [key: string]: string | null })) {
-        this.autoCheckDefinitions.set(key, value);
+      for (let autocheck of  issues.autochecks_available) {
+        this.autocheckHelpTexts.set(autocheck.name, autocheck.helpText);
       }
-
       this.autochecksEnabled.next(true);
-      console.log(this.autoChecklist);
     }
     this.allSameAsAutocheck.next(this.allChecksSameAsAutocheck());
   }
@@ -176,6 +171,6 @@ export class DatasetChecklistComponent {
     }
     this.checklist = checklist;
     this.allSameAsAutocheck.next(this.allChecksSameAsAutocheck());
-
   }
+
 }

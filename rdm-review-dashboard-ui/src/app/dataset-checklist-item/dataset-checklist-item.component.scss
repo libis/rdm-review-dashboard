@@ -1,0 +1,49 @@
+.blue-icon {
+  color: rgb(41, 159, 255);
+}
+
+.green-icon {
+  color: rgb(77, 255, 41);
+}
+
+.red-icon {
+  color: rgb(255, 0, 0);
+}
+
+.hidden-icon {
+  visibility: hidden;
+}
+
+.orange-icon {
+  color: rgb(255, 140, 0);
+}
+
+.dropshadow {
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);
+}
+
+:p-dialogue {
+  width: "50rem";
+}
+
+
+.warning-container {
+  padding: 0.5rem;
+  padding-left: 7px;
+  display: inline;
+}
+
+.autocheck-applied {
+  display: inline;
+  font-style: italic;
+  padding-left: 5px;
+  padding-right: 7px;
+  margin-bottom: 5px;
+  margin-right: -5px;
+}
+
+.checklist-item-text {
+  vertical-align: top;
+  padding-left: 10px;
+  margin-top: -2px;
+}

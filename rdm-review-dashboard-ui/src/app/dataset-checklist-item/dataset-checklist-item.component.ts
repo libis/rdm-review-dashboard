@@ -18,7 +18,7 @@ export class DatasetChecklistItemComponent implements OnInit {
   @Input() autocheckResultChecked: boolean | null = null;
   @Input() autocheckResultMessages!: {
     warning: string | null;
-    definition: string | null;
+    helpText: string | null;
   };
   @Input() hasAutocheck: boolean = false;
 

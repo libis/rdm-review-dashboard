@@ -1,0 +1,57 @@
+.blue-icon {
+  color: rgb(41, 159, 255);
+}
+
+.green-icon {
+  color: rgb(77, 255, 41);
+}
+
+.red-icon {
+  color: rgb(255, 0, 0);
+}
+
+.hidden-icon {
+  visibility: hidden;
+}
+
+.orange-icon {
+  color: rgb(255, 140, 0);
+}
+
+.dropshadow {
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);
+}
+
+:p-dialogue {
+  width: "50rem";
+}
+
+:td {
+  vertical-align: top;
+  text-align: right;
+}
+
+.warning-container {
+  padding: 0.5rem;
+  padding-left: 7px;
+  display: inline;
+}
+
+.p-button {
+  margin-right: 5px;
+  padding: 5px;
+  padding-right: 12px;
+  padding-left: 12px;
+}
+
+.autocheck-icon-container {
+  padding-left: 18px;
+  padding-right: 27px;
+  display: inline-block;
+}
+
+
+.category-name-container {
+  padding: 9px;
+  margin-bottom: 1px;
+}

@@ -1,73 +1,76 @@
-<p-dialog [header]="this.checkboxTitle" [modal]="true" [(visible)]="helpVisible" [style]="{ width: '50rem' }" [dismissableMask]="true">
-<div [innerHTML]="this.autocheckResultMessages.definition"></div>
-</p-dialog>
-<div
-  *ngIf="showAutochecks"
-  style="padding: 0.5rem; display: inline"
->
-  <i
-    class="pi pi-question-circle"
-    style="
-      color: rgb(41, 159, 255);
-      text-shadow: 1px 1px 1px rgba(54, 138, 255, 0.03);
-      padding-right: 7px;
-    "
-     pTooltip="Click to see the autocheck rules for this item"
-    tooltipPosition="top"
+<table >
+  <tr style="vertical-align: top; margin: 3px;">
+    <p-dialog
+      [header]="this.checkboxTitle"
+      [modal]="true"
+      [(visible)]="helpVisible"
+      [dismissableMask]="true"
+    >
+      <div [innerHTML]="this.autocheckResultMessages.helpText"></div>
+    </p-dialog>
 
-    [style]="hasAutocheck ? 'visibility: visible;' : 'visibility: hidden;'"
-    (click) = "showHelp()"
-  ></i>
-</div>
-<i
-  class="pi pi-check"
-  *ngIf="autocheckResultChecked === true"
-  style="color: rgb(77, 255, 41); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03)"
-></i>
-<i
-  class="pi pi-times"
-  *ngIf="autocheckResultChecked === false"
-  style="color: rgb(255, 0, 0); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03)"
-></i>
-<i
-  class="pi pi-exclamation-triangle"
-  *ngIf="autocheckResultChecked === null"
-  style="visibility: hidden"
-></i>
-<div
-  *ngIf="showAutochecks"
-  style="padding: 0.5rem; display: inline"
-  pTooltip="{{ this.autocheckResultMessages.warning || '' }}"
-  tooltipPosition="top"
->
-  <i
-    class="pi pi-exclamation-triangle"
-    *ngIf="autocheckResultMessages.warning != null"
-    style="
-      color: rgb(255, 140, 0);
-      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.03);
-      padding-left: 5px;
-    "
-  ></i>
-</div>
-<i
-  class="pi pi-exclamation-triangle"
-  *ngIf="autocheckResultMessages.warning == null"
-  style="visibility: hidden; padding-left: 5px"
-></i>
+    <td>
+      <div *ngIf="showAutochecks" style="padding: 0.5rem; display: inline">
+        <i
+          class="pi pi-question-circle blue-icon dropshadow"
+          pTooltip="Click to see the autocheck rules for this item"
+          tooltipPosition="top"
+          [style]="
+            hasAutocheck ? 'visibility: visible;' : 'visibility: hidden;'
+          "
+          (click)="showHelp()"
+        ></i>
+      </div>
+    </td>
+    <td>
+      <i
+        class="pi pi-check green-icon dropshadow"
+        *ngIf="autocheckResultChecked === true"
+      ></i>
+      <i
+        class="pi pi-times red-icon dropshadow"
+        *ngIf="autocheckResultChecked === false"
+      ></i>
+    </td>
+    <td>
+      <i
+        class="pi pi-exclamation-triangle"
+        *ngIf="autocheckResultChecked === null"
+        style="visibility: hidden"
+      ></i>
+      <div
+        class="warning-container"
+        *ngIf="showAutochecks"
+        pTooltip="{{ this.autocheckResultMessages.warning || '' }}"
+        tooltipPosition="top"
+      >
+        <i
+          class="pi pi-exclamation-triangle orange-icon dropshadow"
+          *ngIf="autocheckResultMessages.warning != null"
+        ></i>
+        <i
+          class="pi pi-exclamation-triangle hidden-icon"
+          *ngIf="autocheckResultMessages.warning == null"
+        ></i>
+      </div>
+    </td>
+    <td style="margin-left: 10px;">
+      <div>
+        <p-checkbox
+          [binary]="true"
+          [(ngModel)]="checkboxChecked"
+          (onChange)="onCheckboxChange()"
+        ></p-checkbox>
+      </div>
+    </td>
+    <td >
+      <p class="checklist-item-text">
+        <span *ngIf="checkboxSameAsAutocheck" class="autocheck-applied">
+          [Autocheck applied]
+        </span>
 
-<div class="field-checkbox" style="display: inline">
-  <p-checkbox
-    [binary]="true"
-    [(ngModel)]="checkboxChecked"
-    (onChange)="onCheckboxChange()"
-  ></p-checkbox>
-  <div *ngIf="checkboxSameAsAutocheck" style="display: inline; font-style: italic; padding-left: 9px; margin-bottom: 5px; margin-right: -7px;"> 
-    [Autocheck applied]
-  </div>
-  <label
-    [for]="checkboxId"
-  >
-    {{ checkboxLabel }}
-  </label>
-</div>
+        {{ checkboxLabel }}
+      </p>
+    </td>
+  </tr>
+</table>
