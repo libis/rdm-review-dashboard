@@ -26,11 +26,12 @@ def get_check_list() -> List[Check]:
             timeout = check.get("timeout")
             if  timeout is None:
                 timeout = default_timeout
-
+            help_text = check.get("helpText")
             check_list.append(
                 Check(
                     name = check.get("name"),
-                    timeout= timeout
+                    timeout= timeout,
+                    helpText = help_text
                 )
             )
     return check_list

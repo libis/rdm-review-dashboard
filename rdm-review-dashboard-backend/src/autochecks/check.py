@@ -7,3 +7,4 @@ from autochecks.dataset_context import DatasetContext
 class Check(BaseModel): 
     name: str
     timeout: Optional[int|None] = None
+    helpText: str

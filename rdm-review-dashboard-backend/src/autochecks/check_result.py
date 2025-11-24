@@ -8,9 +8,8 @@ class CheckResult(BaseModel):
     warning: str | None = None
     additional_info: dict | None = None
 
-    def __init__(self, definition: str, check_result:bool|None, warning:str|None, additional_info: dict|None=None, check_datetime=None):
+    def __init__(self, check_result:bool|None, warning:str|None, additional_info: dict|None=None, check_datetime=None):
         super().__init__()
-        self.definition = definition
         self.result = check_result
         self.last_checked = check_datetime or datetime.now()
         self.warning = warning 

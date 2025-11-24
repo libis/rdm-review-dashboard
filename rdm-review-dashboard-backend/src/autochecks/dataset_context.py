@@ -16,7 +16,7 @@ class DatasetContext:
     files : list
 
     def get_metadata(self, persistent_id: str) -> dict:
-        response = native.retrieve_dataset_details(persistent_id)
+        response = native.retrieve_dataset_latest_version(persistent_id)
         if response.status_code == 200:
             return json.loads(response.text).get("data")
         else:
@@ -34,8 +34,7 @@ class DatasetContext:
             raise Exception(f"Could not load dataset metadata for {persistent_id}")
         self.dataset_metadata_json = dataset
         
-        self.metadata_blocks = dataset["latestVersion"] \
-            .get("metadataBlocks")
+        self.metadata_blocks = dataset.get("metadataBlocks")
         if self.metadata_blocks:
             try:
                 self.metadata = self.parse_metadata_blocks(self.metadata_blocks)
@@ -44,8 +43,7 @@ class DatasetContext:
                 raise
         else:
             raise Exception("Could not retrieve dataset info.")
-        self.files = dataset.get("latestVersion", {}) \
-            .get("files")
+        self.files = dataset.get("files")
 
     def parse_metadata_blocks(self, metadata: dict) -> dict:
         result = {}

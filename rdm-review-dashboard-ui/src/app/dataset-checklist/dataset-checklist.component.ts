@@ -171,6 +171,7 @@ export class DatasetChecklistComponent {
     }
     this.checklist = checklist;
     this.allSameAsAutocheck.next(this.allChecksSameAsAutocheck());
+    this.onChecklistChange();
   }
 
 }

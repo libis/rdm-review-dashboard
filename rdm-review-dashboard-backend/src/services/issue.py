@@ -109,7 +109,6 @@ async def get_details(persistent_id: str):
     autocheck_results : dict[str, CheckResult] = load_autocheck_results(persistent_id) or {}
     autocheck_states = {}
     autocheck_messages = {}
-    autocheck_definitions = {}
     autocheck_timestamp = None
     for name, check_result in autocheck_results.items():
         if check_result.last_checked  and (not autocheck_timestamp or check_result.last_checked > autocheck_timestamp):
@@ -123,12 +122,6 @@ async def get_details(persistent_id: str):
             autocheck_messages[name] = check_result.warning
         except:
             logging.error(f"Autochecks: Could not get warning message for {name}.")
-        try:
-            autocheck_definitions[name] = check_result.definition
-        except:
-            autocheck_definitions[name] = None
-            logging.error(f"Autochecks: Could not get check_definition for {name}.")
-            continue
 
         
     result = {
@@ -138,8 +131,7 @@ async def get_details(persistent_id: str):
         'auto_checklist_states': autocheck_states,
         'auto_checklist_messages': autocheck_messages,
         "autocheck_performed": autocheck_timestamp,
-        'autochecks_available': get_num_checks(),
-        'autocheck_definitions': autocheck_definitions,
+        'autochecks_available': get_available_autochecks(),
         'categories': get_issue_categories(issue_definitions)
     }
     return result
