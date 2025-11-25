@@ -24,7 +24,7 @@ export class ReviewHistoryComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  getSeverity(content: string): string {
+  getSeverity(content: string): "success" | "secondary" | "info" | "warning" | "danger" | "contrast" | undefined {
     let contentLower = content.toLowerCase();
     if (contentLower.includes('publish')) {
       return 'success';
@@ -55,7 +55,7 @@ export class ReviewHistoryComponent implements OnInit {
     }
 
     else {
-      return 'primary'
+      return 'info'
     }
   }
 

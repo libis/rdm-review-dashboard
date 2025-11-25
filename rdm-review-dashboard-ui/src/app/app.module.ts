@@ -111,9 +111,6 @@ import { DatasetChecklistItemComponent } from './dataset-checklist-item/dataset-
     TagModule,
     TooltipModule,
   ],
-  entryComponents: [
-    AssignReviewerComponent
-  ],
   providers: [{
     provide: APP_INITIALIZER,
     multi: true,

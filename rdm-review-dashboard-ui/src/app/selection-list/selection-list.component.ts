@@ -4,15 +4,8 @@ import { DatasetService } from "../services/dataset.service";
 import { BehaviorSubject, map, Observable, of, switchMap, combineLatest, shareReplay } from "rxjs";
 import { Dataset } from "../models/dataset";
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-
+import { PaginatorState } from 'primeng/paginator';
 import { UserService } from '../services/user.service';
-
-interface PageEvent {
-  first: number;
-  rows: number;
-  page: number;
-  pageCount: number;
-}
 
 @Component({
   selector: 'app-selection-list',
@@ -124,9 +117,9 @@ export class SelectionListComponent implements OnInit {
 
   }
 
-  onPageChange(event: PageEvent) {
-    this.firstRecord.next(event.first);
-    this.rows.next(event.rows);
+  onPageChange(event: PaginatorState) {
+    this.firstRecord.next(event.first ?? 0);
+    this.rows.next(event.rows ?? 9);
   }
   isInt(value: any) {
     return !isNaN(value) &&
