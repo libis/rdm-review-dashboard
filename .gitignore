@@ -1,16 +1,36 @@
 data/*
 !data/.gitkeep
+
+# Config: ignore secrets and JSON, but keep specific backend configs
 config/.secrets
 config/*.json
-!backend_config.json
-!backend_config.container.json
+!config/backend_config.json
+!config/backend_config.container.json
+
 compose.*
 !compose.review.yml
+
+# Environment files
 .env.*
 !.env
+
+# Editors/IDEs
 .vscode 
 .venv
+.idea/
+
+# Python virtualenv and caches
+.venv/
+__pycache__/
+.pytest_cache/
+.coverage
+coverage.xml
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Prevent nested git repos from being tracked
 rdm-review-dashboard-backend/.git
 rdm-review-dashboard-ui/.git
-__pycache__
 config/automations/autochecks.json

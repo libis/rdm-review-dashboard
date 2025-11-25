@@ -66,13 +66,19 @@ def set(issue_list: IssueList, user_id: Optional[str]=None):
 def get(persistent_id: str) -> IssueList:
     '''Reads the previously saved checklist for the dataset issues. Returns None if not found.'''
     file_path = os.path.join(*filesystem.BASE_DIR, filesystem.get_foldername_from_persistent_id(persistent_id), 'issues', 'checklist_state')
+    issues = None
     try:
         issues = shelve.open(file_path)
-    except:
+        result = dict(issues).copy()
+        return result
+    except Exception:
         return None
-    result = dict(issues).copy()
-    issues.close()
-    return  result
+    finally:
+        if issues is not None:
+            try:
+                issues.close()
+            except Exception:
+                pass
 
 
 async def generate_feedback_email(persistent_identifier):

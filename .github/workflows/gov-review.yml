@@ -1,0 +1,206 @@
+# @ai-generated: true
+# @ai-tool: Copilot
+name: Governance Reports Review (/gov)
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  review:
+    if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body || '', '/gov') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse command
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = (context.payload.comment?.body || '').trim();
+            const parts = body.split(/\s+/);
+            let cmd = (parts[1] || 'check').toLowerCase();
+            const allowed = new Set(['help','check','licenses','sbom']);
+            if (!allowed.has(cmd)) cmd = 'help';
+            core.setOutput('cmd', cmd);
+            core.setOutput('do_licenses', String(cmd === 'check' || cmd === 'licenses'));
+            core.setOutput('do_sbom', String(cmd === 'check' || cmd === 'sbom'));
+
+      - name: Show help
+        if: ${{ steps.parse.outputs.cmd == 'help' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const help = [
+              '### /gov help',
+              '',
+              'Usage:',
+              '- `/gov` or `/gov check` — summarize both ScanCode and SBOM artifacts',
+              '- `/gov licenses` — summarize ScanCode (licenses) only',
+              '- `/gov sbom` — summarize SBOM (packages) only',
+            ].join('\n');
+            await github.rest.issues.createComment({owner, repo, issue_number: context.issue.number, body: help});
+
+      - name: Extract PR info
+        if: ${{ steps.parse.outputs.cmd != 'help' }}
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const prNumber = context.issue.number;
+            const {data: pr} = await github.rest.pulls.get({owner, repo, pull_number: prNumber});
+            core.setOutput('head_ref', pr.head.ref);
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('base_ref', pr.base.ref);
+
+      - name: Find latest PR Governance run for this PR
+        if: ${{ steps.parse.outputs.cmd != 'help' }}
+        id: findrun
+        uses: actions/github-script@v7
+        env:
+          HEAD_REF: ${{ steps.pr.outputs.head_ref }}
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const headRef = process.env.HEAD_REF;
+            const {data} = await github.rest.actions.listWorkflowRunsForRepo({owner, repo, per_page: 50});
+            const target = data.workflow_runs
+              .filter(r => r.head_branch === headRef && r.name === 'PR Governance (licenses & secrets)')
+              .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+            if (!target) {
+              core.setFailed('No matching PR Governance run found for this branch.');
+              return;
+            }
+            core.info(`Using run id: ${target.id}`);
+            core.setOutput('run_id', String(target.id));
+
+      - name: Download ScanCode artifact
+        if: ${{ steps.parse.outputs.cmd != 'help' }}
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_id: ${{ steps.findrun.outputs.run_id }}
+          name: scancode-report
+          path: gov-artifacts
+          if_no_artifact_found: warn
+
+      - name: Download SBOM artifact
+        if: ${{ steps.parse.outputs.cmd != 'help' }}
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_id: ${{ steps.findrun.outputs.run_id }}
+          name: sbom-spdx
+          path: gov-artifacts
+          if_no_artifact_found: warn
+
+      - name: List downloaded files (debug)
+        if: ${{ steps.parse.outputs.cmd != 'help' }}
+        run: |
+          echo "Downloaded artifacts:"
+          find gov-artifacts -maxdepth 3 -type f -print || true
+
+      - name: Summarize reports
+        if: ${{ steps.parse.outputs.cmd != 'help' }}
+        id: summarize
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
+          mkdir -p gov-artifacts
+          summary=gov-artifacts/GOV_SUMMARY.md
+          BUF=$''
+          append_line() { BUF+="$1"$'\n'; }
+          append_blank() { BUF+=$'\n'; }
+
+          append_line "## Governance reports summary"
+          append_line "Run ID: ${{ steps.findrun.outputs.run_id }}"
+          append_blank
+
+          COP=0
+          UNK=0
+          # Resolve file paths when artifact names or folders differ
+          SCAN_FILE="gov-artifacts/scancode.json"
+          if [ ! -f "$SCAN_FILE" ]; then
+            alt=$(find gov-artifacts -type f -name 'scancode*.json' | head -n1 || true)
+            if [ -n "${alt:-}" ]; then SCAN_FILE="$alt"; fi
+          fi
+          SBOM_FILE="gov-artifacts/sbom.spdx.json"
+          if [ ! -f "$SBOM_FILE" ]; then
+            alt=$(find gov-artifacts -type f \( -name '*.spdx.json' -o -name 'sbom*.json' \) | head -n1 || true)
+            if [ -n "${alt:-}" ]; then SBOM_FILE="$alt"; fi
+          fi
+
+          if [ "${{ steps.parse.outputs.do_licenses }}" = "true" ]; then
+            if [ -f "$SCAN_FILE" ]; then
+              COP=$(jq -r '[.files[]? | .licenses[]? | (.spdx_license_key // "") | ascii_downcase | select(test("(^|[^a-z])(agpl|gpl|lgpl)([^a-z]|$)"))] | length' "$SCAN_FILE")
+              UNK=$(jq -r '[.files[]? | .licenses[]? | (.spdx_license_key // "") | ascii_downcase | select(. == "unknown" or . == "noassertion" or . == "")] | length' "$SCAN_FILE")
+              append_line "### ScanCode (licenses)"
+              append_line "- Copyleft findings (AGPL/GPL/LGPL): ${COP}"
+              append_line "- Unknown/NoAssertion licenses: ${UNK}"
+              append_line "- Top files with copyleft/unknown:"
+              TOP=$(jq -r '(
+                [.files[]? | select(.licenses) | {path: .path, keys: ([.licenses[]? | (.spdx_license_key // "")|ascii_downcase])}]
+                | map(select((.keys|join(" ")) | test("agpl|gpl|lgpl|unknown|noassertion")))
+                | .[:5]
+                | map("  - " + .path)
+                | .[])
+              ' "$SCAN_FILE" || true)
+              if [ -n "${TOP:-}" ]; then BUF+="$TOP"$'\n'; fi
+              append_blank
+            else
+              append_line "### ScanCode (licenses)"
+              append_line "- Artifact not found."
+              append_blank
+            fi
+          fi
+
+          if [ "${{ steps.parse.outputs.do_sbom }}" = "true" ]; then
+            if [ -f "$SBOM_FILE" ]; then
+              TOTAL=$(jq -r '[.packages[]?] | length' "$SBOM_FILE")
+              GPL=$(jq -r '[.packages[]? | (.licenseConcluded // .licenseDeclared // "") | ascii_downcase | select(test("(^|[^a-z])(agpl|gpl|lgpl)([^a-z]|$)"))] | length' "$SBOM_FILE")
+              NOA=$(jq -r '[.packages[]? | (.licenseConcluded // .licenseDeclared // "") | ascii_downcase | select(. == "noassertion" or . == "unknown" or . == "")] | length' "$SBOM_FILE")
+              append_line "### SBOM (SPDX)"
+              append_line "- Packages: ${TOTAL}"
+              append_line "- Copyleft package licenses (AGPL/GPL/LGPL): ${GPL}"
+              append_line "- Unknown/NoAssertion package licenses: ${NOA}"
+              append_blank
+            else
+              append_line "### SBOM (SPDX)"
+              append_line "- Artifact not found."
+              append_blank
+            fi
+          fi
+
+          printf "%s" "$BUF" > "$summary"
+          printf "%s\n" "copyleft_files=${COP}" >> "$GITHUB_OUTPUT"
+          printf "%s\n" "unknown_files=${UNK}" >> "$GITHUB_OUTPUT"
+          printf "%s" "$BUF" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment summary on PR
+        if: ${{ steps.parse.outputs.cmd != 'help' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const {owner, repo} = context.repo;
+            const body = fs.readFileSync('gov-artifacts/GOV_SUMMARY.md','utf8');
+            await github.rest.issues.createComment({owner, repo, issue_number: context.issue.number, body});
+
+      - name: Add label if review needed
+        if: ${{ steps.parse.outputs.cmd != 'help' && (steps.summarize.outputs.copyleft_files != '0' || steps.summarize.outputs.unknown_files != '0') }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const labels = ['license-review-needed'];
+            await github.rest.issues.addLabels({owner, repo, issue_number: context.issue.number, labels});

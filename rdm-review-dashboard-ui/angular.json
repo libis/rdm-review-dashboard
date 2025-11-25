@@ -129,7 +129,6 @@
               "node_modules/quill/dist/quill.snow.css"
             ],
             "scripts": [
-              "node-modules/fakerator/dist/fakerator.js",
               "node_modules/quill/dist/quill.js"
                 
             ]

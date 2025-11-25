@@ -2,8 +2,11 @@ data/*
 config/*
 image/src/
 image/requirements.txt
+image/dist/
 scripts/
 .vscode 
+.venv/
+.pytest_cache/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

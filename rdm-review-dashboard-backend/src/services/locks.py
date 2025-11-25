@@ -10,12 +10,13 @@ def update(unit_id, lock_type, new_value):
     logging.info(f"locks update: {unit_id}, {lock_type}, {new_value}")
     file_path = os.path.join(*filesystem.BASE_DIR, 'locks')
     logging.info(f'lockfile path {file_path}')
+    locks = None
     try:
         # modified = False
         locks = shelve.open(file_path)
         try:
             unit_locks = locks[unit_id]
-        except:
+        except KeyError:
             unit_locks = {}
         if new_value:
             # if new value: update the lock for dataset
@@ -23,14 +24,17 @@ def update(unit_id, lock_type, new_value):
             # modified = True
         elif unit_locks:
             # if none: del the lock type from dataset
-            unit_locks.pop(lock_type)
+            unit_locks.pop(lock_type, None)
             # modified = True
         if unit_locks:
             # if locks for dataset -> update
             locks[unit_id] = unit_locks
         else:
-            # if not -> remove the dataset from the file
-            del locks[unit_id]
+            # if not -> remove the dataset from the file (ignore if absent)
+            try:
+                del locks[unit_id]
+            except KeyError:
+                pass
         try:
             locks.update()
         except Exception as e:
@@ -39,6 +43,12 @@ def update(unit_id, lock_type, new_value):
     except Exception as e:
         logging.info(e)
         return False
+    finally:
+        if locks is not None:
+            try:
+                locks.close()
+            except Exception:
+                pass
     return True
 
 def add(dataset_id, lock_type):
