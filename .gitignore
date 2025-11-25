@@ -9,5 +9,8 @@ compose.*
 .env.*
 !.env
 .vscode 
+.venv
 rdm-review-dashboard-backend/.git
 rdm-review-dashboard-ui/.git
+__pycache__
+config/automations/autochecks.json
