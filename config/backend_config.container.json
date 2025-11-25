@@ -27,6 +27,8 @@
 
     "issueDefinitionsFile": "/config/dataset_issue_definitions.json",
 	"emailTemplatesPath": "/config/emails",
+    "automationsPath":   "/config/automations",
+    "automations": [],
 
     "reviewerRoles": ["reviewer", "admin"],
     "dataverseUserGroupAliases" : {

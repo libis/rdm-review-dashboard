@@ -26,10 +26,6 @@
   width: "50rem";
 }
 
-:td {
-  vertical-align: top;
-  text-align: right;
-}
 
 .warning-container {
   padding: 0.5rem;
@@ -37,21 +33,17 @@
   display: inline;
 }
 
-.p-button {
-  margin-right: 5px;
-  padding: 5px;
-  padding-right: 12px;
-  padding-left: 12px;
+.autocheck-applied {
+  display: inline;
+  font-style: italic;
+  padding-left: 5px;
+  padding-right: 7px;
+  margin-bottom: 5px;
+  margin-right: -5px;
 }
 
-.autocheck-icon-container {
-  padding-left: 18px;
-  padding-right: 27px;
-  display: inline-block;
-}
-
-
-.category-name-container {
-  padding: 9px;
-  margin-bottom: 1px;
+.checklist-item-text {
+  vertical-align: top;
+  padding-left: 10px;
+  margin-top: -2px;
 }

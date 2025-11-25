@@ -5,6 +5,7 @@ import uvicorn
 
 import os
 import shutil
+import autochecks.autochecks
 from utils.logging import logging
 import utils.logging
 from utils import response_headers
@@ -24,6 +25,7 @@ from fastapi.responses import RedirectResponse
 from services.dataverse import postgresql
 import threading
 import urllib3
+import sys
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -100,6 +102,12 @@ def configure():
 
     if UI_PATH:
         api.mount(UI_BASE_HREF, StaticFiles(directory=UI_PATH, html=True), name="ui")
+        
+    autochecks.autochecks.path = get_setting(settings, "automationsPath", required=False)
+    if autochecks.autochecks.path and autochecks.autochecks.path + "/scripts" not in sys.path:
+        sys.path.insert(1, autochecks.autochecks.path + "/scripts") 
+    autochecks.autochecks.default_timeout = get_setting(settings, "automationDefaultCheckTimeout", required=False)
+    
 
 def configure_routing():
     api.include_router(home.router)
@@ -121,8 +129,7 @@ def configure_dataset_issue_definitions(settings):
     issues = load_settings_file(
         Path(get_setting(settings, "issueDefinitionsFile", required=True)).absolute()
     )
-    issue.ISSUE_DEFINITIONS = issues
-
+    issue.ISSUE_DEFINITIONS_FILE = get_setting(settings, "issueDefinitionsFile", required=True)
 
 def configure_postgresql(settings):
     postgresql.HOST = get_setting(settings, "PostgresHost", required=True)

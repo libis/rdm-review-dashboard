@@ -1,0 +1,76 @@
+<table >
+  <tr style="vertical-align: top; margin: 3px;">
+    <p-dialog
+      [header]="this.checkboxTitle"
+      [modal]="true"
+      [(visible)]="helpVisible"
+      [dismissableMask]="true"
+    >
+      <div [innerHTML]="this.autocheckResultMessages.helpText"></div>
+    </p-dialog>
+
+    <td>
+      <div *ngIf="showAutochecks" style="padding: 0.5rem; display: inline">
+        <i
+          class="pi pi-question-circle blue-icon dropshadow"
+          pTooltip="Click to see the autocheck rules for this item"
+          tooltipPosition="top"
+          [style]="
+            hasAutocheck ? 'visibility: visible;' : 'visibility: hidden;'
+          "
+          (click)="showHelp()"
+        ></i>
+      </div>
+    </td>
+    <td>
+      <i
+        class="pi pi-check green-icon dropshadow"
+        *ngIf="autocheckResultChecked === true"
+      ></i>
+      <i
+        class="pi pi-times red-icon dropshadow"
+        *ngIf="autocheckResultChecked === false"
+      ></i>
+    </td>
+    <td>
+      <i
+        class="pi pi-exclamation-triangle"
+        *ngIf="autocheckResultChecked === null"
+        style="visibility: hidden"
+      ></i>
+      <div
+        class="warning-container"
+        *ngIf="showAutochecks"
+        pTooltip="{{ this.autocheckResultMessages.warning || '' }}"
+        tooltipPosition="top"
+      >
+        <i
+          class="pi pi-exclamation-triangle orange-icon dropshadow"
+          *ngIf="autocheckResultMessages.warning != null"
+        ></i>
+        <i
+          class="pi pi-exclamation-triangle hidden-icon"
+          *ngIf="autocheckResultMessages.warning == null"
+        ></i>
+      </div>
+    </td>
+    <td style="margin-left: 10px;">
+      <div>
+        <p-checkbox
+          [binary]="true"
+          [(ngModel)]="checkboxChecked"
+          (onChange)="onCheckboxChange()"
+        ></p-checkbox>
+      </div>
+    </td>
+    <td >
+      <p class="checklist-item-text">
+        <span *ngIf="checkboxSameAsAutocheck" class="autocheck-applied">
+          [Autocheck applied]
+        </span>
+
+        {{ checkboxLabel }}
+      </p>
+    </td>
+  </tr>
+</table>

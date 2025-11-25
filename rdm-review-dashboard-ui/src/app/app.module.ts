@@ -6,6 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { APP_INITIALIZER } from '@angular/core';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+import { DatePipe } from '@angular/common';
 
 
 // PrimeNG
@@ -56,6 +57,7 @@ import { TopBannerComponent } from './top-banner/top-banner.component';
 
 // 
 import { ReviewHistoryComponent } from './review-history/review-history.component';
+import { DatasetChecklistItemComponent } from './dataset-checklist-item/dataset-checklist-item.component';
 
 
 @NgModule({
@@ -76,7 +78,8 @@ import { ReviewHistoryComponent } from './review-history/review-history.componen
     SelectionListComponent,
     TagComponent,
     TopBannerComponent,
-    ReviewHistoryComponent],
+    ReviewHistoryComponent,
+    DatasetChecklistItemComponent],
   imports: [
     AppRoutingModule,
     AvatarModule,
@@ -121,7 +124,8 @@ import { ReviewHistoryComponent } from './review-history/review-history.componen
       };
     }
   }, 
-  {provide: LocationStrategy, useClass: HashLocationStrategy}
+  {provide: LocationStrategy, useClass: HashLocationStrategy},
+  DatePipe,
   ],
   bootstrap: [AppComponent]
 })
