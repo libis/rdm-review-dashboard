@@ -4,7 +4,7 @@ from utils.logging import logging
 
 def get_dataset_assignees(persistent_id):
     """
-    Retrieves a dataset's assignees, in a dictionary in a dictionary:
+    Retrieves a dataset's assignees, in a dictionary:
 
     Args: 
         persistent_id (str): persistent id of the dataset
