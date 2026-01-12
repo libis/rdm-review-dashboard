@@ -31,7 +31,7 @@
       (click)="openDataset()"></button>
     <button pButton *ngIf="this.reviewService.canLoggedUserReadSelectedDataset()" type="button"
       class="flex p-button-outlined p-2 m-2" icon="pi pi-envelope" label="Contact dataset creator(s)"
-      (click)="mailToContact()"></button>
+      (click)="mailToContributors()"></button>
     <button pButton
       *ngIf="this.reviewService.canLoggedUserReadSelectedDataset() && (supportAsked.asObservable()|async)==false"
       type="button" class="flex p-button-outlined p-2 m-2" label="Ask for support" icon="pi pi-flag"

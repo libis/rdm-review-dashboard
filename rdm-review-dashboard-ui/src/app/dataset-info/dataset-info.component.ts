@@ -138,7 +138,7 @@ export class DatasetInfoComponent implements OnInit, OnDestroy {
     let emails = [];
     for (let contributor of this.contributors.value) {
       names.push(contributor.userfirstname || contributor.name || contributor.username);
-      emails.push(contributor.eMail);
+      emails.push(contributor.useremail);
     }
     let url = `mailto:${emails.join('; ')}?subject=Your dataset [${this.dataset?.identifier}]&Body=Dear ${names!.join(', ')},`
     window.open(url, "_top");

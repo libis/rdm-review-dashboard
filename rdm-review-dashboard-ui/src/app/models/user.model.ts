@@ -5,6 +5,7 @@ export class User {
     name!: string;
     userfirstname!: string | null;
     userlastname!: string | null;
+    useremail!: string | null;
     isAdmin!: boolean;
     isReviewer!: boolean;
     department!: string[];

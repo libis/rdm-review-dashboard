@@ -5,7 +5,7 @@ import json
 from typing import List, Optional, Tuple, Literal
 from enum import Enum
 from services.dataverse import user
-from utils.generic import async_id_from_args
+from utils.generic import async_id_from_args, async_get_authority_and_identifier
 from utils.logging import logging
 import asyncio
 from services.dataverse import postgresql
@@ -85,14 +85,6 @@ async def append_dataset_storage_usage(datasets):
         datasets[i]['size'] = file_sizes.get(record['identifier'])
     return datasets
 
-
-async def get_authority_and_identifier(persistent_identifier: str):
-    authority = persistent_identifier.split("/")[0].replace("doi:", "")
-    identifier = "/".join(persistent_identifier.split("/")[1:])
-    return authority, identifier
-
-    
-
 async def async_get_dataset_details(persistent_identifier: str):
     """
     Queries a dataset's metadata from postgresql.
@@ -101,8 +93,7 @@ async def async_get_dataset_details(persistent_identifier: str):
         persistent_identifier (str): Persistent identifier of the dataset
     
     """
-    authority, identifier = await get_authority_and_identifier(persistent_identifier)
-    
+    authority, identifier = await async_get_authority_and_identifier(persistent_identifier)
     records = postgresql.query_dataset_metadata(authority, identifier)
     result = []
     for record in records:
@@ -168,8 +159,6 @@ async def change_status(persistent_identifier: str, to_status:Literal['draft', '
 
     return dataverse_response
 
-
-
 async def differentiate_departments_faculties(department_faculty: Optional[List[str]]) -> Tuple[List[str], List[str]]:
     department_faculty = department_faculty or []
     faculties = []
@@ -182,8 +171,6 @@ async def differentiate_departments_faculties(department_faculty: Optional[List[
         elif 'department' in item.lower():
             departments.append(item.strip())
     return departments, faculties
-
-
 
 async def get_review_status_counts(reviewer=None):
     if reviewer and not reviewer.startswith('@'):
@@ -209,8 +196,6 @@ async def get_review_status_counts(reviewer=None):
     result['all'] = {'status': 'all', 'count': sum([c.get('count') for c in result.values()])}
     return result
 
-
-
 async def get_dataset_contact(persistent_identifier):
 
     response = await native.async_retrieve_dataset_details(persistent_identifier)
@@ -234,4 +219,3 @@ async def get_dataset_contact(persistent_identifier):
             )
             
     return contacts
-    

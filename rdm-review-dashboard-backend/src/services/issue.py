@@ -4,6 +4,7 @@ import os
 from persistence import filesystem
 from services.dataverse.dataset import metadata
 from services.dataverse import user
+from services.dataverse.dataset import assignee
 from utils.logging import logging
 from models.note import IssueList, IssueDict
 from datetime import datetime
@@ -17,7 +18,7 @@ from autochecks.check_result import CheckResult
 
 ISSUE_DEFINITIONS_FILE: str|None = None
 FEEDBACK_EMAIL:str = ""
-
+DATAVERSE_URL: str = ""
 
 def read_issue_definitions():
     result = None
@@ -220,13 +221,26 @@ def get(persistent_id: str)->IssueDict:
         result = IssueDict(persistent_id=persistent_id, issues=get_empty_issue_checklist())
     return result
 
+async def get_author_names_for_email(dataset_details):
+    author_names = ', '.join([author_name.split(',')[-1].strip() for author_name in dataset_details.get('authorName', [])])
+    return author_names
+
+async def get_contributors(persistent_identifier):
+    assignees = assignee.get_dataset_assignees(persistent_identifier)
+    return assignees.get("contributor", [])
+
+async def get_dataset_url(persistent_identifier, draft=None):
+    result = f"{DATAVERSE_URL}/dataset.xhtml?persistentId={persistent_identifier}"
+    if draft:
+        result +="&version=DRAFT"
+    return result
+    
 
 async def generate_feedback_email(persistent_identifier):
     """Generates a feedback email for the dataset contributor, based on previously saved issues checklist. The template in emails/feedback.txt and issue definitions in dataset_issue_definitions.json are used."""
     dataset_details = await metadata.async_get_dataset_details(persistent_identifier) 
     if not dataset_details or not isinstance(dataset_details, dict):
         raise Exception("Could not get dataset details")
-    author_names = ', '.join([author_name.split(',')[-1].strip() for author_name in dataset_details.get('authorName', [])])
     try:
         reviewer_username = dataset_details.get('reviewer')[0]
         reviewer_info = await user.get_user_info(reviewer_username)
@@ -240,6 +254,23 @@ async def generate_feedback_email(persistent_identifier):
     issues_list = "\n".join([f"{num+1}. {issue}\n" for num, issue in enumerate(issue_definitions)])
     dataset_title = dataset_details.get('title')
     message = FEEDBACK_EMAIL 
-    for k, v in {"{author_names}": author_names, "{dataset_title}":dataset_title, "{issues_list}":issues_list, "{reviewer_name}":reviewer_name}.items():
+    author_names = await get_author_names_for_email(dataset_details)
+    contributors = await get_contributors(persistent_identifier)
+    contributor_names = ""
+    dataset_draft_url = await get_dataset_url(persistent_identifier, draft=True)
+    if "{contributor_names}" in message:
+        contributor_names_list = []
+        for contributor in contributors:
+            contributor_info = await user.get_user_info(contributor)
+            if isinstance(contributor_info, dict) and "userfirstname" in contributor_info:
+                contributor_names_list.append(contributor_info.get("userfirstname"))
+        contributor_names = ', '.join(contributor_names_list)
+    for k, v in {
+        "{author_names}": author_names,
+        "{contributor_names}": contributor_names,
+        "{dataset_title}":dataset_title, 
+        "{issues_list}":issues_list, 
+        "{reviewer_name}":reviewer_name,
+        "{dataset_draft_url}": dataset_draft_url}.items():
         message = message.replace(k, v)
     return message

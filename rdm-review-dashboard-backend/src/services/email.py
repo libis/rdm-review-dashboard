@@ -6,6 +6,7 @@ from email import encoders
 from pathlib import Path
 from email.mime.multipart import MIMEMultipart
 from services.dataverse.dataset.metadata import get_dataset_contact
+from services.dataverse.dataset import assignee
 from utils.logging import logging
 from typing import List, Optional
 from utils.generic import async_id_from_args
@@ -19,7 +20,6 @@ SMTP_HOST = ""
 SMTP_PORT = ""
 SMTP_PASSWORD = ""
 DATAVERSE_URL = ""
-
 
 async def send_email(
     from_: str,
@@ -96,6 +96,9 @@ async def send_email(
 
     return result
 
+async def get_contributors(persistent_identifier):
+    assignees = assignee.get_dataset_assignees(persistent_identifier)
+    return assignees.get("contributor", [])
 
 async def send_feedback_email(persistent_identifier: str, logged_user: str):
     """Sends the stored feedback email to the dataset contributor."""
@@ -106,13 +109,18 @@ async def send_feedback_email(persistent_identifier: str, logged_user: str):
 
     email_html = email_text.replace("\n", "</br>")
 
-    dataset_contact_info = await get_dataset_contact(persistent_identifier)
-    email_address = [contact.get("datasetContactEmail") for contact in dataset_contact_info]
+    # dataset_contact_info = await get_dataset_contact(persistent_identifier)
+    # email_address = [contact.get("datasetContactEmail") for contact in dataset_contact_info]
+    contributors = await get_contributors(persistent_identifier)
+    email_address = []
+    for contributor in contributors:
+        contributor_info = await user.get_user_info(contributor)
+        if isinstance(contributor_info, dict) and "useremail" in contributor_info:
+            email_address.append(contributor_info.get("useremail"))
     cc = []
-
     if len(email_address) == 0:
         logging.warning(
-            f"Feedback email could not be sen for {persistent_identifier}: No contributor email!"
+            f"Feedback email could not be sen for {persistent_identifier}: No contact email!"
         )
         return False
 

@@ -177,6 +177,7 @@ def configure_email(settings):
 
 def configure_api_keys(settings):
     email.DATAVERSE_URL = get_setting(settings, "DataverseURL", required=True)
+    issue.DATAVERSE_URL = get_setting(settings, "DataverseURL", required=True)
     native.BASE_URL = get_setting(settings, "DataverseAPI", required=True) + "/api"
     native.KEY = read_value_from_file(get_setting(settings, "DataverseAPIKeyFile", required=True))
 

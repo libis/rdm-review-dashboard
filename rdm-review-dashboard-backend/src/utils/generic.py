@@ -40,3 +40,8 @@ def read_value_from_file(file_path, required=False):
         return None
     with open(file) as f:
         return f.readline().strip()
+    
+async def async_get_authority_and_identifier(persistent_identifier: str):
+    authority = persistent_identifier.split("/")[0].replace("doi:", "")
+    identifier = "/".join(persistent_identifier.split("/")[1:])
+    return authority, identifier
