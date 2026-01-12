@@ -105,7 +105,6 @@ export class DatasetChecklistComponent {
     } else {
       this.checklist = this.checklist.filter(i => i !== event.id);
     }
-    console.log(this.checklist);
 
     this.onChecklistChange();
   }

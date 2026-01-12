@@ -28,7 +28,6 @@ export class DatasetPublishComponent implements OnInit {
 
     this.feedbackTextAsHTML = this.reviewService.selectedDatasetSavedFeedback.value?.replace(/(?:\r\n|\r|\n)/g, '<br>') || '';
     this.locked = this.reviewService.isLockedForReviewing()
-    console.log(this.reviewService.selectedDatasetToBePublished);
   }
 
   ngOnInit(): void {
