@@ -89,6 +89,11 @@ async def async_retrieve_dataset_details(dataset_id: str):
     response = await request_utils.async_get_request(request_url, key=get_key(), persistentId=dataset_id)
     return response
 
+async def async_retrieve_dataset_draft_details(dataset_id: str):
+    request_url =  f'{BASE_URL}/datasets/:persistentId/versions/:draft' 
+    response = await request_utils.async_get_request(request_url, key=get_key(), persistentId=dataset_id)
+    return response
+
 def retrieve_dataset_latest_version(dataset_id: str):
     request_url =  f'{BASE_URL}/datasets/:persistentId/versions/:latest' 
     response = request_utils.get_request(request_url, key=get_key(), persistentId=dataset_id)

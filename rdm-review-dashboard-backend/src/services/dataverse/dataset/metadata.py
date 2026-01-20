@@ -108,6 +108,12 @@ async def sanitize_reviewer_username(reviewer):
         reviewer = "@" + reviewer
     return reviewer
 
+async def async_get_dataset_draft_metadata(persistent_identifier):
+    res = await native.async_retrieve_dataset_draft_details(persistent_identifier)
+    result = None
+    if res.status_code == 200:
+        result = json.loads(res.text)
+    return result
 
 
 async def async_get_datasets_details(start=None, rows=False, status=None, reviewer=None):

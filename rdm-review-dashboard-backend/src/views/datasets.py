@@ -3,6 +3,7 @@ from typing import Optional
 from utils.logging import logging
 from services.dataverse.dataset import metadata
 from services import issue
+from autochecks.dataset_context import DatasetContext
 from utils import response_headers
 
 router = fastapi.APIRouter()
@@ -95,6 +96,44 @@ async def async_get_datasets_details(
     """Retrieves a list of all status counts for datasets."""
     datasets = await metadata.get_review_status_counts(reviewer=reviewer)
     return list(datasets.values())
+
+
+@router.get("/api/datasets/{persistent_identifier:path}/draft/metadata")
+@response_headers.inject_uid
+async def get_dataset_draft_metadata(
+    response: fastapi.Response,
+    request: fastapi.Request,
+    persistent_identifier: str,
+    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
+):
+    """Retrieves the specified dataset's details."""
+    datasets = await metadata.async_get_dataset_draft_metadata(persistent_identifier)
+    return datasets
+
+
+@router.get("/api/datasets/{persistent_identifier:path}/draft/metadata/:flatten")
+@response_headers.inject_uid
+async def get_dataset_draft_metadata_flatten(
+    response: fastapi.Response,
+    request: fastapi.Request,
+    persistent_identifier: str,
+    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
+):
+    """Retrieves the specified dataset's details."""
+    datasets = DatasetContext(persistent_identifier).metadata
+    return datasets
+
+@router.get("/api/datasets/{persistent_identifier:path}/draft/files")
+@response_headers.inject_uid
+async def get_dataset_draft_files(
+    response: fastapi.Response,
+    request: fastapi.Request,
+    persistent_identifier: str,
+    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
+):
+    """Retrieves the specified dataset's details."""
+    datasets = DatasetContext(persistent_identifier).files
+    return datasets
 
 
 @router.get("/api/datasets/{persistent_identifier:path}")
