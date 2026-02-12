@@ -12,7 +12,8 @@
     <div class="flex flex-row vertical-align-top h-full">
       <app-avatar [name]="dataset.authorName.at(0) || ''"> </app-avatar>
       <div class="flex flex-column">
-        <div class="text-3xl mt-0 mb-0">{{(dataset.authorName).at(0) || ''}}</div>
+        <!-- <div class="text-3xl mt-0 mb-0">{{(dataset.authorName).at(0) || ''}}</div> -->
+        <div class="text-xl mt-0 mb-0">{{this.getFormattedContributorNames(dataset)}}</div> 
         <div class="mt-2 mb-0 flex-auto">{{dataset.title}}</div>
         <div class="mt-2 mb-0 flex-auto">{{dataset.identifier}}</div>
         <div *ngIf="dataset.version" class="mt-2 mb-0 flex-auto">v{{dataset.version.toFixed(1)}}</div>

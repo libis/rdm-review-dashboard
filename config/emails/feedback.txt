@@ -1,6 +1,6 @@
-Hi {author_names},
+Hi {contributor_names},
 
-Your dataset titled  "{dataset_title}" has been returned from review because of the following reason(s):
+Your dataset titled  "{dataset_title}" ( <a href="{dataset_draft_url}">{dataset_draft_url}</a>) has been returned from review because of the following reason(s):
 
 {issues_list}
 

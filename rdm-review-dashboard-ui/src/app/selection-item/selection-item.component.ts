@@ -67,4 +67,12 @@ export class SelectionItemComponent implements OnInit {
       this.router.navigate(['datasets', this.dataset.identifier]).then();
     }
   }
+    getFormattedContributorNames(dataset: Dataset) {
+    let jointNames = [];
+    for (let contributor of dataset.contributorDetails) {
+      jointNames.push(contributor.userlastname + ", " + contributor.userfirstname);
+    }
+    return jointNames.join("; ");
+  }
+
 }

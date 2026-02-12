@@ -206,6 +206,14 @@ export class DatasetInfoComponent implements OnInit, OnDestroy {
     );
   }
 
+  getFormattedContributorNames(dataset: Dataset) {
+    let jointNames = [];
+    for (let contributor of dataset.contributorDetails) {
+      jointNames.push(contributor.userlastname + ", " + contributor.userfirstname);
+    }
+    return jointNames.join("; ");
+  }
+
   ngOnDestroy(): void {
     this.datasetSubscription.unsubscribe();
     this.supportTagSubscription.unsubscribe();

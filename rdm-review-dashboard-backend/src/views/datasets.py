@@ -106,7 +106,7 @@ async def get_dataset_draft_metadata(
     persistent_identifier: str,
     AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
 ):
-    """Retrieves the specified dataset's details."""
+    """Retrieves the specified dataset's draft version's details."""
     datasets = await metadata.async_get_dataset_draft_metadata(persistent_identifier)
     return datasets
 
@@ -119,7 +119,7 @@ async def get_dataset_draft_metadata_flatten(
     persistent_identifier: str,
     AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
 ):
-    """Retrieves the specified dataset's details."""
+    """Retrieves the specified dataset's draft version's flattened metadata."""
     datasets = DatasetContext(persistent_identifier).metadata
     return datasets
 
@@ -131,7 +131,7 @@ async def get_dataset_draft_files(
     persistent_identifier: str,
     AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
 ):
-    """Retrieves the specified dataset's details."""
+    """Retrieves the specified dataset's draft version's file list."""
     datasets = DatasetContext(persistent_identifier).files
     return datasets
 

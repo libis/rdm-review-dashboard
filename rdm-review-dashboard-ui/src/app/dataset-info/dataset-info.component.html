@@ -1,6 +1,7 @@
 <div *ngIf="dataset" class="review-box border-1 border-300 border-round p-3 mt-2 surface-card">
   <p class="text-4xl mb-0">{{dataset.title}}</p>
   <div class="grid">
+
     <p *ngIf="dataset.identifier" class="col-3">{{dataset.identifier}}</p>
     <p *ngIf="dataset.version!=0" class="col-2">Current version: {{dataset.version?.toFixed(1)|| 'N/A'}}</p>
     <p class="col-2"> Size: {{getDatasetSize()}}</p>
@@ -10,7 +11,9 @@
       <app-avatar [name]="dataset.authorName[0]"> </app-avatar>
     </div>
     <div class="flex flex-column">
-      <p class="text-xl mt-0 mb-0">{{dataset.authorName.join('; ')}}</p>
+      <!-- <p class="text-xl mt-0 mb-0">{{dataset.authorName.join('; ')}}</p> -->
+      <p  class="text-xl mt-0 mb-0">{{this.getFormattedContributorNames(dataset)}}</p>
+
       <p class="text-500 mt-0 mb-0">{{dataset.title}}</p>
     </div>
   </div>
