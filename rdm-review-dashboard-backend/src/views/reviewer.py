@@ -1,6 +1,6 @@
 import fastapi
 from services.dataverse import user
-from typing import Optional
+from typing import List, Optional
 from services.dataverse.dataset import assignee
 from utils.logging import logging
 from utils import response_headers
@@ -165,6 +165,18 @@ async def get_dataverse_reviewers(response: fastapi.Response, request: fastapi.R
         if _user.get("isAdmin", False) or _user.get("isReviewer", False):
             result.append(_user)
     return users
+
+@router.get("/api/users/{user_id}/assignedDatasets")
+@response_headers.inject_uid
+async def get_users_datasets(response: fastapi.Response, request: fastapi.Request, user_id: str):
+    if user_id in {"me", ":me"}:
+        user_id = response.headers.get("X-User")
+    logging.info(f"looking up user: {user_id}")
+    result = {"id": user_id}
+    user_id = user_id.strip("@")
+    result = await user.get_user_assigned_datasets(user_id, ["contributor", "admin", "reviewer"])
+    return result
+
 
 
 @router.get("/api/users/{user_id}")

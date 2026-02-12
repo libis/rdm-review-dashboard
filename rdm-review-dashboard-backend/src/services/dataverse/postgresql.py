@@ -1,3 +1,4 @@
+from typing import List
 import psycopg2
 from utils.logging import logging
 from utils.generic import read_value_from_file
@@ -316,4 +317,19 @@ def query_dataset_assignments(authority: str, identifier: str):
 	LEFT JOIN authenticateduser ON authenticateduser.useridentifier=SUBSTRING(roleassignment.assigneeidentifier FROM 2) 
     LEFT JOIN dataverserole ON roleassignment.role_id=dataverserole.id
 	WHERE datasetversion_info.authority='{authority}' AND datasetversion_info.identifier='{identifier}';"""
+    return run_query(query)
+
+def query_user_assignments(user_id, roles:List[str]|None=None):
+    query = f"""SELECT * FROM datasetversion_info LEFT JOIN roleassignment ON roleassignment.definitionpoint_id = datasetversion_info.dataset_id
+ 	LEFT JOIN authenticateduser ON authenticateduser.useridentifier=SUBSTRING(roleassignment.assigneeidentifier FROM 2)
+    LEFT JOIN dataverserole ON roleassignment.role_id=dataverserole.id 
+    LEFT JOIN datasetversion_metadata ON datasetversion_info.version_id=datasetversion_metadata.version_id   
+    WHERE authenticateduser.useridentifier LIKE '{user_id}' 
+    AND datasetversion_metadata.name LIKE 'title'
+    """    
+    if roles is not None:
+        role_list = ["'"+ role +"'" for role in roles]
+        query += f" AND dataverserole.alias IN (" + ", ".join(role_list) + ");"
+    else:
+        query+= ";"
     return run_query(query)

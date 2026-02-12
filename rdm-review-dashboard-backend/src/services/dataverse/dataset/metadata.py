@@ -5,6 +5,7 @@ import json
 from typing import List, Optional, Tuple, Literal
 from enum import Enum
 from services.dataverse import user
+from services.dataverse.dataset import assignee
 from utils.generic import async_id_from_args, async_get_authority_and_identifier
 from utils.logging import logging
 import asyncio
@@ -98,9 +99,17 @@ async def async_get_dataset_details(persistent_identifier: str):
     result = []
     for record in records:
         new_record = await format_dataset_metadata(record)
+        assignees = assignee.get_dataset_assignees(persistent_identifier)
+        contributors = assignees.get("contributor", [])
+        contributor_info = []
+        for contributor_id in contributors:
+            contributor_info.append((await user.get_user_info(contributor_id)))
+        new_record["contributorDetails"] = contributor_info
         result.append(new_record)
-    result = await append_dataset_storage_usage(result)
 
+    result = await append_dataset_storage_usage(result)
+    
+    
     return result[0] if len(result)>0 else None
     
 async def sanitize_reviewer_username(reviewer):
@@ -133,9 +142,15 @@ async def async_get_datasets_details(start=None, rows=False, status=None, review
     result = []
     for record in records:
         new_record = await format_dataset_metadata(record)
+        assignees = assignee.get_dataset_assignees(new_record.get("identifier"))
+        contributors = assignees.get("contributor", [])
+        contributor_info = []
+        for contributor_id in contributors:
+            contributor_info.append((await user.get_user_info(contributor_id)))
+        new_record["contributorDetails"] = contributor_info
         result.append(new_record)
-    result = await append_dataset_storage_usage(result)
 
+    result = await append_dataset_storage_usage(result)
     return result
 
 
