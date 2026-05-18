@@ -16,8 +16,13 @@ def wait_dataverse(cooldown:int=10):
     request_url = f'{BASE_URL}/info/version'
     response = None
     while not isinstance(response, Response)  or response.status_code != 200:
-        response = request_utils.get_request(request_url)
-        sleep(cooldown)
+        try:
+            response = request_utils.get_request(request_url)
+        except Exception as e:
+            logging.error(f"Could not connect to dataverse: {e.__str__()}")
+        if not response or response.status_code!=200:
+            logging.error(f"Waiting for {cooldown} seconds before next attempt...")
+            sleep(cooldown)
 
 def retrieve_dataset_assignees(persistent_id):
     """Retrieves all assignments of the dataset."""

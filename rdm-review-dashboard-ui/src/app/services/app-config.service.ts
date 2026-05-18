@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
 
 
 @Injectable({
@@ -8,7 +7,7 @@ import { Router } from '@angular/router';
 })
 export class AppConfigService {
   private config: any;
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(private http: HttpClient) {
   }
 
   loadConfig() {

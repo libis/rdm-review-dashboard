@@ -20,6 +20,7 @@ class DatasetContext:
         if response.status_code == 200:
             return json.loads(response.text).get("data")
         else:
+            logging.error(response.status_code, response.text)
             raise Exception(f"Could not retrieve dataset metadata for {persistent_id}: \n" + response.text)
 
     def __init__(self, persistent_id: str):

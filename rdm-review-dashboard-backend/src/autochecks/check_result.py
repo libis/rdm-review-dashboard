@@ -4,7 +4,7 @@ from datetime import datetime
 class CheckResult(BaseModel): 
     definition: str = ""
     result: bool | None = None
-    last_checked: datetime | None = None
+    last_checked: str | None = None
     warning: str | None = None
     message: str | None = None
     additional_info: dict | None = None
@@ -12,7 +12,7 @@ class CheckResult(BaseModel):
     def __init__(self, check_result:bool|None, warning:str|None, message: str|None=None, additional_info: dict|None=None, check_datetime=None):
         super().__init__()
         self.result = check_result
-        self.last_checked = check_datetime or datetime.now()
+        self.last_checked = check_datetime or str(datetime.now())
         self.warning = warning 
         self.message = message
         self.additional_info = additional_info or None 

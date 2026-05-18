@@ -7,12 +7,12 @@ async def async_get_request(request_url, key=None, headers=None, verify= None, *
     verify = verify or False
     headers = headers or {}
     if key:
-        params = dict(key=key)
+        headers.update({"x-dataverse-key": key})
     if kwargs:
         params.update(kwargs)
     logging.info(f'async get request: {request_url}')
     async with httpx.AsyncClient(verify=verify, timeout=None) as client:
-        res = await client.get(request_url, params=params, timeout=None)
+        res = await client.get(request_url, headers=headers, params=params, timeout=None)
         logging.info(f'response {request_url, res.status_code}')
         if res.status_code != 200:
             logging.info(res.text)
@@ -23,15 +23,15 @@ def get_request(request_url, key=None, headers=None, verify= None, **kwargs):
     verify = verify or False
     headers = headers or {}
     if key:
-        params = dict(key=key)
-        if '?' not in request_url:
-            request_url += f'?key={key}'
-        else:
-            request_url += f'&key={key}'
+        headers.update({"x-dataverse-key": key})
+        # if '?' not in request_url:
+        #     request_url += f'?key={key}'
+        # else:
+        #     request_url += f'&key={key}'
     if kwargs:
         params.update(kwargs)
     logging.info(f'sync get request: {request_url}')
-    res = requests.get(request_url, params=params, verify=verify, timeout=None)
+    res = requests.get(request_url, headers=headers, params=params, verify=verify, timeout=None)
     logging.info(f'response {request_url, res.status_code}')
     if res.status_code != 200:
         logging.info(res.text)
@@ -44,7 +44,7 @@ async def async_post_request(request_url, key, headers=None, data=None, json_dic
     verify = verify or False
     request_url_params = []
     if key:
-        kwargs.update({'key':key})
+        headers.update({"x-dataverse-key": key})
     if kwargs:
         for k, v in kwargs.items():
             request_url_params.append(f'{k}={v}') 
@@ -65,7 +65,7 @@ def post_request(request_url, key, headers=None, data=None, json_dict=None, veri
     verify = verify or False
     request_url_params = []
     if key:
-        kwargs.update({'key':key})
+        headers.update({"x-dataverse-key": key})
     if kwargs:
         for k, v in kwargs.items():
             request_url_params.append(f'{k}={v}') 
@@ -81,12 +81,9 @@ def delete_request(request_url, key=None, headers=None, verify=None):
     verify = verify or False
     headers = headers or {}
     if key:
-        if '?' not in request_url:
-            request_url = f'{request_url}?key={key}'
-        else:
-            request_url = f'{request_url}&key={key}'
+        headers.update({"x-dataverse-key": key})
     logging.info(f'sync delete request: {request_url}')
-    res = requests.delete(request_url, verify=verify, timeout=None)
+    res = requests.delete(request_url,  headers=headers, verify=verify, timeout=None)
     logging.info(f'response {request_url, res.status_code}')
     if res.status_code != 200:
         logging.info(res.text)

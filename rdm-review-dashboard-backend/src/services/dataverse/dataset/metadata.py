@@ -12,6 +12,8 @@ import asyncio
 from services.dataverse import postgresql
 
 
+DATAVERSE_URL = ""
+
 class ReviewStatus(Enum):
     DRAFT = 'draft'
     SUBMITTED_FOR_REVIEW = 'submitted_for_review'
@@ -78,6 +80,7 @@ async def format_dataset_metadata(record):
     record['authorName'] = metadata.get('authorName',  list())
     record['status'] = await format_status(record)
     record['department'], record['faculty'] = await differentiate_departments_faculties(metadata.get('departmentFaculty'))
+    record['datasetUrl'] = f"{DATAVERSE_URL}/dataset.xhtml?persistentId={record["identifier"]}"
     return record
 
 async def append_dataset_storage_usage(datasets):
