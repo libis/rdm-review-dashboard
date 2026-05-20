@@ -3,7 +3,7 @@
 STAGE ?= dev
 BASE_HREF ?= /ui/
 
-include .env
+include env.$(STAGE)
 -include .env.local
 export
 
@@ -14,6 +14,13 @@ SHELL = /bin/bash
 USER_ID ?= $(shell id -u)
 GROUP_ID ?= $(shell id -g)
 
+
+build: build-frontend build-container ## Build frontend + container
+
+push: ## Push Docker image (only in prod stage)
+	if [ "$(STAGE)" = "prod" ]; then \
+		docker push $(IMAGE_TAG); \
+	fi
 
 build-frontend: ## Build Frontend
 	echo "Building frontend ..."
