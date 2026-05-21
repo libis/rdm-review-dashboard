@@ -1,5 +1,3 @@
-
-
 <h1>
   Check my dataset results for
   <em>
@@ -33,7 +31,7 @@
                   </p-accordion-content>
                   @if (
                     $index < category.issues.length - 1 &&
-                    hasTaskFeedback(category.issues[$index+1])
+                    hasTaskFeedback(category.issues[$index + 1])
                   ) {
                     <span
                       style="
@@ -45,7 +43,6 @@
                         margin-top: bottom;
                       "
                     >
-
                     </span>
                   }
                 </p-accordion-panel>
@@ -57,13 +54,12 @@
     }
   </div>
   @if (hasAutocheckResultToDisplay()) {
-    <div  id="all_results" class="section">
+    <div id="all_results" class="section">
       <h2>All-results</h2>
-      <div  style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em;">
-
+      <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
         <p-accordion [multiple]="true" [value]="['1']">
           <p-accordion-panel value="0">
-            <p-accordion-header style="padding-top: 0px; padding-bottom: 0px;">
+            <p-accordion-header style="padding-top: 0px; padding-bottom: 0px">
               <h3>Click to see all autocheck results</h3>
             </p-accordion-header>
             <p-accordion-content>
@@ -103,32 +99,41 @@
 
   <div id="tips" class="tips" class="section">
     <h2>Tips to improve your dataset</h2>
-     <div style="border: solid rgb(191, 203, 207) 1px;  padding: 1.5em; margin: 1em">
+    <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
       @for (category of this.taskCategories(); track category.id) {
         @for (issueId of category.issues; track $index) {
-                        @if (hasTip(issueId)) {
-          <p-accordion [value]="['0']" [multiple]="true">
-            <p-accordion-panel value="0" [disabled]="!hasTip(issueId)">
-              <p-accordion-header>
-                <div class="header-content">
-                  <div style="font-weight: bold; color: black">
-                    {{ getIssueDetails(issueId).title }} - {{ getIssueDetails(issueId).condition }}
+          @if (hasTip(issueId)) {
+            <p-accordion [value]="['0']" [multiple]="true">
+              <p-accordion-panel value="0" [disabled]="!hasTip(issueId)">
+                <p-accordion-header>
+                  <div class="header-content">
+                    <div style="font-weight: bold; color: black">
+                      {{ getIssueDetails(issueId).title }} -
+                      {{ getIssueDetails(issueId).condition }}
+                    </div>
                   </div>
-                </div>
-              </p-accordion-header>
-              @if (hasTip(issueId)) {
-                <p-accordion-content>
-                  <p
-                    style="padding: 0.5em; padding-left: 2.5em"
-                    [innerHTML]="getIssueDetails(issueId).tip"
-                  ></p>
-                </p-accordion-content>
-              }
-            </p-accordion-panel>
-          </p-accordion>
-        }}
+                </p-accordion-header>
+                @if (hasTip(issueId)) {
+                  <p-accordion-content>
+                    <p
+                      style="padding: 0.5em; padding-left: 2.5em"
+                      [innerHTML]="getIssueDetails(issueId).tip"
+                    ></p>
+                  </p-accordion-content>
+                }
+              </p-accordion-panel>
+            </p-accordion>
+          }
+        }
       }
     </div>
-    </div>
-  }
-<p-speeddial [model]="items" [radius]="80" direction="up" [style]="{position:'fixed', bottom: '20px', right:'20px', color:'blue'}" [tooltipOptions]="{ tooltipPosition: 'left' }" [buttonProps]="{ severity: 'info', rounded: true } "/>
+  </div>
+}
+<p-speeddial
+  [model]="items"
+  [radius]="80"
+  direction="up"
+  [style]="{ position: 'fixed', bottom: '20px', right: '20px', color: 'blue' }"
+  [tooltipOptions]="{ tooltipPosition: 'left' }"
+  [buttonProps]="{ severity: 'info', rounded: true }"
+/>

@@ -1,4 +1,7 @@
 {
     "apiUrl": "http://localhost:8000",
-    "dataverseUrl": "https://localhost:7000"
+    "dataverseUrl": "https://localhost:7000",
+    "dataverseName": "",
+    "helpDeskEmail": "",
+    "supportLink": ""
 }

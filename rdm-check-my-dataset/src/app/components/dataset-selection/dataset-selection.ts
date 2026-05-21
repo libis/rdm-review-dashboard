@@ -11,6 +11,7 @@ import { CardModule } from 'primeng/card';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DividerModule } from 'primeng/divider';
 import { AccordionModule } from 'primeng/accordion';
+import { Config } from '../../services/config';
 
 interface DatasetOption {
   identifier: string;
@@ -46,11 +47,14 @@ export class DatasetSelection implements OnDestroy {
   datasetList$: Observable<DatasetOption[] | null> = of(null);
   datasetOptionsList: Signal<DatasetOption[] | undefined>;
   selectedDataset: DatasetOption | undefined;
+  helpDeskEmail: string;
+  dataverseName: string;
   constructor(
     private api: ApiService,
     private router: Router,
     private route: ActivatedRoute,
     private datasetService: DatasetService,
+    private config: Config,
   ) {
     this.datasetService.setMetadata(null);
     this.datasetOptionsList = toSignal(
@@ -74,6 +78,9 @@ export class DatasetSelection implements OnDestroy {
         }),
       ),
     );
+    this.helpDeskEmail = this.config.helpDeskEmail;
+    this.dataverseName = this.config.dataverseName;
+
   }
 
   onClickNext() {

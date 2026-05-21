@@ -7,6 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { DatasetService } from '../../services/dataset.service';
 import { ApiService } from '../../services/api-service';
+import { Config } from '../../services/config';
 import { CardModule } from 'primeng/card';
 import { AvatarModule } from 'primeng/avatar';
 import { ProgressBarModule } from 'primeng/progressbar';
@@ -41,12 +42,16 @@ export class Checklist implements OnInit {
   taskCategories: Signal<any[]> = signal([]);
   ForDataset: Signal<boolean | null> = signal(null);
   items: MenuItem[] | null = null;
+  helpDeskEmail: string;
+  dataverseName: string;
+  supportLink: string;
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private dataset: DatasetService,
     private api: ApiService,
     private tasks: TaskService,
+    private config: Config,
   ) {
     combineLatest([this.route.params])
       .pipe(
@@ -73,6 +78,9 @@ export class Checklist implements OnInit {
         this.tasks.done().length == this.tasks.all().length,
     );
     this.taskCategories = computed(() => this.tasks.taskStatuses()?.structure);
+    this.helpDeskEmail = this.config.helpDeskEmail;
+    this.dataverseName = this.config.dataverseName;
+    this.supportLink = this.config.supportLink;
   }
 
   ngOnInit() {
@@ -83,7 +91,7 @@ export class Checklist implements OnInit {
         icon: 'pi pi-question',
         command: () => {
     window.open(
-      `mailto: (${this.getDatasetDOI()})`, "_top");
+      `mailto:${this.helpDeskEmail}?subject=[Check-My-Dataset Review] (${this.getDatasetDOI()})`, "_top");
         },
       },
       {
@@ -91,7 +99,7 @@ export class Checklist implements OnInit {
         tooltip: 'Support & Guidelines',
         icon: 'pi pi-book',
         command: () => {
-          window.open("", "_blank");
+          window.open(this.supportLink, "_blank");
         },
       },
     ];
@@ -182,10 +190,13 @@ export class Checklist implements OnInit {
   }
 
   isLargeDataset() {
+    return true;
     return this.getTaskResults('totalDatasetFilesSizeIsLessThan5GB').result === false;
   }
 
   isLargeNumFiles() {
+    return true;
+
     return this.getTaskResults('numFilesIsLessThan1000').result === false;
   }
 

@@ -19,4 +19,15 @@ export class Config {
     let apiUrl = this.config.apiUrl + '/api';
     return apiUrl;
   }
+
+  get helpDeskEmail() {
+    return this.config.helpDeskEmail;
+  }
+  get dataverseName() {
+    return this.config.dataverseName;
+  }
+  get supportLink() {
+    return this.config.supportLink;
+  }
+
 }
