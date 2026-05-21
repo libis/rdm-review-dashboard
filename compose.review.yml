@@ -2,7 +2,7 @@ services:
   review:
     container_name: "review"
     hostname: "review"
-    image: rdm/review:1.3
+    image: rdm/review:1.4
     restart: unless-stopped
     environment:
       BACKEND_CONFIG_FILE: "/config/backend_config.container.json"
