@@ -1,6 +1,6 @@
 # Author: Eryk Kulikowski @ KU Leuven (2023). Apache 2.0 License
 
-STAGE ?= dev
+STAGE ?= prod
 BASE_HREF ?= /ui/
 
 include env.$(STAGE)
