@@ -9,7 +9,7 @@ router = fastapi.APIRouter()
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/notes")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_notes_by_dataset_id(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -24,7 +24,7 @@ async def get_notes_by_dataset_id(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/notes/{note_id}")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_notes_by_note_id(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -37,7 +37,7 @@ async def get_notes_by_note_id(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/notes/{note_id}")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def post_note_by_note_id(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -60,7 +60,7 @@ async def post_note_by_note_id(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/notes")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def post_note(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -83,7 +83,7 @@ async def post_note(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/internal_note")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_internal_note(
     response: fastapi.Response, request: fastapi.Request, persistent_identifier: str
 ):
@@ -94,7 +94,7 @@ async def get_internal_note(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/internal_note")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def replace_internal_note(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -116,7 +116,7 @@ async def replace_internal_note(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/history")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_history(
     response: fastapi.Response, request: fastapi.Request, persistent_identifier: str
 ):
@@ -128,7 +128,7 @@ async def get_history(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/review_tags")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_review_tags(
     response: fastapi.Response, request: fastapi.Request, persistent_identifier: str
 ):
@@ -144,7 +144,7 @@ async def get_review_tags(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/review_tags")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def update_tags(
     response: fastapi.Response,
     request: fastapi.Request,

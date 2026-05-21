@@ -10,7 +10,7 @@ router = fastapi.APIRouter()
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/feedback/:generate")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def generate_feedback(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -32,7 +32,7 @@ async def generate_feedback(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/feedback")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_feedback(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -46,7 +46,7 @@ async def get_feedback(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/feedback")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def replace_feedback(
     response: fastapi.Response,
     request: fastapi.Request,

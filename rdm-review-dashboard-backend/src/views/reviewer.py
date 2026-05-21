@@ -10,7 +10,7 @@ router = fastapi.APIRouter()
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/reviewer")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def set_reviewer(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -46,7 +46,7 @@ async def set_reviewer(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/reviewer/:replace")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def replace_reviewer(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -85,7 +85,7 @@ async def replace_reviewer(
 
 
 @router.delete("/api/datasets/{persistent_identifier:path}/reviewer")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def delete_reviewer(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -122,7 +122,7 @@ async def delete_reviewer(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/assignees/contributor")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_dataset_contributor(
     response: fastapi.Response, request: fastapi.Request, persistent_identifier: str
 ):
@@ -137,7 +137,7 @@ async def get_dataset_contributor(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/reviewer")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_dataset_reviewers(
     response: fastapi.Response, request: fastapi.Request, persistent_identifier: str
 ):
@@ -148,7 +148,7 @@ async def get_dataset_reviewers(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/assignees")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_dataset_assignees(
     response: fastapi.Response, request: fastapi.Request, persistent_identifier: str
 ):
@@ -157,7 +157,7 @@ async def get_dataset_assignees(
 
 
 @router.get("/api/reviewers")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_dataverse_reviewers(response: fastapi.Response, request: fastapi.Request):
     result = []
     users = await user.get_dataverse_assignees(["admin", "reviewer"])
@@ -167,7 +167,7 @@ async def get_dataverse_reviewers(response: fastapi.Response, request: fastapi.R
     return users
 
 @router.get("/api/users/{user_id}/assignedDatasets")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin", "researcher"])
 async def get_users_datasets(response: fastapi.Response, request: fastapi.Request, user_id: str):
     if user_id in {"me", ":me"}:
         user_id = response.headers.get("X-User")
@@ -180,7 +180,7 @@ async def get_users_datasets(response: fastapi.Response, request: fastapi.Reques
 
 
 @router.get("/api/users/{user_id}")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_user(response: fastapi.Response, request: fastapi.Request, user_id: str):
     if user_id in {"me", ":me"}:
         user_id = response.headers.get("X-User")
@@ -193,6 +193,6 @@ async def get_user(response: fastapi.Response, request: fastapi.Request, user_id
 
 
 @router.get("/api/users/")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_dataverse_assignees(response: fastapi.Response, request: fastapi.Request):
     return await user.get_dataverse_assignees(["admin", "reviewer"])

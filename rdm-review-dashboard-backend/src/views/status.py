@@ -10,7 +10,7 @@ router = fastapi.APIRouter()
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/status")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def set_status(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -39,7 +39,7 @@ async def set_status(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/:publish")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def publish_dataset(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -67,7 +67,7 @@ async def publish_dataset(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/:return")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def return_dataset(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -97,7 +97,7 @@ async def return_dataset(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/:deaccession")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def deaccession_dataset(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -124,7 +124,7 @@ async def deaccession_dataset(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/:submit")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def submit_for_review_dataset(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -151,7 +151,7 @@ async def submit_for_review_dataset(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/status")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_dataset_status(
     response: fastapi.Response, request: fastapi.Request, persistent_identifier: str
 ):

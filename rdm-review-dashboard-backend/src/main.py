@@ -6,6 +6,7 @@ import uvicorn
 import os
 import shutil
 import autochecks.autochecks
+# from autochecks import autocheck_runner_cfg
 from utils.logging import logging
 import utils.logging
 from utils import response_headers
@@ -23,6 +24,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
 from services.dataverse import postgresql
+from services.dataverse.dataset import metadata
 import threading
 import urllib3
 import sys
@@ -33,6 +35,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 SETTINGS_FILE = ""
 DATAVERSE_API_KEY = None
 UI_PATH = None
+CHECK_UI_PATH = None
 
 api = fastapi.FastAPI()
 api.add_middleware(
@@ -44,20 +47,24 @@ api.add_middleware(
 )
 
 
-@api.middleware("http")
-async def redirect_to_index(request: fastapi.Request, call_next):
-    response = await call_next(request)
-    if (
-        not UI_PATH
-        or request.url.path.startswith("/api/")
-        or response.status_code != 404
-    ):
-        return response
+# @api.middleware("http")
+# async def redirect_to_index(request: fastapi.Request, call_next):
+#     response = await call_next(request)
+#     if (
+#         not UI_PATH
+#         or request.url.path.startswith("/api/")
+#         or response.status_code != 404
+#     ):
+#         return response
     
+#     if CHECK_UI_PATH and request.url.path.startswith("/check/"):
+#         return fastapi.responses.HTMLResponse(
+#                 content=open(CHECK_UI_PATH + "index.html", "r").read(), status_code=200
+#                 )
 
-    return fastapi.responses.HTMLResponse(
-        content=open(UI_PATH + "/index.html", "r").read(), status_code=200
-    )
+#     return fastapi.responses.HTMLResponse(
+#         content=open(UI_PATH + "index.html", "r").read(), status_code=200
+#     )
 
 
 def configure():
@@ -94,21 +101,26 @@ def configure():
     # configure_users(settings)
     
     UI_PATH = get_setting(settings, "UIPath", required=True)
+    CHECK_UI_PATH = get_setting(settings, "CheckMyDatasetUIPath", required=True)
     UI_BASE_HREF = get_setting(settings, "UI_BASE_HREF", required=False) or "/ui/"
+    CHECK_UI_BASE_HREF = get_setting(settings, "CHECK_UI_BASE_HREF", required=False) or "/check/"
+    
     UI_ASSETS_PATH = get_setting(settings, "UIAssetsPath", required=False)
 
     if UI_ASSETS_PATH:
         api.mount("/ui/assets/", StaticFiles(directory=UI_ASSETS_PATH), name="assets")
-
+    if UI_ASSETS_PATH:
+        api.mount("/check/assets/", StaticFiles(directory=UI_ASSETS_PATH), name="assets")
     if UI_PATH:
         api.mount(UI_BASE_HREF, StaticFiles(directory=UI_PATH, html=True), name="ui")
-        
+    if  CHECK_UI_PATH:
+        api.mount(CHECK_UI_BASE_HREF, StaticFiles(directory=CHECK_UI_PATH, html=True), name="check")
+
     autochecks.autochecks.path = get_setting(settings, "automationsPath", required=False)
     if autochecks.autochecks.path and autochecks.autochecks.path + "/scripts" not in sys.path:
         sys.path.insert(1, autochecks.autochecks.path + "/scripts") 
-    autochecks.autochecks.default_timeout = get_setting(settings, "automationDefaultCheckTimeout", required=False)
+    autochecks.autochecks.default_timeout = get_setting(settings, "automationDefaultCheckTimeout", required=False)    
     
-
 def configure_routing():
     api.include_router(home.router)
     api.include_router(reviewer.router)
@@ -126,10 +138,8 @@ def configure_authentication(settings):
 
 
 def configure_dataset_issue_definitions(settings):
-    issues = load_settings_file(
-        Path(get_setting(settings, "issueDefinitionsFile", required=True)).absolute()
-    )
     issue.ISSUE_DEFINITIONS_FILE = get_setting(settings, "issueDefinitionsFile", required=True)
+    issue.CHECK_MY_DATASET_ISSUE_DEFINITIONS_FILE = get_setting(settings, "checkMyDatasetIssueDefinitionsFile", required=True)
 
 def configure_postgresql(settings):
     postgresql.HOST = get_setting(settings, "PostgresHost", required=True)
@@ -176,11 +186,13 @@ def configure_email(settings):
 
 
 def configure_api_keys(settings):
+    
     email.DATAVERSE_URL = get_setting(settings, "DataverseURL", required=True)
     issue.DATAVERSE_URL = get_setting(settings, "DataverseURL", required=True)
+    metadata.DATAVERSE_URL = get_setting(settings, "DataverseURL", required=True)
     native.BASE_URL = get_setting(settings, "DataverseAPI", required=True) + "/api"
     native.KEY_FILE = get_setting(settings, "DataverseAPIKeyFile", required=True)
-
+     
 
 def configure_users(settings):
     user_file_path = Path(get_setting(settings, "usersFile")).absolute()
