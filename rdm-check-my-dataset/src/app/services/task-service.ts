@@ -1,0 +1,86 @@
+import { computed, Injectable, signal, Signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  BehaviorSubject,
+  takeWhile,
+  combineLatest,
+  distinct,
+  timer,
+  switchMap,
+  map,
+  Observable,
+  of,
+} from 'rxjs';
+import { ApiService } from './api-service';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class TaskService {
+  mainTaskIdFollowed: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+  latestResults: Signal<any | null> = signal(null);
+  taskStatuses$: Observable<any | null>;
+  taskStatuses: Signal<any | null>;
+  tasksStarted: string | null = null;
+  taskDescription!: Signal<Map<string, any>>;
+  done: Signal<any[]> = signal([]);
+  all: Signal<any[]> = signal([]);
+  // statuses: Signal<any|null> = signal(null);
+  details: Signal<any | null> = signal(null);
+  results: Signal<any | null> = signal(null);
+  statuses: Signal<Map<string, string>> = signal(new Map());
+  constructor(private api: ApiService) {
+    this.taskStatuses$ = combineLatest([
+      this.mainTaskIdFollowed.asObservable().pipe(distinct((id) => id)),
+      timer(1, 3000),
+    ]).pipe(
+      switchMap(([orchestratorTaskId, _time]) => {
+        if (orchestratorTaskId) {
+          return this.api.pollResults(orchestratorTaskId);
+        }
+        return of(null);
+      }),
+      takeWhile((result: any) => {
+        if (!result || !result.tasks) {
+          return true;
+        }
+        const allTasksDone = result.tasks.every((task: any) => task.status === 'done');
+        return !allTasksDone;
+      }, true),
+    );
+    this.taskStatuses = toSignal(this.taskStatuses$);
+    this.all = computed(() => {
+      return this.taskStatuses()?.tasks || [];
+    });
+    this.done = computed(() =>
+      (this.taskStatuses()?.tasks || []).filter((task: any) => task.status === 'done'),
+    );
+    this.taskDescription = computed(() => {
+      let result: Map<string, any> = new Map();
+      for (let item of this.taskStatuses().details) {
+        result.set(item.id, item);
+      }
+      return result;
+    });
+    this.results = computed(() => {
+      let result: Map<string, any> = new Map();
+      for (let item of this.taskStatuses().tasks) {
+        result.set(item.task_id, item);
+      }
+      return result;
+    });
+    this.statuses = computed(() => {
+      let result: Map<string, string> = new Map();
+      for (let item of this.taskStatuses().tasks) {
+        result.set(item.id, item.status);
+      }
+      return result;
+    });
+  }
+
+
+  setTaskToFollow(newId: string | null) {
+    console.log('following task', newId);
+    this.mainTaskIdFollowed.next(newId);
+  }
+}

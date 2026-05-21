@@ -1,0 +1,12 @@
+
+ @if (numTasksDone()<=0 || numTasksAll()<=0) {
+        <p-progress-bar mode="indeterminate"></p-progress-bar>
+ } @else if (numTasksDone()! < numTasksAll()!) {
+        <p-progress-bar [value]="numTasksDone() * 100 / numTasksAll()">
+                <ng-template #content let-value>
+                    <span>{{ numTasksDone() }}/ {{numTasksAll()}}</span>
+                </ng-template>
+        </p-progress-bar>
+ } 
+
+ 

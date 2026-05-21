@@ -1,0 +1,27 @@
+@if (datasetOptionsList() === undefined) {
+  <h5>Loading your dataset(s)...</h5>
+
+  <p-progress-spinner ariaLabel="loading" />
+} @else {
+  <p-card>
+    <h2>Select draft dataset</h2>
+    <p-button severity="info" label="Check my dataset >>" (click)="onClickNext()"></p-button>
+  </p-card>
+  <p-accordion>
+    <p-accordion-panel>
+      <p-accordion-header>
+        <h4>KU Leuven RDR</h4>
+      </p-accordion-header>
+      <p-accordion-content>
+        <h5>&nbsp; Datasets:</h5>
+        <p-select
+          [options]="datasetOptionsList()"
+          [(ngModel)]="selectedDataset"
+          [loading]="!datasetOptionsList()"
+          optionLabel="optionLabel"
+          placeholder="Select a dataset..."
+        ></p-select>
+      </p-accordion-content>
+    </p-accordion-panel>
+  </p-accordion>
+}
