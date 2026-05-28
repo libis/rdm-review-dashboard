@@ -4,6 +4,7 @@ data/*
 # Config: ignore secrets and JSON, but keep specific backend configs
 config/.secrets
 config/*.json
+config/automations/scripts/*.py
 !config/backend_config.json
 !config/backend_config.container.json
 
@@ -34,3 +35,4 @@ Thumbs.db
 rdm-review-dashboard-backend/.git
 rdm-review-dashboard-ui/.git
 config/automations/autochecks.json
+config/automations/scripts/customLicense.py
