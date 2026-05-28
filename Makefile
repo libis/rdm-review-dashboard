@@ -2,6 +2,7 @@
 
 STAGE ?= dev
 BASE_HREF ?= /ui/
+BASE_HREF_CHECK ?= /check/
 
 include env.$(STAGE)
 -include .env.local
@@ -14,23 +15,22 @@ SHELL = /bin/bash
 USER_ID ?= $(shell id -u)
 GROUP_ID ?= $(shell id -g)
 
-
-build: build-frontend build-container ## Build frontend + container
-
-push: ## Push Docker image (only in prod stage)
-	if [ "$(STAGE)" = "prod" ]; then \
-		docker push $(IMAGE_TAG); \
-	fi
-
-build-frontend: ## Build Frontend
+.PHONY: build-frontend
+build-frontend: 
 	echo "Building frontend ..."
-	cd ./rdm-review-dashboard-ui && rm -rf ./dist && npx ng build --configuration="production" --base-href $(BASE_HREF)
+	cd ./rdm-review-dashboard-ui && npm install &&  rm -rf ./dist && ng build --configuration="production" --base-href $(BASE_HREF)
 
-build-container: ## Build Docker image
+.PHONY: build-check
+build-check: 
+	echo "Building check-my-dataset ui ..."
+	cd ./rdm-check-my-dataset && npm install && rm -rf ./dist && ng build --configuration="production" --base-href $(BASE_HREF_CHECK)
+
+build-image: build-frontend build-check
 	echo "Building Docker image ..."
 	rm -rf rdm-review-dashboard-backend/image/dist
 	rm -rf rdm-review-dashboard-backend/image/src
 	cp -r rdm-review-dashboard-ui/dist rdm-review-dashboard-backend/image/dist
+	cp -r rdm-check-my-dataset/dist rdm-review-dashboard-backend/image/dist
 	cp rdm-review-dashboard-backend/requirements.txt rdm-review-dashboard-backend/image/
 	cp -r rdm-review-dashboard-backend/src rdm-review-dashboard-backend/image/src
 	docker build \
@@ -40,13 +40,24 @@ build-container: ## Build Docker image
 run:
 	cd ./rdm-review-dashboard-backend/src && uvicorn main:api --proxy-headers --host 0.0.0.0 --port 8000 --workers 4
 
+autocheck-consumer:
+	cd ./rdm-review-dashboard-backend/src && huey_consumer.py autochecks.autocheck_tasks.huey  -f --workers 1
+
 .PHONY: venv
-venv: ## Create a Python virtual environment in .venv
-	python3 -m venv .venv
-	. .venv/bin/activate && python -m pip install --upgrade pip
+venv: 
+	python3 -m venv ./rdm-review-dashboard-backend/.venv
+	. ./rdm-review-dashboard-backend/.venv/bin/activate && python -m pip install --upgrade pip && pip install -r ./rdm-review-dashboard-backend/requirements.txt
 
 .PHONY: test
-test: venv ## Run backend unit tests in .venv
+test: venv
 	. .venv/bin/activate \
 		&& python -m pip install -r rdm-review-dashboard-backend/requirements.txt -r rdm-review-dashboard-backend/requirements-dev.txt \
 		&& python -m pytest -q rdm-review-dashboard-backend/tests
+
+push: 
+	if [ "$(STAGE)" = "prod" ]; then \
+		echo "Pushing Docker image to repository ..."; \
+		docker push $(IMAGE_TAG); \
+	else \
+		echo "Not in production stage. Pushing not allowed."; \
+	fi
