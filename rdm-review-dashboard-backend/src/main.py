@@ -47,29 +47,30 @@ api.add_middleware(
 )
 
 
-# @api.middleware("http")
-# async def redirect_to_index(request: fastapi.Request, call_next):
-#     response = await call_next(request)
-#     if (
-#         not UI_PATH
-#         or request.url.path.startswith("/api/")
-#         or response.status_code != 404
-#     ):
-#         return response
-    
-#     if CHECK_UI_PATH and request.url.path.startswith("/check/"):
-#         return fastapi.responses.HTMLResponse(
-#                 content=open(CHECK_UI_PATH + "index.html", "r").read(), status_code=200
-#                 )
-
-#     return fastapi.responses.HTMLResponse(
-#         content=open(UI_PATH + "index.html", "r").read(), status_code=200
-#     )
-
+@api.middleware("http")
+async def redirect_to_index(request: fastapi.Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if (
+        not UI_PATH
+        or path.startswith("/api/")
+        or response.status_code != 404
+    ):
+        return response
+    if CHECK_UI_PATH and request.url.path.startswith("/check/"):
+        return await fastapi.responses.HTMLResponse(
+                content=open(CHECK_UI_PATH + "index.html", "r").read(), status_code=200
+                )
+    if UI_PATH and request.url.path.startswith("/ui/"):
+        return await  fastapi.responses.HTMLResponse(
+                content=open(UI_PATH + "index.html", "r").read(), status_code=200
+                )
+    return response
 
 def configure():
     global SETTINGS_FILE
     global UI_PATH
+    global CHECK_UI_PATH
     global api
     SETTINGS_FILE = (
         os.environ.get("BACKEND_CONFIG_FILE") or "./config/backend_config.json"

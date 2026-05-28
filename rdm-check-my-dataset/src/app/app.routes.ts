@@ -4,10 +4,10 @@ import { NgModule } from '@angular/core';
 import { Checklist } from './components/checklist/checklist';
 
 export const routes: Routes = [
-    { pathMatch: "full", path: "select", component: DatasetSelection },
-    { pathMatch: "full", path: "checklist/:datasetId", component: Checklist},
+    {  path: "select", component: DatasetSelection },
+    { path: "checklist/:datasetId", component: Checklist},
     { pathMatch: "full", path: "", redirectTo: "select"},
-    { pathMatch: "full", path: "**", redirectTo: "select"},
+    { path: "**", redirectTo: "select"},
 ];
 
 @NgModule({
