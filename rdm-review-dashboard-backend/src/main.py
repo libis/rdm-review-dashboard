@@ -57,13 +57,13 @@ async def redirect_to_index(request: fastapi.Request, call_next):
         or response.status_code != 404
     ):
         return response
-    if CHECK_UI_PATH and request.url.path.startswith("/check/"):
-        return await fastapi.responses.HTMLResponse(
-                content=open(CHECK_UI_PATH + "index.html", "r").read(), status_code=200
+    if CHECK_UI_PATH and path.startswith("/check/"):
+        return fastapi.responses.HTMLResponse(
+                content=open(CHECK_UI_PATH + "/index.html", "r").read(), status_code=200
                 )
-    if UI_PATH and request.url.path.startswith("/ui/"):
-        return await  fastapi.responses.HTMLResponse(
-                content=open(UI_PATH + "index.html", "r").read(), status_code=200
+    if UI_PATH and not "/check/" in path:
+        return fastapi.responses.HTMLResponse(
+                content=open(UI_PATH + "/index.html", "r").read(), status_code=200
                 )
     return response
 

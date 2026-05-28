@@ -103,7 +103,7 @@ pool = ConnectionPool(host=redis_host, port=redis_port, db=redis_db, max_connect
 huey = RedisHuey(
     name='rdb_autocheck',  
     connection_pool=pool,  
-    immediate=True  
+    immediate=False  
 )
     
 def import_module(check_name: str):
