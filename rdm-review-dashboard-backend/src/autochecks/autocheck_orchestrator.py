@@ -91,9 +91,16 @@ def get_check_status(persistent_id):
         subtask_statuses[subtask] = subtask_state
     issue_definitions = issue.read_check_my_dataset_issue_definitions()
     issue_categories = issue.get_issue_categories(issue_definitions)
+    issue_details = []
+    for k, v in issue_definitions.items():
+        current_issue = {}
+        current_issue.update(v)
+        current_issue["id"] = k
+        issue_details.append(current_issue)
+        
     return {
         "tasks": list(subtask_statuses.values()),
         "structure": issue_categories,
-        "details": list(issue_definitions.values())
+        "details": issue_details
         }
 

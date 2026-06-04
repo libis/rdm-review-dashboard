@@ -94,7 +94,7 @@ def get_issue_categories(issue_definitions):
         category = v['category']
         if category not in categories:
             categories[category] = []
-        categories[category].append(v['id'])
+        categories[category].append(k)
     result = []
     for k, v in categories.items():
         result.append({

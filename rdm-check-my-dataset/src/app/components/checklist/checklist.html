@@ -13,25 +13,25 @@
         <h3 style="padding-left: 1.5em">{{ category.label }}</h3>
         <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
           @for (issueId of category.issues; track $index) {
-            @if (isTaskDone(issueId) && hasTaskFeedback(issueId) && category.id != 'tips') {
+            @if (isTaskDone(issueId) && hasCheckFailedOrHasCheckWarning(issueId)) {
               <p-accordion [value]="['0']" [multiple]="true">
                 <p-accordion-panel value="0">
                   <p-accordion-header>
                     <div style="padding-bottom: 0; margin-bottom: 0">
                       {{ getIssueDetails(issueId).title }}
                       <span style="font-weight: normal">
-                        {{ getIssueDetails(issueId).warning }}
+                        - {{ getIssueResults(issueId)?.warning || getIssueDetails(issueId).overview_header }}
                       </span>
                     </div>
                   </p-accordion-header>
                   <p-accordion-content
                     style="padding-top: 0; margin-top: 0; padding-bottom: 0; margin-top: bottom"
                   >
-                    <div [innerHTML]="getIssueDetails(issueId).message"></div>
+                    <div [innerHTML]="getIssueDetails(issueId).overview_content"></div>
                   </p-accordion-content>
-                  @if (
+                  <!-- @if (
                     $index < category.issues.length - 1 &&
-                    hasTaskFeedback(category.issues[$index + 1])
+                    hasCheckFailedOrHasCheckWarning(category.issues[$index + 1])
                   ) {
                     <span
                       style="
@@ -44,7 +44,7 @@
                       "
                     >
                     </span>
-                  }
+                  } -->
                 </p-accordion-panel>
               </p-accordion>
             }
@@ -72,12 +72,12 @@
                         @if (
                           isTaskDone(issueId) &&
                           hasTaskResults(issueId) &&
-                          getIssueDetails(issueId).condition &&
-                          getIssueDetails(issueId).condition != ''
+                          getIssueDetails(issueId).all_results_header &&
+                          getIssueDetails(issueId).all_results_header != ''
                         ) {
                           <app-checklist-item
                             [taskStatus]="getCompletionStatus(issueId)"
-                            [taskResults]="getTaskResults(issueId)"
+                            [taskResults]="getIssueResults(issueId)"
                             [checkboxId]="issueId"
                             [checkboxDetails]="getIssueDetails(issueId)"
                             [checkboxChecked]="false"
@@ -102,22 +102,22 @@
     <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
       @for (category of this.taskCategories(); track category.id) {
         @for (issueId of category.issues; track $index) {
-          @if (hasTip(issueId)) {
+          @if (isTipDisplayed(issueId)) {
             <p-accordion [value]="['0']" [multiple]="true">
-              <p-accordion-panel value="0" [disabled]="!hasTip(issueId)">
+              <p-accordion-panel value="0" [disabled]="!hasIssueTipContent(issueId) ">
                 <p-accordion-header>
                   <div class="header-content">
                     <div style="font-weight: bold; color: black">
                       {{ getIssueDetails(issueId).title }} -
-                      {{ getIssueDetails(issueId).condition }}
+                      {{ getIssueDetails(issueId).tips_header }}
                     </div>
                   </div>
                 </p-accordion-header>
-                @if (hasTip(issueId)) {
+                @if (hasIssueTipContent(issueId)) {
                   <p-accordion-content>
                     <p
                       style="padding: 0.5em; padding-left: 2.5em"
-                      [innerHTML]="getIssueDetails(issueId).tip"
+                      [innerHTML]="getIssueDetails(issueId).tips_content"
                     ></p>
                   </p-accordion-content>
                 }

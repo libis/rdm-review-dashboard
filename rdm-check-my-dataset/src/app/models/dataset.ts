@@ -37,3 +37,9 @@ export enum Status {
   Deaccessioned = 'deaccessioned',
   Published = 'published',
 }
+
+
+export interface CheckResult {
+  result: boolean | null;
+  warning: string | null;
+}

@@ -16,7 +16,7 @@ import { TaskService } from '../../services/task-service';
 import { DividerModule } from 'primeng/divider';
 import { SpeedDialModule } from 'primeng/speeddial';
 import { MenuItem, MessageService } from 'primeng/api';
-
+import { CheckResult } from "../../models/dataset"
 @Component({
   selector: 'app-checklist',
   imports: [
@@ -113,8 +113,37 @@ export class Checklist implements OnInit {
     return this.tasks.taskDescription().get(itemId);
   }
 
-  hasTip(issueId: string) {
-    return this.getIssueDetails(issueId).tip && this.getIssueDetails(issueId).tip !== '';
+  isTipDisplayed(issueId: string): boolean {
+    let issueDetails = this.getIssueDetails(issueId);
+    if (!issueDetails.tips_content && !issueDetails.tips_header) {
+      return false;
+    }
+    let checkResult = this.getIssueResults(issueId);
+    let displayCondition = this.getIssueDetails(issueId).display_in_tips; 
+    return this.isDisplayed(checkResult, displayCondition)
+  }
+
+  hasIssueTipContent(issueId: string) {
+    return this.getIssueDetails(issueId).tips_content && this.getIssueDetails(issueId).tips_content !== '';
+  }
+
+  isDisplayed(checkResult: CheckResult, displayCondition: string) : boolean {
+    if (displayCondition == "never" || displayCondition == "n") {
+      return false;
+    }
+    if (displayCondition == "always" || displayCondition == "a") {
+      return true;
+    }
+    if (displayCondition == "success" || displayCondition == "on_success" || displayCondition == "s") {
+      return checkResult.result === true;
+    }
+    if (displayCondition == "fail" || displayCondition == "on_fail" || displayCondition == "f") {
+      return checkResult.result === false;
+    }
+    if (displayCondition == "fail_or_warning" || displayCondition == "on_fail_or_warning" || displayCondition == "fw") {
+      return checkResult.result === false || checkResult.warning != null;
+    }
+    return false;
   }
 
   getTaskCompletionData(taskId: string) {
@@ -133,16 +162,25 @@ export class Checklist implements OnInit {
     return url;
   }
 
-  getTaskResults(taskId: string) {
-    return this.tasks.results().get(taskId)?.results;
+  getIssueResults(issueId: string) {
+    let scriptName = this.getIssueDetails(issueId).script;
+    if (!scriptName || scriptName == "") {
+      return null;
+    }
+
+    return this.tasks.results().get(scriptName)?.results;
   }
 
   getTaskStatus(taskId: string) {
     return this.tasks.statuses().get(taskId);
   }
 
-  getCompletionStatus(taskId: string) {
-    return this.getTaskCompletionData(taskId)?.status || null;
+  getCompletionStatus(issueId: string) {
+    let scriptName = this.getIssueDetails(issueId).script;
+    if (!scriptName || scriptName == "") {
+      return 'done';
+    }
+    return this.getTaskCompletionData(scriptName)?.status || null;
   }
 
   isTaskDone(issueId: string): boolean {
@@ -152,28 +190,21 @@ export class Checklist implements OnInit {
   }
 
   hasTaskResults(issueId: string): boolean {
-    let results = this.getTaskResults(issueId);
-    if (results === undefined) {
+    let results = this.getIssueResults(issueId);
+    if (results === undefined || results === null) {
       return false;
     }
     return results.result !== null || results.warning !== null || results.message !== null;
   }
 
-  hasTaskFeedback(issueId: string): boolean {
-    let results = this.getTaskResults(issueId);
-    if (results === undefined) {
+  hasCheckFailedOrHasCheckWarning(issueId: string): boolean {
+    let results = this.getIssueResults(issueId);
+    if (results === undefined || results === null) {
       return false;
     }
     return results.result === false || results.warning !== null || results.message !== null;
   }
 
-  hasTaskTip(issueId: string): boolean {
-    let results = this.getTaskResults(issueId);
-    if (results === undefined) {
-      return false;
-    }
-    return results.result === null || results.warning === null;
-  }
 
   hasAutocheckResultToDisplay() {
     return this.tasks.all().some((task) => this.hasTaskResults(task.task_id));
@@ -189,20 +220,7 @@ export class Checklist implements OnInit {
     return result;
   }
 
-  isLargeDataset() {
-    return true;
-    return this.getTaskResults('totalDatasetFilesSizeIsLessThan5GB').result === false;
-  }
 
-  isLargeNumFiles() {
-    return true;
-
-    return this.getTaskResults('numFilesIsLessThan1000').result === false;
-  }
-
-  isFileSizeCheckFailed() {
-    return this.isLargeDataset() || this.isLargeNumFiles();
-  }
 
   getHelptext(itemId: string) {
     let autocheckInfo = this.getAutocheckAvailable(itemId);
@@ -231,7 +249,7 @@ export class Checklist implements OnInit {
     }
     for (let issueID of category.issues) {
       console.log(category.label, issueID);
-      if (this.isTaskDone(issueID) && this.hasTaskFeedback(issueID)) {
+      if (this.isTaskDone(issueID) && this.hasCheckFailedOrHasCheckWarning(issueID)) {
         return true;
       }
     }
