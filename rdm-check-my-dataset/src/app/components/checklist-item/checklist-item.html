@@ -1,0 +1,24 @@
+<table>
+  <tr style="vertical-align: top; margin: 3px">
+    @if (isAutocheckChecked() === true) {
+      <td>
+        <div style="padding: 0.5rem; display: inline">
+          <i class="pi pi-check green-icon dropshadow"> </i>
+        </div>
+      </td>
+    } @else if (isAutocheckChecked() === false) {
+      <td>
+        <div style="padding: 0.5rem; display: inline">
+          <i class="pi pi-times red-icon dropshadow"> </i>
+        </div>
+      </td>
+    } @else if (getAutocheckWarning() != null) {
+      <td>
+        <div style="padding: 0.5rem; display: inline" [pTooltip]="getAutocheckWarning()">
+          <i class="pi pi-exclamation-triangle orange-icon dropshadow"></i>
+        </div>
+      </td>
+    }
+    <div>{{ checkboxDetails.all_results_header }}</div>
+  </tr>
+</table>

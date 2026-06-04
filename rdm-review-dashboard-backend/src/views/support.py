@@ -25,7 +25,7 @@ async def get_tags(persistent_identifier, _type=None, text=None):
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/support_request")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def get_support_request(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -38,7 +38,7 @@ async def get_support_request(
 
 
 @router.post("/api/datasets/doi:{persistent_identifier:path}/support_request")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def ask_support(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -71,7 +71,7 @@ async def ask_support(
 
 
 @router.delete("/api/datasets/doi:{persistent_identifier:path}/support_request")
-@response_headers.inject_uid
+@response_headers.inject_uid(["reviewer", "admin"])
 async def remove_support_request(
     response: fastapi.Response,
     request: fastapi.Request,

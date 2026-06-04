@@ -96,14 +96,12 @@ async def get_dataverse_assignees(groups=None) -> List[dict]:
 
 
 async def get_user_assigned_datasets(user_id: str, roles: List[str]):
-    print(roles)
     query_results = postgresql.query_user_assignments(user_id, roles)
-    print(query_results)
     result = []
     for dataset in query_results:
         result.append(
             {
-                "doi": f"doi:{dataset.get("authority")}/{dataset.get("identifier")}",
+                "identifier": f"doi:{dataset.get("authority")}/{dataset.get("identifier")}",
                 "version": f"{dataset.get("versionnumber",0)}.{dataset.get("minorversionnumber")}",
                 "role": f"{dataset.get("alias")}",
                 "title": f"{dataset.get("value")[0]}",

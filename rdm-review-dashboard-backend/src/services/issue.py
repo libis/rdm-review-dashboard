@@ -17,8 +17,21 @@ from autochecks.check import Check
 from autochecks.check_result import CheckResult
 
 ISSUE_DEFINITIONS_FILE: str|None = None
+CHECK_MY_DATASET_ISSUE_DEFINITIONS_FILE: str|None = None
 FEEDBACK_EMAIL:str = ""
 DATAVERSE_URL: str = ""
+
+def read_check_my_dataset_issue_definitions():
+    result = None
+    if CHECK_MY_DATASET_ISSUE_DEFINITIONS_FILE is None:
+        raise FileNotFoundError("Issue definitions file not set!")
+    try:
+        with open(Path(CHECK_MY_DATASET_ISSUE_DEFINITIONS_FILE).absolute()) as f:
+            result = json.load(f)
+    except:
+        logging.error(f"Could not read issue definitions from {CHECK_MY_DATASET_ISSUE_DEFINITIONS_FILE}")
+        raise
+    return result
 
 def read_issue_definitions():
     result = None
@@ -71,7 +84,7 @@ def load_autocheck_results(persistent_id: str) -> dict[str, CheckResult]|None:
     except Exception as e:
         logging.error(file_path + ": " + str(e))
     finally:
-        if isinstance(results_shelve, shelve.Shelf):
+        if results_shelve is not None:
             results_shelve.close()
     return result
 
@@ -81,7 +94,7 @@ def get_issue_categories(issue_definitions):
         category = v['category']
         if category not in categories:
             categories[category] = []
-        categories[category].append(v['id'])
+        categories[category].append(k)
     result = []
     for k, v in categories.items():
         result.append({
@@ -215,7 +228,7 @@ def get(persistent_id: str)->IssueDict:
         logging.error(file_path + ": " + str(e))
         result = IssueDict(persistent_id=persistent_id, issues=get_empty_issue_checklist())
     finally:
-        if isinstance(issues, shelve.Shelf):
+        if issues is not None:
             issues.close()
     if not result or result == {}:
         result = IssueDict(persistent_id=persistent_id, issues=get_empty_issue_checklist())
