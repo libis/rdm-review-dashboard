@@ -36,3 +36,4 @@ rdm-review-dashboard-backend/.git
 rdm-review-dashboard-ui/.git
 config/automations/autochecks.json
 config/automations/scripts/customLicense.py
+.angular
