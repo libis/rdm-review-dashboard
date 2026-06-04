@@ -1,8 +1,8 @@
 # Author: Eryk Kulikowski @ KU Leuven (2023). Apache 2.0 License
 
 STAGE ?= prod
-BASE_HREF ?= /ui/
-BASE_HREF_CHECK ?= /check/
+BASE_HREF ?= /review/ui/
+BASE_HREF_CHECK ?= /review/check/
 
 include env.$(STAGE)
 -include .env.local
