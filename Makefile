@@ -30,7 +30,7 @@ build-image: build-frontend build-check
 	rm -rf rdm-review-dashboard-backend/image/dist
 	rm -rf rdm-review-dashboard-backend/image/src
 	cp -r rdm-review-dashboard-ui/dist rdm-review-dashboard-backend/image/dist
-	cp -r rdm-check-my-dataset/dist rdm-review-dashboard-backend/image/dist
+	cp -r rdm-check-my-dataset/dist rdm-review-dashboard-backend/image/
 	cp rdm-review-dashboard-backend/requirements.txt rdm-review-dashboard-backend/image/
 	cp -r rdm-review-dashboard-backend/src rdm-review-dashboard-backend/image/src
 	docker build \
