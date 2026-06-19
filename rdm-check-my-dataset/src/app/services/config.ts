@@ -29,5 +29,8 @@ export class Config {
   get supportLink() {
     return this.config.supportLink;
   }
+  get introHTML() {
+    return this.config.introHTML;
+  }
 
 }

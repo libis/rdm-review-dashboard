@@ -1,7 +1,8 @@
 {
     "apiUrl": "http://localhost:8000",
     "dataverseUrl": "https://localhost:7000",
-    "dataverseName": "",
+    "dataverseName": "RDR",
     "helpDeskEmail": "",
-    "supportLink": ""
+    "supportLink": "",
+    "introHTML": "<p>This tool helps you run an initial automated review of your draft dataset in {dataverseName} before submission. It performs basic checks for common issues such as incomplete metadata or missing documentation, so you can fix them early and get your dataset ready for publication.<p/> <p>Please note that this is a first check. Our curation team will still review your dataset and provide tailored feedback and guidance to help make your data as FAIR as possible. This full review goes beyond the automated checks performed by this tool; an overview of all review criteria can be found here. <p/><p> If you have any questions, please contact us at <a href='mailto:{helpDeskEmail}'> {helpDeskEmail} </a> </p>  "
 }
