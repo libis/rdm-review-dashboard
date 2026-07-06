@@ -18,12 +18,17 @@ GROUP_ID ?= $(shell id -g)
 .PHONY: build-frontend
 build-frontend: 
 	echo "Building frontend ..."
-	cd ./rdm-review-dashboard-ui && npm install &&  rm -rf ./dist && ng build --configuration="production" --base-href $(BASE_HREF)
+	cd ./rdm-review-dashboard-ui && npm install &&  rm -rf ./dist && npx ng build --configuration="production" --base-href $(BASE_HREF)
 
 .PHONY: build-check
 build-check: 
 	echo "Building check-my-dataset ui ..."
-	cd ./rdm-check-my-dataset && npm install && rm -rf ./dist && ng build --configuration="production" --base-href $(BASE_HREF_CHECK)
+	cd ./rdm-check-my-dataset && npm install && rm -rf ./dist && npx ng build --configuration="production" --base-href $(BASE_HREF_CHECK)
+
+# `build` is the cross-repo contract target — rdm-deployment's initialize.mak
+# builds every sibling repo with `make build STAGE=…`.
+.PHONY: build
+build: build-image
 
 build-image: build-frontend build-check
 	echo "Building Docker image ..."
