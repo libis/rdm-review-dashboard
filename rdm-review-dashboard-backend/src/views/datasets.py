@@ -166,7 +166,7 @@ async def get_poll_autocheck_tasks_results(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}")
-@response_headers.inject_uid(["reviewer", "admin"])
+@response_headers.inject_uid(["reviewer", "admin", "researcher"])
 async def get_dataset_details(
     response: fastapi.Response,
     request: fastapi.Request,
