@@ -14,6 +14,7 @@
         <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
           @for (issueId of category.issues; track $index) {
             @if (isTaskDone(issueId) && hasCheckFailedOrHasCheckWarning(issueId)) {
+              @if (hasIssueOverviewContent(issueId)) {
               <p-accordion [value]="['0']" [multiple]="true">
                 <p-accordion-panel value="0">
                   <p-accordion-header>
@@ -47,7 +48,15 @@
                   } -->
                 </p-accordion-panel>
               </p-accordion>
-            }
+            } @else {
+                <div class="issue-item">
+                  <div style="font-weight: bold;">
+                    {{ getIssueDetails(issueId).title }} -
+                    {{ getIssueResults(issueId)?.warning || getIssueDetails(issueId).overview_header }}
+                  </div>
+                </div>
+              }
+          }
           }
         </div>
       }
@@ -103,27 +112,38 @@
       @for (category of this.taskCategories(); track category.id) {
         @for (issueId of category.issues; track $index) {
           @if (isTipDisplayed(issueId)) {
+            @if (hasIssueTipContent(issueId)) {
+
             <p-accordion [value]="['0']" [multiple]="true">
-              <p-accordion-panel value="0" [disabled]="!hasIssueTipContent(issueId) ">
+              <p-accordion-panel value="0"  >
                 <p-accordion-header>
                   <div class="header-content">
-                    <div style="font-weight: bold; color: black">
+                    <div style="font-weight: bold;">  
                       {{ getIssueDetails(issueId).title }} -
                       {{ getIssueDetails(issueId).tips_header }}
                     </div>
                   </div>
                 </p-accordion-header>
-                @if (hasIssueTipContent(issueId)) {
                   <p-accordion-content>
                     <p
                     style="padding-top: 0; margin-top: 0; padding-bottom: 0; margin-top: bottom"
                       [innerHTML]="getIssueDetails(issueId).tips_content"
                     ></p>
                   </p-accordion-content>
-                }
               </p-accordion-panel>
             </p-accordion>
+          } @else {
+                  <div class="issue-item" >
+                    <div style="font-weight: bold;">
+                      {{ getIssueDetails(issueId).title }} -
+                      {{ getIssueDetails(issueId).tips_header }}
+                    </div>
+                  </div>
           }
+
+                }
+
+
         }
       }
     </div>

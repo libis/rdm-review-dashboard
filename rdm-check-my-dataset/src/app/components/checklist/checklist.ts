@@ -105,9 +105,6 @@ export class Checklist implements OnInit {
     ];
   }
 
-  pollResults(datasetId: string) {
-    return this.api.pollResults(datasetId);
-  }
 
   getIssueDetails(itemId: string) {
     return this.tasks.taskDescription().get(itemId);
@@ -126,6 +123,11 @@ export class Checklist implements OnInit {
   hasIssueTipContent(issueId: string) {
     return this.getIssueDetails(issueId).tips_content && this.getIssueDetails(issueId).tips_content !== '';
   }
+
+  hasIssueOverviewContent(issueId: string) {
+    return this.getIssueDetails(issueId).overview_content && this.getIssueDetails(issueId).overview_content !== '';
+  }
+
 
   isDisplayed(checkResult: CheckResult, displayCondition: string) : boolean {
     if (displayCondition == "never" || displayCondition == "n") {
