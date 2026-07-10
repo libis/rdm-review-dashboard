@@ -28,10 +28,6 @@ import utils.logging
 
 
 
-class PersistenceMode(Enum):
-    REDIS = "REDIS"
-    FS = "FS"
-
 
 persistence_mode = None
 check_modules = {}
@@ -40,7 +36,7 @@ check_modules = {}
 def _initialize_consumer_config():
     import sys
     import autochecks.autochecks
-    
+    global persistence_mode, huey_backend_cfg, huey_immediate_mode, check_modules
     SETTINGS_FILE = os.environ.get("BACKEND_CONFIG_FILE") or "./config/backend_config.json"
     
     if not os.path.isabs(SETTINGS_FILE):
@@ -67,7 +63,12 @@ def _initialize_consumer_config():
         if autochecks.autochecks.path and autochecks.autochecks.path + "/scripts" not in sys.path:
             sys.path.insert(1, autochecks.autochecks.path + "/scripts")
         autochecks.autochecks.default_timeout = settings.get("automationDefaultCheckTimeout")
-        
+
+        persistence_mode = settings.get("huey_backend", "REDIS")
+        huey_immediate_mode = settings.get("huey_immediate_mode", True)
+        huey_backend_cfg = settings.get("huey_backend_cfg", {})
+
+
         logging.info(f"Huey consumer initialized with config from {SETTINGS_FILE}")
         logging.info(f"Dataverse API: {native.BASE_URL}")
         logging.info(f"Data path: {filesystem.BASE_DIR}")
@@ -81,12 +82,6 @@ def _initialize_consumer_config():
 _initialize_consumer_config()
 
 
-redis_host = "cache"
-redis_port = 6379
-redis_db = 0
-redis_pw = None
-redis_max_connections = 20
-
 
 class TaskStatus(Enum):
     PENDING = "pending"
@@ -95,17 +90,19 @@ class TaskStatus(Enum):
     DONE = "done"
     FAILED = "failed"
     
+huey = None
+match persistence_mode:
+    case "REDIS":
+        pool = ConnectionPool(host=huey_backend_cfg.get("host", "localhost"), port=huey_backend_cfg.get("port", 6379), db=huey_backend_cfg.get("db", 0), max_connections=huey_backend_cfg.get("max_connections", 20))
+        huey = RedisHuey(
+            name='rdb_autocheck',  
+            connection_pool=pool,  
+            immediate=huey_immediate_mode  
+        )
+    case "FS":
+        #TODO implement fs backend
+        pass
 
-#TODO: put switch case
-
-pool = ConnectionPool(host=redis_host, port=redis_port, db=redis_db, max_connections=redis_max_connections)
-
-huey = RedisHuey(
-    name='rdb_autocheck',  
-    connection_pool=pool,  
-    immediate=False  
-)
-    
 def import_module(check_name: str):
     module = None
     try:
