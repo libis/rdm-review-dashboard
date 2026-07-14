@@ -32,5 +32,11 @@ export class Config {
   get introHTML() {
     return this.config.introHTML;
   }
+  get allChecksSucceededHTML() {
+    return this.config.allChecksSucceededHTML;
+  }
+  get NoResultWarning() {
+    return this.config.NoResultWarning;
+  }
 
 }

@@ -34,4 +34,7 @@ export class ChecklistItem {
       this.helpVisible = true;
     }
   }
+  getNoResultWarning(): string | undefined {
+    return this.checkboxDetails?.no_result_warning || 'This requirement could not be automatically validated, please check its correctness manually.';
+  }
 }
