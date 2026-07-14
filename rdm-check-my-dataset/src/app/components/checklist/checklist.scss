@@ -27,3 +27,7 @@ h2 > .section {
   color: rgb(51, 65, 85); // rgb(100, 116, 139);
 
 }
+
+:host ::ng-deep .p-speeddial .p-speeddial-button .p-button-icon.pi.pi-plus {
+  display: none !important;
+}
