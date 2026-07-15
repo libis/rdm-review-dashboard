@@ -49,6 +49,8 @@ export class DatasetSelection implements OnDestroy {
   selectedDataset: DatasetOption | undefined;
   helpDeskEmail: string;
   dataverseName: string;
+  introHTML: string;
+  supportLink: string;
   constructor(
     private api: ApiService,
     private router: Router,
@@ -80,7 +82,16 @@ export class DatasetSelection implements OnDestroy {
     );
     this.helpDeskEmail = this.config.helpDeskEmail;
     this.dataverseName = this.config.dataverseName;
+    this.introHTML = this.config.introHTML;
+    this.supportLink = this.config.supportLink
+  }
 
+  getIntroHTML() {
+    let result = this.introHTML;
+    result = result.replaceAll("{helpDeskEmail}", this.helpDeskEmail);
+    result = result.replaceAll("{dataverseName}", this.dataverseName);
+    result = result.replaceAll("{supportLink}", this.supportLink);
+    return result;
   }
 
   onClickNext() {

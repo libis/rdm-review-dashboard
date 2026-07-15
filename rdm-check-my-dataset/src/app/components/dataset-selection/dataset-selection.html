@@ -1,39 +1,24 @@
-<p>
-  This tool helps you run an initial automated review of your draft dataset before submission. It
-  performs basic checks for common issues such as incomplete metadata or missing documentation, so
-  you can fix them early and get your dataset ready for publication.
-</p>
-<p>
-  Please note that this is a first check. Our curation team will still review your dataset and
-  provide tailored feedback and guidance to help make your data as FAIR as possible. This full
-  review goes beyond the automated checks performed by this tool; an overview of all review criteria
-  can be found here.
-</p>
-<p>If you have any questions, please contact us at {{helpDeskEmail}}</p>
+<div id="introHTML" [innerHTML]="getIntroHTML()"></div>
 @if (datasetOptionsList() === undefined) {
   <h5>Loading your dataset(s)...</h5>
-
   <p-progress-spinner ariaLabel="loading" />
 } @else {
-  <p-card>
-    <h2>Select draft dataset</h2>
-    <p-button severity="info" label="Check my dataset >>" (click)="onClickNext()"></p-button>
-  </p-card>
-  <p-accordion>
-    <p-accordion-panel>
-      <p-accordion-header>
-        <h4>{{dataverseName}}</h4>
-      </p-accordion-header>
-      <p-accordion-content>
-        <h5>&nbsp; Datasets:</h5>
-        <p-select
-          [options]="datasetOptionsList()"
-          [(ngModel)]="selectedDataset"
-          [loading]="!datasetOptionsList()"
-          optionLabel="optionLabel"
-          placeholder="Select a dataset..."
-        ></p-select>
-      </p-accordion-content>
-    </p-accordion-panel>
-  </p-accordion>
+  <div style="margin: 2em;">
+     <div style="margin: 1em">
+    <h4>Select Draft Dataset</h4>
+    </div>
+    <div style="margin: 1em">
+    <p-select
+      [options]="datasetOptionsList()"
+      [(ngModel)]="selectedDataset"
+      [loading]="!datasetOptionsList()"
+      optionLabel="optionLabel"
+      placeholder="Select a dataset..."
+    >
+    </p-select>
+    </div>
+    <div style="margin: 1em">
+      <p-button severity="info" label="Check my dataset >>" (click)="onClickNext()"></p-button>
+    </div>
+  </div>
 }

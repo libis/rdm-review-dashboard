@@ -105,9 +105,15 @@ export class Checklist implements OnInit {
     ];
   }
 
-  pollResults(datasetId: string) {
-    return this.api.pollResults(datasetId);
+
+  getNoResultWarning(issueId: string): string | null {
+    if (this.getIssueResults(issueId) != null && !this.getIssueResults(issueId).warning && this.getIssueResults(issueId).result === null) {
+    return this.getIssueDetails(issueId)?.no_result_warning || this.config.NoResultWarning;
   }
+  return null;
+
+  }
+
 
   getIssueDetails(itemId: string) {
     return this.tasks.taskDescription().get(itemId);
@@ -115,9 +121,9 @@ export class Checklist implements OnInit {
 
   isTipDisplayed(issueId: string): boolean {
     let issueDetails = this.getIssueDetails(issueId);
-    if (!issueDetails.tips_content && !issueDetails.tips_header) {
-      return false;
-    }
+    // if (!issueDetails.tips_content && !issueDetails.tips_header) {
+    //   return false;
+    // }
     let checkResult = this.getIssueResults(issueId);
     let displayCondition = this.getIssueDetails(issueId).display_in_tips; 
     return this.isDisplayed(checkResult, displayCondition)
@@ -126,6 +132,11 @@ export class Checklist implements OnInit {
   hasIssueTipContent(issueId: string) {
     return this.getIssueDetails(issueId).tips_content && this.getIssueDetails(issueId).tips_content !== '';
   }
+
+  hasIssueOverviewContent(issueId: string) {
+    return this.getIssueDetails(issueId).overview_content && this.getIssueDetails(issueId).overview_content !== '';
+  }
+
 
   isDisplayed(checkResult: CheckResult, displayCondition: string) : boolean {
     if (displayCondition == "never" || displayCondition == "n") {
@@ -197,17 +208,25 @@ export class Checklist implements OnInit {
     return results.result !== null || results.warning !== null || results.message !== null;
   }
 
-  hasCheckFailedOrHasCheckWarning(issueId: string): boolean {
+  hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(issueId: string): boolean {
     let results = this.getIssueResults(issueId);
     if (results === undefined || results === null) {
       return false;
     }
-    return results.result === false || results.warning !== null || results.message !== null;
+    return results.result === false || results.warning !== null || results.message !== null || this.getNoResultWarning(issueId) !== null;
   }
 
 
   hasAutocheckResultToDisplay() {
     return this.tasks.all().some((task) => this.hasTaskResults(task.task_id));
+  }
+
+  hasFailedOrWarningOrNoResultWarning() {
+    return this.tasks.all().some((task) => this.hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(task.task_id));
+  }
+
+  getAllChecksSucceededHTML() {
+    return this.config.allChecksSucceededHTML.replace("{dataverseName}", this.dataverseName).replace("{helpDeskEmail}", this.helpDeskEmail);
   }
 
   getAutocheckAvailable(itemId: string) {
@@ -249,7 +268,7 @@ export class Checklist implements OnInit {
     }
     for (let issueID of category.issues) {
       console.log(category.label, issueID);
-      if (this.isTaskDone(issueID) && this.hasCheckFailedOrHasCheckWarning(issueID)) {
+      if (this.isTaskDone(issueID) && this.hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(issueID)) {
         return true;
       }
     }

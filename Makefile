@@ -1,11 +1,8 @@
 # Author: Eryk Kulikowski @ KU Leuven (2023). Apache 2.0 License
 
 STAGE ?= prod
-BASE_HREF ?= /review/ui/
-BASE_HREF_CHECK ?= /review/check/
 
 include env.$(STAGE)
--include .env.local
 export
 
 .SILENT:
@@ -18,12 +15,17 @@ GROUP_ID ?= $(shell id -g)
 .PHONY: build-frontend
 build-frontend: 
 	echo "Building frontend ..."
-	cd ./rdm-review-dashboard-ui && npm install &&  rm -rf ./dist && ng build --configuration="production" --base-href $(BASE_HREF)
+	cd ./rdm-review-dashboard-ui && npm install &&  rm -rf ./dist && npx ng build --configuration="production" --base-href $(BASE_HREF)
 
 .PHONY: build-check
 build-check: 
 	echo "Building check-my-dataset ui ..."
-	cd ./rdm-check-my-dataset && npm install && rm -rf ./dist && ng build --configuration="production" --base-href $(BASE_HREF_CHECK)
+	cd ./rdm-check-my-dataset && npm install && rm -rf ./dist && npx ng build --configuration="production" --base-href $(BASE_HREF_CHECK)
+
+# `build` is the cross-repo contract target — rdm-deployment's initialize.mak
+# builds every sibling repo with `make build STAGE=…`.
+.PHONY: build
+build: build-image
 
 build-image: build-frontend build-check
 	echo "Building Docker image ..."
@@ -37,8 +39,8 @@ build-image: build-frontend build-check
 		--build-arg USER_ID=$(USER_ID) --build-arg GROUP_ID=$(GROUP_ID) \
 		--tag "$(IMAGE_TAG)" ./rdm-review-dashboard-backend/image
 
-run:
-	cd ./rdm-review-dashboard-backend/src && uvicorn main:api --proxy-headers --host 0.0.0.0 --port 8000 --workers 4
+run: venv 
+	. ./rdm-review-dashboard-backend/.venv/bin/activate && cd ./rdm-review-dashboard-backend/src && uvicorn main:api --proxy-headers --host 0.0.0.0 --port 8000 --workers 4
 
 autocheck-consumer:
 	cd ./rdm-review-dashboard-backend/src && huey_consumer.py autochecks.autocheck_tasks.huey  -f --workers 1

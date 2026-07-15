@@ -18,6 +18,12 @@
           <i class="pi pi-exclamation-triangle orange-icon dropshadow"></i>
         </div>
       </td>
+    } @else {
+      <td>
+        <div style="padding: 0.5rem; display: inline" [pTooltip]="getNoResultWarning()">
+          <i class="pi pi-exclamation-triangle orange-icon dropshadow" style="opacity: 0.5;"></i>
+        </div>
+      </td>
     }
     <div>{{ checkboxDetails.all_results_header }}</div>
   </tr>

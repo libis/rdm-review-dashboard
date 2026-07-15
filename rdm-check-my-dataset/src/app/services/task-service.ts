@@ -3,8 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import {
   BehaviorSubject,
   takeWhile,
-  combineLatest,
-  distinct,
+  distinctUntilChanged,
   timer,
   switchMap,
   map,
@@ -30,23 +29,23 @@ export class TaskService {
   results: Signal<any | null> = signal(null);
   statuses: Signal<Map<string, string>> = signal(new Map());
   constructor(private api: ApiService) {
-    this.taskStatuses$ = combineLatest([
-      this.mainTaskIdFollowed.asObservable().pipe(distinct((id) => id)),
-      timer(1, 3000),
-    ]).pipe(
-      switchMap(([orchestratorTaskId, _time]) => {
-        if (orchestratorTaskId) {
-          return this.api.pollResults(orchestratorTaskId);
+    this.taskStatuses$ = this.mainTaskIdFollowed.asObservable().pipe(
+      distinctUntilChanged(),
+      switchMap((orchestratorTaskId) => {
+        if (!orchestratorTaskId) {
+          return of(null);
         }
-        return of(null);
+        return timer(0, 3000).pipe(
+          switchMap(() => this.api.pollResults(orchestratorTaskId)),
+          takeWhile((result: any) => {
+            if (!result || !result.tasks) {
+              return true;
+            }
+            const allTasksDone = result.tasks.every((task: any) => task.status === 'done');
+            return !allTasksDone;
+          }, true),
+        );
       }),
-      takeWhile((result: any) => {
-        if (!result || !result.tasks) {
-          return true;
-        }
-        const allTasksDone = result.tasks.every((task: any) => task.status === 'done');
-        return !allTasksDone;
-      }, true),
     );
     this.taskStatuses = toSignal(this.taskStatuses$);
     this.all = computed(() => {
