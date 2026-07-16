@@ -230,6 +230,9 @@ export class Checklist implements OnInit {
   }
 
   hasFailedOrWarningOrNoResultWarning() {
+    if (!this.tasks.all()) {
+      return false;
+    }
     return this.tasks.all().some((task) => this.hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(task.task_id));
   }
 
