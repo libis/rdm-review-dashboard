@@ -37,6 +37,6 @@ export class ChecklistItem {
     }
   }
   getNoResultWarning(): string | undefined {
-    return this.checkboxDetails?.no_result_warning || this.config.noResultWarning;
+    return this.config.noResultWarning;
   }
 }

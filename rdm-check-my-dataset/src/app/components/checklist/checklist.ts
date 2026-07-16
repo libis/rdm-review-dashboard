@@ -111,13 +111,6 @@ export class Checklist implements OnInit {
   }
 
 
-  getNoResultWarning(issueId: string): string | null {
-    if (this.getIssueResults(issueId) != null && !this.getIssueResults(issueId).warning && this.getIssueResults(issueId).result === null) {
-    return this.getIssueDetails(issueId)?.no_result_warning || this.config.noResultWarning;
-  }
-  return null;
-
-  }
 
 
   getIssueDetails(itemId: string) {
@@ -190,14 +183,11 @@ export class Checklist implements OnInit {
       return null;
     }
     const issueDetails = this.getIssueDetails(issueId);
-    if (!issueDetails) {
-      return null;
-    }
-    const scriptName = issueDetails.script;
+    // if no issue details, fall back to using the issueId as the task id/script name
+    const scriptName = (issueDetails && issueDetails.script) ? issueDetails.script : issueId;
     if (!scriptName || scriptName === '') {
       return null;
     }
-
     return resultsMap.get(scriptName)?.results || null;
   }
 
@@ -207,10 +197,8 @@ export class Checklist implements OnInit {
 
   getCompletionStatus(issueId: string) {
     const details = this.getIssueDetails(issueId);
-    if (!details) {
-      return null;
-    }
-    const scriptName = details.script;
+    // If details exist use their script, otherwise try to use issueId as the task id
+    const scriptName = (details && details.script) ? details.script : issueId;
     if (!scriptName || scriptName === '') {
       return 'done';
     }
@@ -231,12 +219,12 @@ export class Checklist implements OnInit {
     return results.result !== null || results.warning !== null || results.message !== null;
   }
 
-  hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(issueId: string): boolean {
+  checkSucceeded(issueId: string): boolean {
     let results = this.getIssueResults(issueId);
-    if (results === undefined || results === null) {
-      return false;
+    if (results.result === true) {
+      return true;
     }
-    return results.result === false || results.warning !== null || results.message !== null || this.getNoResultWarning(issueId) !== null;
+    return false;
   }
 
 
@@ -248,7 +236,7 @@ export class Checklist implements OnInit {
     if (!this.tasks.all()) {
       return false;
     }
-    return this.tasks.all().some((task) => this.hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(task.task_id));
+    return this.tasks.all().some((task) => !this.checkSucceeded(task.task_id));
   }
 
   getAllChecksSucceededHTML() {
@@ -293,10 +281,15 @@ export class Checklist implements OnInit {
     }
     for (let issueID of category.issues) {
       console.log(category.label, issueID);
-      if (this.isTaskDone(issueID) && this.hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(issueID)) {
+      if (this.isTaskDone(issueID) && !this.checkSucceeded(issueID)) {
         return true;
       }
     }
     return false;
   }
+
+    getNoResultWarning(): string | undefined {
+    return this.config.noResultWarning;
+  }
+
 }

@@ -24,16 +24,23 @@
         <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
           @for (issueId of category.issues; track $index) {
             <!-- Displayed if task is done. Displayed in all cases except check passed. In case of no result, displays a no result warning -->
-            @if (isTaskDone(issueId) && (hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(issueId))) {
-              @if (hasIssueOverviewContent(issueId) && !getNoResultWarning(issueId)) {
+            @if (isTaskDone(issueId) && !checkSucceeded(issueId)) {
+          
+              @if (hasIssueOverviewContent(issueId)) {
               <p-accordion [value]="['0']" [multiple]="true">
                 <p-accordion-panel value="0">
                   <p-accordion-header>
                     <div style="padding-bottom: 0; margin-bottom: 0">
-                      {{ getIssueDetails(issueId)?.title }}
+                      {{ getIssueDetails(issueId).title }}
+                      @if(getIssueResults(issueId).result === false || getIssueResults(issueId).warning) {
                       <span style="font-weight: normal">
-                        - {{ getIssueResults(issueId)?.warning || getIssueDetails(issueId)?.overview_header  }}
+                        - {{ getIssueResults(issueId).warning || getIssueDetails(issueId).overview_header  }}
                       </span>
+                    } @else {
+                      <span style="font-weight: normal">
+                        - {{ getNoResultWarning() }}
+                      </span>
+                    }
                     </div>
                   </p-accordion-header>
                   <p-accordion-content style="padding-top: 0; margin-top: 0; padding-bottom: 0; margin-top: bottom">
@@ -62,7 +69,7 @@
                     <div style="font-weight: bold;">
                     {{ getIssueDetails(issueId)?.title }} -
                     <span style="font-weight: normal">
-                        {{ getNoResultWarning(issueId) || getIssueResults(issueId)?.warning || getIssueDetails(issueId)?.overview_header }}
+                        {{ getNoResultWarning() || getIssueResults(issueId)?.warning || getIssueDetails(issueId)?.overview_header }}
                     </span>
                   </div>
                 </div>
