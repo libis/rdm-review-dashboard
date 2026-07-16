@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { TooltipModule } from 'primeng/tooltip';
-
+import { Config } from '../../services/config';
 @Component({
   selector: 'app-checklist-item',
   standalone: true,
@@ -16,6 +16,8 @@ export class ChecklistItem {
   @Input() checkboxChecked!: boolean | null;
   @Input() helptext!: string | null;
   helpVisible: boolean = false;
+
+  constructor(private config: Config) {}
 
   isAutocheckChecked() {
     return this.taskResults?.result;
@@ -35,6 +37,6 @@ export class ChecklistItem {
     }
   }
   getNoResultWarning(): string | undefined {
-    return this.checkboxDetails?.no_result_warning || 'This requirement could not be automatically validated, please check its correctness manually.';
+    return this.checkboxDetails?.no_result_warning || this.config.NoResultWarning;
   }
 }
