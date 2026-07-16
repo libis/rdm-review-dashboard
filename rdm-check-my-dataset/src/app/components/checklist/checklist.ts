@@ -113,7 +113,7 @@ export class Checklist implements OnInit {
 
   getNoResultWarning(issueId: string): string | null {
     if (this.getIssueResults(issueId) != null && !this.getIssueResults(issueId).warning && this.getIssueResults(issueId).result === null) {
-    return this.getIssueDetails(issueId)?.no_result_warning || this.config.NoResultWarning;
+    return this.getIssueDetails(issueId)?.no_result_warning || this.config.noResultWarning;
   }
   return null;
 
@@ -121,25 +121,31 @@ export class Checklist implements OnInit {
 
 
   getIssueDetails(itemId: string) {
-    return this.tasks.taskDescription().get(itemId);
+    const td = this.tasks.taskDescription();
+    if (!td) {
+      return null;
+    }
+    return td.get(itemId) || null;
   }
 
   isTipDisplayed(issueId: string): boolean {
     let issueDetails = this.getIssueDetails(issueId);
-    // if (!issueDetails.tips_content && !issueDetails.tips_header) {
-    //   return false;
-    // }
+    if (!issueDetails) {
+      return false;
+    }
     let checkResult = this.getIssueResults(issueId);
-    let displayCondition = this.getIssueDetails(issueId).display_in_tips; 
-    return this.isDisplayed(checkResult, displayCondition)
+    let displayCondition = issueDetails.display_in_tips;
+    return this.isDisplayed(checkResult, displayCondition);
   }
 
   hasIssueTipContent(issueId: string) {
-    return this.getIssueDetails(issueId).tips_content && this.getIssueDetails(issueId).tips_content !== '';
+    const details = this.getIssueDetails(issueId);
+    return !!(details && details.tips_content && details.tips_content !== '');
   }
 
   hasIssueOverviewContent(issueId: string) {
-    return this.getIssueDetails(issueId).overview_content && this.getIssueDetails(issueId).overview_content !== '';
+    const details = this.getIssueDetails(issueId);
+    return !!(details && details.overview_content && details.overview_content !== '');
   }
 
 
@@ -179,15 +185,20 @@ export class Checklist implements OnInit {
   }
 
   getIssueResults(issueId: string) {
-    if (!this.tasks.results()) {
+    const resultsMap = this.tasks.results();
+    if (!resultsMap) {
       return null;
     }
-    let scriptName = this.getIssueDetails(issueId).script;
-    if (!scriptName || scriptName == "") {
+    const issueDetails = this.getIssueDetails(issueId);
+    if (!issueDetails) {
+      return null;
+    }
+    const scriptName = issueDetails.script;
+    if (!scriptName || scriptName === '') {
       return null;
     }
 
-    return this.tasks.results().get(scriptName)?.results;
+    return resultsMap.get(scriptName)?.results || null;
   }
 
   getTaskStatus(taskId: string) {
@@ -195,8 +206,12 @@ export class Checklist implements OnInit {
   }
 
   getCompletionStatus(issueId: string) {
-    let scriptName = this.getIssueDetails(issueId).script;
-    if (!scriptName || scriptName == "") {
+    const details = this.getIssueDetails(issueId);
+    if (!details) {
+      return null;
+    }
+    const scriptName = details.script;
+    if (!scriptName || scriptName === '') {
       return 'done';
     }
     return this.getTaskCompletionData(scriptName)?.status || null;
@@ -241,13 +256,12 @@ export class Checklist implements OnInit {
   }
 
   getAutocheckAvailable(itemId: string) {
-    let result = this.tasks
-      .taskStatuses()
-      .autochecks_available.find((item: any) => item.name === itemId);
-    if (result === undefined) {
+    const ts = this.tasks.taskStatuses();
+    if (!ts || !ts.autochecks_available) {
       return null;
     }
-    return result;
+    const result = ts.autochecks_available.find((item: any) => item.name === itemId);
+    return result || null;
   }
 
 

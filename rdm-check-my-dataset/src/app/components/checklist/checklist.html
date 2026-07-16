@@ -30,14 +30,14 @@
                 <p-accordion-panel value="0">
                   <p-accordion-header>
                     <div style="padding-bottom: 0; margin-bottom: 0">
-                      {{ getIssueDetails(issueId).title }}
+                      {{ getIssueDetails(issueId)?.title }}
                       <span style="font-weight: normal">
-                        - {{ getIssueResults(issueId)?.warning || getIssueDetails(issueId).overview_header  }}
+                        - {{ getIssueResults(issueId)?.warning || getIssueDetails(issueId)?.overview_header  }}
                       </span>
                     </div>
                   </p-accordion-header>
                   <p-accordion-content style="padding-top: 0; margin-top: 0; padding-bottom: 0; margin-top: bottom">
-                    <div [innerHTML]="getIssueDetails(issueId).overview_content"></div>
+                    <div [innerHTML]="getIssueDetails(issueId)?.overview_content"></div>
                   </p-accordion-content>
                   <!-- @if (
                               $index < category.issues.length - 1 &&
@@ -59,10 +59,10 @@
               </p-accordion>
               } @else {
                 <div class="issue-item">
-                  <div style="font-weight: bold;">
-                    {{ getIssueDetails(issueId).title }} -
+                    <div style="font-weight: bold;">
+                    {{ getIssueDetails(issueId)?.title }} -
                     <span style="font-weight: normal">
-                        {{ getNoResultWarning(issueId) || getIssueResults(issueId)?.warning || getIssueDetails(issueId).overview_header }}
+                        {{ getNoResultWarning(issueId) || getIssueResults(issueId)?.warning || getIssueDetails(issueId)?.overview_header }}
                     </span>
                   </div>
                 </div>
@@ -95,8 +95,8 @@
                     @for (issueId of category.issues; track $index) {
                       @if (
                       isTaskDone(issueId) &&
-                      getIssueDetails(issueId).all_results_header &&
-                      getIssueDetails(issueId).all_results_header != ''
+                      getIssueDetails(issueId)?.all_results_header &&
+                      getIssueDetails(issueId)?.all_results_header != ''
                       ) {
                       <app-checklist-item [taskStatus]="getCompletionStatus(issueId)" [taskResults]="getIssueResults(issueId)"
                         [checkboxId]="issueId" [checkboxDetails]="getIssueDetails(issueId)" [checkboxChecked]="false"
@@ -125,25 +125,25 @@
                 <p-accordion-panel value="0">
                   <p-accordion-header>
                     <div class="header-content">
-                      <div style="font-weight: bold;">
-                        {{ getIssueDetails(issueId).title }} 
-                          <span style="font-weight: normal">
-                            - {{ getIssueDetails(issueId).tips_header || getIssueDetails(issueId).all_results_header }} </span>
+                        <div style="font-weight: bold;">
+                          {{ getIssueDetails(issueId)?.title }} 
+                            <span style="font-weight: normal">
+                              - {{ getIssueDetails(issueId)?.tips_header || getIssueDetails(issueId)?.all_results_header }} </span>
+                        </div>
                       </div>
-                    </div>
                   </p-accordion-header>
                   <p-accordion-content>
                     <p style="padding-top: 0; margin-top: 0; padding-bottom: 0; margin-top: bottom"
-                      [innerHTML]="getIssueDetails(issueId).tips_content"></p>
+                      [innerHTML]="getIssueDetails(issueId)?.tips_content"></p>
                   </p-accordion-content>
                 </p-accordion-panel>
               </p-accordion>
               } @else {
-              <div class="issue-item">
+                <div class="issue-item">
                 <div style="font-weight: bold;">
-                  {{ getIssueDetails(issueId).title }} 
+                  {{ getIssueDetails(issueId)?.title }} 
                   <span style="font-weight: normal">
-                            - {{ getIssueDetails(issueId).tips_header || getIssueDetails(issueId).all_results_header }} </span>
+                            - {{ getIssueDetails(issueId)?.tips_header || getIssueDetails(issueId)?.all_results_header }} </span>
                 </div>
               </div>
             }
