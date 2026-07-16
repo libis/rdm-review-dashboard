@@ -35,8 +35,9 @@ export class Config {
   get allChecksSucceededHTML() {
     return this.config.allChecksSucceededHTML;
   }
-  get NoResultWarning() {
-    return this.config.NoResultWarning;
+  get noResultWarning() {
+    console.log('noResultWarning', this.config.noResultWarning);
+    return this.config.noResultWarning;
   }
 
 }

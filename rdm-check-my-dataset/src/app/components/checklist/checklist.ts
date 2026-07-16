@@ -111,35 +111,34 @@ export class Checklist implements OnInit {
   }
 
 
-  getNoResultWarning(issueId: string): string | null {
-    if (this.getIssueResults(issueId) != null && !this.getIssueResults(issueId).warning && this.getIssueResults(issueId).result === null) {
-    return this.getIssueDetails(issueId)?.no_result_warning || this.config.NoResultWarning;
-  }
-  return null;
-
-  }
 
 
   getIssueDetails(itemId: string) {
-    return this.tasks.taskDescription().get(itemId);
+    const td = this.tasks.taskDescription();
+    if (!td) {
+      return null;
+    }
+    return td.get(itemId) || null;
   }
 
   isTipDisplayed(issueId: string): boolean {
     let issueDetails = this.getIssueDetails(issueId);
-    // if (!issueDetails.tips_content && !issueDetails.tips_header) {
-    //   return false;
-    // }
+    if (!issueDetails) {
+      return false;
+    }
     let checkResult = this.getIssueResults(issueId);
-    let displayCondition = this.getIssueDetails(issueId).display_in_tips; 
-    return this.isDisplayed(checkResult, displayCondition)
+    let displayCondition = issueDetails.display_in_tips;
+    return this.isDisplayed(checkResult, displayCondition);
   }
 
   hasIssueTipContent(issueId: string) {
-    return this.getIssueDetails(issueId).tips_content && this.getIssueDetails(issueId).tips_content !== '';
+    const details = this.getIssueDetails(issueId);
+    return !!(details && details.tips_content && details.tips_content !== '');
   }
 
   hasIssueOverviewContent(issueId: string) {
-    return this.getIssueDetails(issueId).overview_content && this.getIssueDetails(issueId).overview_content !== '';
+    const details = this.getIssueDetails(issueId);
+    return !!(details && details.overview_content && details.overview_content !== '');
   }
 
 
@@ -179,15 +178,17 @@ export class Checklist implements OnInit {
   }
 
   getIssueResults(issueId: string) {
-    if (!this.tasks.results()) {
+    const resultsMap = this.tasks.results();
+    if (!resultsMap) {
       return null;
     }
-    let scriptName = this.getIssueDetails(issueId).script;
-    if (!scriptName || scriptName == "") {
+    const issueDetails = this.getIssueDetails(issueId);
+    // if no issue details, fall back to using the issueId as the task id/script name
+    const scriptName = (issueDetails && issueDetails.script) ? issueDetails.script : issueId;
+    if (!scriptName || scriptName === '') {
       return null;
     }
-
-    return this.tasks.results().get(scriptName)?.results;
+    return resultsMap.get(scriptName)?.results || null;
   }
 
   getTaskStatus(taskId: string) {
@@ -195,8 +196,10 @@ export class Checklist implements OnInit {
   }
 
   getCompletionStatus(issueId: string) {
-    let scriptName = this.getIssueDetails(issueId).script;
-    if (!scriptName || scriptName == "") {
+    const details = this.getIssueDetails(issueId);
+    // If details exist use their script, otherwise try to use issueId as the task id
+    const scriptName = (details && details.script) ? details.script : issueId;
+    if (!scriptName || scriptName === '') {
       return 'done';
     }
     return this.getTaskCompletionData(scriptName)?.status || null;
@@ -216,12 +219,12 @@ export class Checklist implements OnInit {
     return results.result !== null || results.warning !== null || results.message !== null;
   }
 
-  hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(issueId: string): boolean {
+  checkSucceeded(issueId: string): boolean {
     let results = this.getIssueResults(issueId);
-    if (results === undefined || results === null) {
-      return false;
+    if (results.result === true) {
+      return true;
     }
-    return results.result === false || results.warning !== null || results.message !== null || this.getNoResultWarning(issueId) !== null;
+    return false;
   }
 
 
@@ -233,7 +236,7 @@ export class Checklist implements OnInit {
     if (!this.tasks.all()) {
       return false;
     }
-    return this.tasks.all().some((task) => this.hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(task.task_id));
+    return this.tasks.all().some((task) => !this.checkSucceeded(task.task_id));
   }
 
   getAllChecksSucceededHTML() {
@@ -241,13 +244,12 @@ export class Checklist implements OnInit {
   }
 
   getAutocheckAvailable(itemId: string) {
-    let result = this.tasks
-      .taskStatuses()
-      .autochecks_available.find((item: any) => item.name === itemId);
-    if (result === undefined) {
+    const ts = this.tasks.taskStatuses();
+    if (!ts || !ts.autochecks_available) {
       return null;
     }
-    return result;
+    const result = ts.autochecks_available.find((item: any) => item.name === itemId);
+    return result || null;
   }
 
 
@@ -279,10 +281,15 @@ export class Checklist implements OnInit {
     }
     for (let issueID of category.issues) {
       console.log(category.label, issueID);
-      if (this.isTaskDone(issueID) && this.hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(issueID)) {
+      if (this.isTaskDone(issueID) && !this.checkSucceeded(issueID)) {
         return true;
       }
     }
     return false;
   }
+
+    getNoResultWarning(): string | undefined {
+    return this.config.noResultWarning;
+  }
+
 }
