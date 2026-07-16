@@ -56,21 +56,33 @@ export class TaskService {
     );
     this.taskDescription = computed(() => {
       let result: Map<string, any> = new Map();
-      for (let item of this.taskStatuses().details) {
+      const ts = this.taskStatuses();
+      if (!ts || !ts.details) {
+        return result;
+      }
+      for (let item of ts.details || []) {
         result.set(item.id, item);
       }
       return result;
     });
     this.results = computed(() => {
       let result: Map<string, any> = new Map();
-      for (let item of this.taskStatuses().tasks) {
+      const ts = this.taskStatuses();
+      if (!ts || !ts.tasks) {
+        return result;
+      }
+      for (let item of ts.tasks || []) {
         result.set(item.task_id, item);
       }
       return result;
     });
     this.statuses = computed(() => {
       let result: Map<string, string> = new Map();
-      for (let item of this.taskStatuses().tasks) {
+      const ts = this.taskStatuses();
+      if (!ts || !ts.tasks) {
+        return result;
+      }
+      for (let item of ts.tasks || []) {
         result.set(item.id, item.status);
       }
       return result;

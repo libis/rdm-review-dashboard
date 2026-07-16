@@ -71,12 +71,17 @@ export class Checklist implements OnInit {
           }
         },
       });
-    this.allTasksDone = computed(
-      () =>
-        this.tasks.all().length >= 0 &&
-        this.tasks.done().length >= 0 &&
-        this.tasks.done().length == this.tasks.all().length,
-    );
+    this.allTasksDone = computed(() => {
+      const all = this.tasks.all() || [];
+      const done = this.tasks.done() || [];
+      if (all.length === 0) {
+        console.debug('[Checklist] allTasksDone check: no tasks yet', { all, done });
+        return false;
+      }
+      const res = done.length === all.length;
+      console.debug('[Checklist] allTasksDone check:', { allLength: all.length, doneLength: done.length, result: res });
+      return res;
+    });
     this.taskCategories = computed(() => this.tasks.taskStatuses()?.structure);
     this.helpDeskEmail = this.config.helpDeskEmail;
     this.dataverseName = this.config.dataverseName;

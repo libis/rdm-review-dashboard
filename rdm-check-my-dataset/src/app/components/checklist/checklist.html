@@ -13,146 +13,147 @@
       <div class="issue-item" style="padding-left: 1.8em; padding-right: 2em; padding-top: 0em; padding-bottom: 0em;" innerHTML="{{ getAllChecksSucceededHTML() }}">
       </div>
     </div>
-}
-@if(hasFailedOrWarningOrNoResultWarning()) {
-<!-- This section is displayed only if any check failed or has warning, or there's a check with no result -->
-  <div id="overview" class="section">
-    <h2>Overview</h2>
-    @for (category of this.taskCategories(); track category.id) {
-      @if (hasCategoryActiveIssues(category) && category.id != 'tips') {
-      <h3 style="padding-left: 1.5em">{{ category.label }}</h3>
-      <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
-        @for (issueId of category.issues; track $index) {
-          <!-- Displayed if task is done. Displayed in all cases except check passed. In case of no result, displays a no result warning -->
-          @if (isTaskDone(issueId) && (hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(issueId))) {
-            @if (hasIssueOverviewContent(issueId) && !getNoResultWarning(issueId)) {
-            <p-accordion [value]="['0']" [multiple]="true">
-              <p-accordion-panel value="0">
-                <p-accordion-header>
-                  <div style="padding-bottom: 0; margin-bottom: 0">
-                    {{ getIssueDetails(issueId).title }}
+  } 
+  @if(hasFailedOrWarningOrNoResultWarning()) {
+  <!-- This section is displayed only if any check failed or has warning, or there's a check with no result -->
+    <div id="overview" class="section">
+      <h2>Overview</h2>
+      @for (category of this.taskCategories(); track category.id) {
+        @if (hasCategoryActiveIssues(category) && category.id != 'tips') {
+        <h3 style="padding-left: 1.5em">{{ category.label }}</h3>
+        <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
+          @for (issueId of category.issues; track $index) {
+            <!-- Displayed if task is done. Displayed in all cases except check passed. In case of no result, displays a no result warning -->
+            @if (isTaskDone(issueId) && (hasCheckFailedOrHasCheckWarningOrHasNoResultWarning(issueId))) {
+              @if (hasIssueOverviewContent(issueId) && !getNoResultWarning(issueId)) {
+              <p-accordion [value]="['0']" [multiple]="true">
+                <p-accordion-panel value="0">
+                  <p-accordion-header>
+                    <div style="padding-bottom: 0; margin-bottom: 0">
+                      {{ getIssueDetails(issueId).title }}
+                      <span style="font-weight: normal">
+                        - {{ getIssueResults(issueId)?.warning || getIssueDetails(issueId).overview_header  }}
+                      </span>
+                    </div>
+                  </p-accordion-header>
+                  <p-accordion-content style="padding-top: 0; margin-top: 0; padding-bottom: 0; margin-top: bottom">
+                    <div [innerHTML]="getIssueDetails(issueId).overview_content"></div>
+                  </p-accordion-content>
+                  <!-- @if (
+                              $index < category.issues.length - 1 &&
+                              hasCheckFailedOrHasCheckWarning(category.issues[$index + 1])
+                            ) {
+                              <span
+                                style="
+                                  margin-left: 1.5em;
+                                  margin-right: 2em;                                                                                                                                                      
+                                  padding-top: 0;
+                                  margin-top: 0;
+                                  padding-bottom: 0;
+                                  margin-top: bottom;
+                                "
+                              >
+                              </span>
+                            } -->
+                </p-accordion-panel>
+              </p-accordion>
+              } @else {
+                <div class="issue-item">
+                  <div style="font-weight: bold;">
+                    {{ getIssueDetails(issueId).title }} -
                     <span style="font-weight: normal">
-                      - {{ getIssueResults(issueId)?.warning || getIssueDetails(issueId).overview_header  }}
+                        {{ getNoResultWarning(issueId) || getIssueResults(issueId)?.warning || getIssueDetails(issueId).overview_header }}
                     </span>
                   </div>
-                </p-accordion-header>
-                <p-accordion-content style="padding-top: 0; margin-top: 0; padding-bottom: 0; margin-top: bottom">
-                  <div [innerHTML]="getIssueDetails(issueId).overview_content"></div>
-                </p-accordion-content>
-                <!-- @if (
-                            $index < category.issues.length - 1 &&
-                            hasCheckFailedOrHasCheckWarning(category.issues[$index + 1])
-                          ) {
-                            <span
-                              style="
-                                margin-left: 1.5em;
-                                margin-right: 2em;                                                                                                                                                      
-                                padding-top: 0;
-                                margin-top: 0;
-                                padding-bottom: 0;
-                                margin-top: bottom;
-                              "
-                            >
-                            </span>
-                          } -->
-              </p-accordion-panel>
-            </p-accordion>
-            } @else {
+                </div>
+              }
+              }
+            }
+        </div>
+        }
+      }
+    </div>
+  }
+  <!--
+    All results section is displayed even if all pass or no warnings
+  -->
+
+  <div id="all_results" class="section">
+    <h2>All-results</h2>
+    <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
+      <p-accordion [multiple]="true" [value]="['1']">
+        <p-accordion-panel value="0">
+          <p-accordion-header style="padding-top: 0px; padding-bottom: 0px">
+            <h3>Click to see all autocheck results</h3>
+          </p-accordion-header>
+          <p-accordion-content>
+            @for (category of this.taskCategories(); track category.id) {
+              @if (category.id != 'tips') {
+                <div class="row">
+                  <h3>{{ category.label }}</h3>
+                  <div style="padding-bottom: 1.5em">
+                    @for (issueId of category.issues; track $index) {
+                      @if (
+                      isTaskDone(issueId) &&
+                      getIssueDetails(issueId).all_results_header &&
+                      getIssueDetails(issueId).all_results_header != ''
+                      ) {
+                      <app-checklist-item [taskStatus]="getCompletionStatus(issueId)" [taskResults]="getIssueResults(issueId)"
+                        [checkboxId]="issueId" [checkboxDetails]="getIssueDetails(issueId)" [checkboxChecked]="false"
+                        [helptext]="'test...'">
+                      </app-checklist-item>
+                        }
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </p-accordion-content>
+        </p-accordion-panel>
+      </p-accordion>
+    </div>
+  </div>
+
+  <div id="tips" class="tips" class="section">
+    <h2>Tips to improve your dataset</h2>
+    <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
+      @for (category of this.taskCategories(); track category.id) {
+        @for (issueId of category.issues; track $index) {
+          @if (isTipDisplayed(issueId)) {
+            @if (hasIssueTipContent(issueId)) {
+              <p-accordion [value]="['0']" [multiple]="true">
+                <p-accordion-panel value="0">
+                  <p-accordion-header>
+                    <div class="header-content">
+                      <div style="font-weight: bold;">
+                        {{ getIssueDetails(issueId).title }} 
+                          <span style="font-weight: normal">
+                            - {{ getIssueDetails(issueId).tips_header || getIssueDetails(issueId).all_results_header }} </span>
+                      </div>
+                    </div>
+                  </p-accordion-header>
+                  <p-accordion-content>
+                    <p style="padding-top: 0; margin-top: 0; padding-bottom: 0; margin-top: bottom"
+                      [innerHTML]="getIssueDetails(issueId).tips_content"></p>
+                  </p-accordion-content>
+                </p-accordion-panel>
+              </p-accordion>
+              } @else {
               <div class="issue-item">
                 <div style="font-weight: bold;">
-                  {{ getIssueDetails(issueId).title }} -
-                   <span style="font-weight: normal">
-                      {{ getNoResultWarning(issueId) || getIssueResults(issueId)?.warning || getIssueDetails(issueId).overview_header }}
-                   </span>
+                  {{ getIssueDetails(issueId).title }} 
+                  <span style="font-weight: normal">
+                            - {{ getIssueDetails(issueId).tips_header || getIssueDetails(issueId).all_results_header }} </span>
                 </div>
               </div>
             }
-            }
-          }
-      </div>
-      }
-    }
-  </div>
-}
-<!--
-   All results section is displayed even if all pass or no warnings
- -->
-
-<div id="all_results" class="section">
-  <h2>All-results</h2>
-  <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
-    <p-accordion [multiple]="true" [value]="['1']">
-      <p-accordion-panel value="0">
-        <p-accordion-header style="padding-top: 0px; padding-bottom: 0px">
-          <h3>Click to see all autocheck results</h3>
-        </p-accordion-header>
-        <p-accordion-content>
-          @for (category of this.taskCategories(); track category.id) {
-            @if (category.id != 'tips') {
-              <div class="row">
-                <h3>{{ category.label }}</h3>
-                <div style="padding-bottom: 1.5em">
-                  @for (issueId of category.issues; track $index) {
-                    @if (
-                    isTaskDone(issueId) &&
-                    getIssueDetails(issueId).all_results_header &&
-                    getIssueDetails(issueId).all_results_header != ''
-                    ) {
-                    <app-checklist-item [taskStatus]="getCompletionStatus(issueId)" [taskResults]="getIssueResults(issueId)"
-                      [checkboxId]="issueId" [checkboxDetails]="getIssueDetails(issueId)" [checkboxChecked]="false"
-                      [helptext]="'test...'">
-                    </app-checklist-item>
-                      }
-                  }
-                </div>
-              </div>
-            }
-          }
-        </p-accordion-content>
-      </p-accordion-panel>
-    </p-accordion>
-  </div>
-</div>
-
-<div id="tips" class="tips" class="section">
-  <h2>Tips to improve your dataset</h2>
-  <div style="border: solid rgb(191, 203, 207) 1px; padding: 1.5em; margin: 1em">
-    @for (category of this.taskCategories(); track category.id) {
-      @for (issueId of category.issues; track $index) {
-        @if (isTipDisplayed(issueId)) {
-          @if (hasIssueTipContent(issueId)) {
-            <p-accordion [value]="['0']" [multiple]="true">
-              <p-accordion-panel value="0">
-                <p-accordion-header>
-                  <div class="header-content">
-                    <div style="font-weight: bold;">
-                      {{ getIssueDetails(issueId).title }} 
-                        <span style="font-weight: normal">
-                          - {{ getIssueDetails(issueId).tips_header || getIssueDetails(issueId).all_results_header }} </span>
-                    </div>
-                  </div>
-                </p-accordion-header>
-                <p-accordion-content>
-                  <p style="padding-top: 0; margin-top: 0; padding-bottom: 0; margin-top: bottom"
-                    [innerHTML]="getIssueDetails(issueId).tips_content"></p>
-                </p-accordion-content>
-              </p-accordion-panel>
-            </p-accordion>
-            } @else {
-            <div class="issue-item">
-              <div style="font-weight: bold;">
-                {{ getIssueDetails(issueId).title }} 
-                <span style="font-weight: normal">
-                          - {{ getIssueDetails(issueId).tips_header || getIssueDetails(issueId).all_results_header }} </span>
-              </div>
-            </div>
           }
         }
       }
-    }
+    </div>
   </div>
-</div>
-}
+  }
+               
 <p-speeddial [model]="items" [radius]="80" direction="up"
   [style]="{ position: 'fixed', bottom: '20px', right: '20px', color: 'blue' }"
   [tooltipOptions]="{ tooltipPosition: 'left' }" [buttonProps]="{ severity: 'info', rounded: true }"
