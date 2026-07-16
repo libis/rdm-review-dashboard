@@ -174,6 +174,9 @@ export class Checklist implements OnInit {
   }
 
   getIssueResults(issueId: string) {
+    if (!this.tasks.results()) {
+      return null;
+    }
     let scriptName = this.getIssueDetails(issueId).script;
     if (!scriptName || scriptName == "") {
       return null;
