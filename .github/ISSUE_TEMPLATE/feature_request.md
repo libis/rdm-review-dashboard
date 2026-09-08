@@ -1,10 +1,12 @@
-
 ---
 name: Feature request
 about: Suggest a new feature
-title: "[FEATURE] "
-labels: feature
+title: "[FEATURE]"
+labels: ''
+assignees: ''
+
 ---
+
 <!--
 Thank you for contributing to the Review Dashboard through the creation of a feature request!
 
