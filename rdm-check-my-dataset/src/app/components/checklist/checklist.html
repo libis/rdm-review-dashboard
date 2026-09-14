@@ -1,7 +1,7 @@
 <h1>
   Check my dataset results for
   <em>
-    <a [href]="getDatasetUrl()">{{ getDatasetTitle() }} [{{ getDatasetDOI() }}] </a></em>
+    <a class="dataset-link" (click)="openDatasetInNewTab()">{{ getDatasetTitle() }} [{{ getDatasetDOI() }}] </a></em>
 </h1>
 <app-task-status></app-task-status>
 <!-- This page is displayed only when all tasks are done. -->

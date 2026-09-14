@@ -31,3 +31,9 @@ h2 > .section {
 :host ::ng-deep .p-speeddial .p-speeddial-button .p-button-icon.pi.pi-plus {
   display: none !important;
 }
+
+.dataset-link {
+  color: #1d4ed8;
+  text-decoration: underline;
+  cursor: pointer;
+}

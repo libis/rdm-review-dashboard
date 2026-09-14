@@ -177,6 +177,11 @@ export class Checklist implements OnInit {
     return url;
   }
 
+  openDatasetInNewTab() {
+    let url = this.getDatasetUrl();
+    window.open(url, '_blank');
+  }
+
   getIssueResults(issueId: string) {
     const resultsMap = this.tasks.results();
     if (!resultsMap) {
