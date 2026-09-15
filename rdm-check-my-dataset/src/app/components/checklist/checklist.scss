@@ -1,24 +1,3 @@
-// Override accordion to use neutral colors (remove slate/blue tint from Lara theme)
-:host {
-  --p-accordion-header-first-top-border-radius: 0;
-  --p-accordion-header-last-bottom-border-radius: 0;
-}
-
-
-
-h1 {
-padding: 1em; padding-left: 0.5em;
-}
-
-.section {
-  padding-left: 1.5em;
-  margin-top: 2.5em;
-}
-
-h2 > .section {
-  padding-left: 1.0em;
-}
-
 .issue-item {
   padding: 18px;
   padding-top: 28px;
@@ -27,11 +6,6 @@ h2 > .section {
   color: rgb(51, 65, 85); // rgb(100, 116, 139);
 
 }
-
-:host ::ng-deep .p-speeddial .p-speeddial-button .p-button-icon.pi.pi-plus {
-  display: none !important;
-}
-
 .dataset-link {
   color: #1d4ed8;
   text-decoration: underline;
