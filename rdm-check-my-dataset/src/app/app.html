@@ -1,1 +1,5 @@
-<router-outlet />
+<div  [innerHTML]="customHeader()"></div>
+
+<router-outlet style="min-height: 100%;"></router-outlet>
+
+<div [innerHTML]="customFooter()"></div>

@@ -1,24 +1,19 @@
-<div id="introHTML" [innerHTML]="getIntroHTML()"></div>
-@if (datasetOptionsList() === undefined) {
+<div style="padding-left: 15%; padding-right: 15%; margin-top: -22px;">
+  <div id="introHTML" style="font-size: 1.5rem; line-height: 1.625; justify-content: center;"
+    [innerHTML]="getIntroHTML()"></div>
+  @if (datasetOptionsList() === undefined) {
   <h5>Loading your dataset(s)...</h5>
   <p-progress-spinner ariaLabel="loading" />
-} @else {
-  <div style="margin: 2em;">
-     <div style="margin: 1em">
-    <h4>Select Draft Dataset</h4>
-    </div>
-    <div style="margin: 1em">
-    <p-select
-      [options]="datasetOptionsList()"
-      [(ngModel)]="selectedDataset"
-      [loading]="!datasetOptionsList()"
-      optionLabel="optionLabel"
-      placeholder="Select a dataset..."
-    >
+  } @else {
+  <div style="margin-top: 5em; margin-bottom: 2em; display: flex; justify-content: center;">
+
+    <p-select style="min-width:  50%;" [options]="datasetOptionsList()" [(ngModel)]="selectedDataset"
+      [loading]="!datasetOptionsList()" optionLabel="optionLabel" placeholder="Select a draft dataset...">
     </p-select>
-    </div>
-    <div style="margin: 1em">
-      <p-button severity="info" label="Check my dataset >>" (click)="onClickNext()"></p-button>
-    </div>
   </div>
-}
+  <div style="margin-top: 2.5em; margin-bottom: 3em; display: flex; justify-content: center;">
+    <p-button severity="info" [disabled]="selectedDataset === undefined" label="Check my dataset >>"
+      (click)="onClickNext()"></p-button>
+  </div>
+  }
+</div>
