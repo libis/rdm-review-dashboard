@@ -1,7 +1,8 @@
+<div style="margin-left: 15%; margin-right: 15%; margin-top: -22px;">
 <h1>
   Check my dataset results for
   <em>
-    <a [href]="getDatasetUrl()">{{ getDatasetTitle() }} [{{ getDatasetDOI() }}] </a></em>
+    <a class="dataset-link" (click)="openDatasetInNewTab()">{{ getDatasetTitle() }} [{{ getDatasetDOI() }}] </a></em>
 </h1>
 <app-task-status></app-task-status>
 <!-- This page is displayed only when all tasks are done. -->
@@ -165,3 +166,5 @@
   [style]="{ position: 'fixed', bottom: '20px', right: '20px', color: 'blue' }"
   [tooltipOptions]="{ tooltipPosition: 'left' }" [buttonProps]="{ severity: 'info', rounded: true }"
   [showIcon]="'pi pi-question'" [rotateAnimation]="false" />
+
+  </div>
