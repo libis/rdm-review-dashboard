@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: Review dashboard
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - name: KU Leuven
+  - name: LIBIS
+repository-code: 'https://github.com/libis/rdm-review-dashboard/'
+url: 'https://rdr.kuleuven.be/'
+abstract: >-
+  The Review Dashboard is a web application that aims to
+  streamline the review, feedback and curation of datasets
+  in Dataverse.
+keywords:
+  - Curation
+  - Dataverse
+license: Apache-2.0
