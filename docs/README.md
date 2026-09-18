@@ -1,9 +1,12 @@
+![RDR-logo](images/RDR-logo.png)
+
 # Review Dashboard
 ## Introduction
 The Review Dashboard is a web application that aims to streamline the review, feedback and curation of datasets in Dataverse. It enables the installations to provide a standardized roadmap for their reviewers and keep track of datasets in various stages of the curation process. It provides reviewer assignment, configurable review checklists, automated quality checks, review notes and automated feedback generation, allowing reviewers to efficiently assess datasets before publication. It also maintains review state and reviewer comments, enabling continuity when reviews are reassigned. 
 
-A demonstration of the review dashboard is available here: https://kuleuven.mediaspace.kaltura.com/media/KU+Leuven+Review+DashboardA+screen+recording/1_fuuts6ic.
+A demonstration of the review dashboard is available [here](https://kuleuven.mediaspace.kaltura.com/media/KU+Leuven+Review+DashboardA+screen+recording/1_fuuts6ic).
 
+[GitHub repository](https://github.com/libis/rdm-review-dashboard)
 
 ## Features
 
@@ -21,7 +24,7 @@ A demonstration of the review dashboard is available here: https://kuleuven.medi
 
 The review dashboard is currently designed for Dataverse installations consisting of a single repository or collection.
 
-Support for multi-institutional or multi-collection review workflows is not currently available. Installations that manage multiple independent repositories may require additional customization or future enhancements.
+Support for multi-institutional or multi-collection review workflows is currently not available. Installations that manage multiple independent repositories may require additional customization or future enhancements.
 
 
 ## Architecture
@@ -97,6 +100,9 @@ The review dashboard supports various customization options. The table below pro
 
 - [Review workflow](review-workflow.md)
 
+## Acknowledgement
+
+This project was developed with support from KU Leuven and FOSB. We would like to thank all contributors and reviewers who provided valuable feedback throughout the design, implementation, and testing of the Review Dashboard.
 
 ## License
 
