@@ -11,7 +11,7 @@ The platform consists of:
 - Check My Dataset frontend (Angular)
 - Dataverse integrations
 - A configurable review and feedback framework
-- An shared automated validation ("autocheck") framework
+- An shared automated validation (autocheck) framework
 
 Both applications use the same backend infrastructure and validation framework, but provide different user experiences:
 

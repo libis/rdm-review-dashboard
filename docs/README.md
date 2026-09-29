@@ -1,5 +1,24 @@
 ![RDR-logo](images/RDR-logo.png)
 
+<a href="installation.md"><button>Installation</button></a> <a href="architecture.md"><button>Architecture</button></a> <a href="backend.md"><button>Backend</button></a> <a href="frontend-review-dashboard.md"><button>Frontend Review Dashboard</button></a> <a href="frontend-check-my-dataset.md"><button>Frontend Check My Dataset</button></a> <a href="roles.md"><button>Roles</button></a> <a href="checks.md"><button>Checks</button></a> <a href="emails.md"><button>Frontend Review Dashboard</button></a> <a href="review-workflow.md"><button>Review workflow</button></a> 
+
+- [Installation](installation.md)
+- [Architecture](architecture.md)
+
+### Configuration
+
+- [Backend](backend.md)
+- [Frontend Review Dashboard](frontend-review-dashboard.md)
+- [Frontend Check My Dataset](frontend-check-my-dataset.md)
+- [Roles](roles.md)
+- [Emails](emails.md)
+- [Checks](checks.md)
+
+### End-user guide
+
+- [Review workflow](review-workflow.md)
+- [User guide Check My Dataset](https://www.kuleuven.be/rdm/en/rdr/check-my-dataset-tool)
+
 # Review Dashboard
 ## Introduction
 
@@ -9,7 +28,7 @@ The platform can be extended with **Check My Dataset**, a complementary self-ser
 
 Both applications share the same backend infrastructure, configuration framework, and automated validation scripts. Validation checks can therefore be reused across both tools, ensuring consistent validation throughout the curation process.
 
-A demonstration of the review dashboard is available [here](https://kuleuven.mediaspace.kaltura.com/media/KU+Leuven+Review+DashboardA+screen+recording/1_fuuts6ic).
+A demonstration of the Review Dashboard is available [here](https://kuleuven.mediaspace.kaltura.com/media/KU+Leuven+Review+DashboardA+screen+recording/1_fuuts6ic).
 
 [GitHub repository](https://github.com/libis/rdm-review-dashboard)
 
@@ -105,7 +124,7 @@ The Review Dashboard and Check My Dataset share a common infrastructure and vali
 
 | Component | Configurable elements | Documentation |
 |------------|------------|------------|
-| Frontend | Dataverse name, Dataverse URL, backend API URL | frontend-check-my-dataset.md |
+| Frontend | Dataverse name, Dataverse URL, backend API URL | [Frontend Check My Dataset](frontend-check-my-dataset.md) |
 | Validation results | Overview messages, result descriptions, display rules, and recommendations | [Checks](checks.md) |
 | Tips and recommendations | Guidance shown in the *Overview* and *General tips to improve your dataset* sections | [Checks](checks.md)
 
