@@ -1,23 +1,19 @@
 ![RDR-logo](images/RDR-logo.png)
 
-<a href="installation.md"><button>Installation</button></a> <a href="architecture.md"><button>Architecture</button></a> <a href="backend.md"><button>Backend</button></a> <a href="frontend-review-dashboard.md"><button>Frontend Review Dashboard</button></a> <a href="frontend-check-my-dataset.md"><button>Frontend Check My Dataset</button></a> <a href="roles.md"><button>Roles</button></a> <a href="checks.md"><button>Checks</button></a> <a href="emails.md"><button>Frontend Review Dashboard</button></a> <a href="review-workflow.md"><button>Review workflow</button></a> 
+<a href="installation.md"><button>Installation</button></a> <a href="architecture.md"><button>Architecture</button></a> <a href="backend.md"><button>Backend</button></a> <a href="frontend-review-dashboard.md"><button>Frontend Review Dashboard</button></a> <a href="frontend-check-my-dataset.md"><button>Frontend Check My Dataset</button></a>
 
-- [Installation](installation.md)
-- [Architecture](architecture.md)
+<a href="roles.md"><button>Roles</button></a> <a href="checks.md"><button>Checks</button></a> <a href="emails.md"><button>Emails</button></a> <a href="review-workflow.md"><button>Review workflow</button></a> 
 
-### Configuration
+[https://img.shields.io/badge/Installation-blue](installation.md)
+[https://img.shields.io/badge/Architecture-blue](architecture.md)
+[https://img.shields.io/badge/Backend-blue](backend.md)
+[https://img.shields.io/badge/Frontend-Review_Dashboard-blue](frontend_review_dashboard.md)
+[https://img.shields.io/badge/Frontend-Check_My_Dataset-blue](frontend_check_my_dataset.md)
 
-- [Backend](backend.md)
-- [Frontend Review Dashboard](frontend-review-dashboard.md)
-- [Frontend Check My Dataset](frontend-check-my-dataset.md)
-- [Roles](roles.md)
-- [Emails](emails.md)
-- [Checks](checks.md)
-
-### End-user guide
-
-- [Review workflow](review-workflow.md)
-- [User guide Check My Dataset](https://www.kuleuven.be/rdm/en/rdr/check-my-dataset-tool)
+[https://img.shields.io/badge/Checks-blue](checks.md)
+[https://img.shields.io/badge/Roles-blue](roles.md)
+[https://img.shields.io/badge/Emails-blue](emails.md)
+[https://img.shields.io/badge/Review_workflow-blue](review-workflow.md)
 
 # Review Dashboard
 ## Introduction
