@@ -4,17 +4,6 @@
 
 <a href="roles.md"><button>Roles</button></a> <a href="checks.md"><button>Checks</button></a> <a href="emails.md"><button>Emails</button></a> <a href="review-workflow.md"><button>Review workflow</button></a> 
 
-[https://img.shields.io/badge/Installation-blue](installation.md)
-[https://img.shields.io/badge/Architecture-blue](architecture.md)
-[https://img.shields.io/badge/Backend-blue](backend.md)
-[https://img.shields.io/badge/Frontend-Review_Dashboard-blue](frontend_review_dashboard.md)
-[https://img.shields.io/badge/Frontend-Check_My_Dataset-blue](frontend_check_my_dataset.md)
-
-[https://img.shields.io/badge/Checks-blue](checks.md)
-[https://img.shields.io/badge/Roles-blue](roles.md)
-[https://img.shields.io/badge/Emails-blue](emails.md)
-[https://img.shields.io/badge/Review_workflow-blue](review-workflow.md)
-
 # Review Dashboard
 ## Introduction
 

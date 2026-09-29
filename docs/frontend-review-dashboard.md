@@ -1,3 +1,7 @@
+<a href="README.md"><button>Overview</button></a> <a href="installation.md"><button>Installation</button></a> <a href="architecture.md"><button>Architecture</button></a> <a href="backend.md"><button>Backend</button></a> <a href="frontend-check-my-dataset.md"><button>Frontend Check My Dataset</button></a>
+
+<a href="roles.md"><button>Roles</button></a> <a href="checks.md"><button>Checks</button></a> <a href="emails.md"><button>Emails</button></a> <a href="review-workflow.md"><button>Review workflow</button></a>
+
 # Review Dashboard Frontend
 
 The Review Dashboard provides the user interface for reviewing datasets in Dataverse. It requires a running review dashboard backend and is built using Angular CLI  14.1.2. The frontend communicates exclusively with the backend API and cannot function independently. 

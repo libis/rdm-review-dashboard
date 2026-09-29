@@ -1,3 +1,7 @@
+<a href="README.md"><button>Overview</button></a> <a href="installation.md"><button>Installation</button></a> <a href="architecture.md"><button>Architecture</button></a> <a href="backend.md"><button>Backend</button></a> <a href="frontend-review-dashboard.md"><button>Frontend Review Dashboard</button></a> <a href="frontend-check-my-dataset.md"><button>Frontend Check My Dataset</button></a>
+
+<a href="roles.md"><button>Roles</button></a> <a href="checks.md"><button>Checks</button></a> <a href="review-workflow.md"><button>Review workflow</button></a>
+
 # Feedback emails
 
 ## Overview
