@@ -1,8 +1,8 @@
 ![RDR-logo](images/RDR-logo.png)
 
-<a href="installation.md"><button>Installation</button></a> <a href="architecture.md"><button>Architecture</button></a> <a href="backend.md"><button>Backend</button></a> <a href="frontend-review-dashboard.md"><button>Frontend Review Dashboard</button></a> <a href="frontend-check-my-dataset.md"><button>Frontend Check My Dataset</button></a>
+<a href="installation.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Installation</button></a> <a href="architecture.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Architecture</button></a> <a href="backend.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Backend</button></a> <a href="frontend-review-dashboard.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Frontend Review Dashboard</button></a> <a href="frontend-check-my-dataset.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Frontend Check My Dataset</button></a>
 
-<a href="roles.md"><button>Roles</button></a> <a href="checks.md"><button>Checks</button></a> <a href="emails.md"><button>Emails</button></a> <a href="review-workflow.md"><button>Review workflow</button></a> 
+<a href="roles.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Roles</button></a> <a href="checks.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Checks</button></a> <a href="emails.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Emails</button></a> <a href="review-workflow.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Review workflow</button></a> 
 
 # Review Dashboard
 ## Introduction
