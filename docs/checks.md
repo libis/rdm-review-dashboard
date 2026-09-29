@@ -2,36 +2,23 @@
 
 ## Overview
 
-The review dashboard uses a configurable checklist to support dataset review.
+The Review Dashboard and Check My Dataset use configurable issue definitions to evaluate datasets and present validation results. 
 
-Each checklist item is defined as an **issue**. Issues can be reviewed manually by a reviewer or evaluated automatically through an **autocheck**.
+Both applications share the same autocheck framework and validation scripts, but use different issue definition files and present results in different ways:
 
-In addition to driving the review workflow, issue definitions are also used to generate structured feedback for dataset contributors when datasets are returned for revision.
+- The Review Dashboard uses issue definitions to support dataset review and feedback generation.
+- Check My Dataset uses issue definitions to present validation results and recommendations directly to dataset contributors.
+
+The shared validation framework consists of:
+
+- issue definitions
+- autocheck scripts
+- validation results
+
+Issue definitions determine how validation results are presented in each application, while the underlying autocheck scripts remain shared.
 
 
-```text
-Issue Definition
-       │
-       ▼
-Review Checklist
-       │
-       ▼
-Reviewer Evaluation
-       │
-       ▼
-Feedback Generation
-
-Optional:
-
-Autocheck Script
-       │
-       ▼
-Automatic Evaluation
-```
-
-## Review framework architecture
-
-The review framework consists of several components that work together to evaluate datasets and generate feedback.
+## Review Dashboard workflow
 
 ```text
 Issue Definition
@@ -65,17 +52,49 @@ The issue definition is the central configuration component. It determines:
 
 Autochecks can optionally be linked to issue definitions to assist reviewers by automatically evaluating specific requirements.
 
+## Check My Dataset workflow
 
-## Issue Definitions
+```text
+Issue Definition
+│
+├── Optional Autocheck Script
+│             │
+│             ▼
+│      Validation Result
+│
+▼
+Presentation Rules
+│
+├── Overview
+│      └── Issues requiring attention
+│          + associated guidance
+│
+├── All Autocheck Results
+│      └── Complete list of validation results
+│
+└── Tips to Improve Your Dataset
+       ├── Conditional tips based on autocheck results
+       └── General recommendations without autochecks
+```
 
-Issue definitions define the checklist items that reviewers use during the review process.
+In Check My Dataset, issue definitions determine:
+
+- which validation scripts are executed
+- how validation results are presented
+- which guidance is shown to dataset creators
+- when recommendations appear in the user interface
+
+## Issue Definition files
+
+The applications use separate issue definitions files.
+
+### Review Dashboard issue definitions
 
 Configuration file: config/dataset_issue_definitions.json
 
-Each issue appears as a checklist item in the review dashboard and can contribute to the automatically generated feedback when datasets are returned for revision.
+Issue definitions define the checklist items that reviewers use during the review process. Each issue appears as a checklist item in the Review Dashboard and can contribute to the automatically generated feedback when datasets are returned for revision.
 
-### Structure
-
+#### Structure
 
 Each issue has the following structure:
 
@@ -92,9 +111,9 @@ Each issue has the following structure:
 }
 ```
 
-### Properties
+#### Properties
 
-#### category
+**category**
 
 Groups issues together in the review checklist.
 
@@ -104,29 +123,29 @@ Common categories include:
 - metadata
 - terms
 
-#### id
+**id**
 
 unique identifier of the issue.
 
 This should match the issue name.
 
-#### title
+**title**
 
 Human-readable title shown in the review checklist.
 
-#### condition
+**condition**
 
 Describes the expected situation.
 
 The reviewer sees this text in the checklist and confirms it when the requirement is met.
 
-#### warning
+**warning**
 
 Describes the situation when the issue is present.
 
 This text is shown in the review summary.
 
-#### message
+**message**
 
 Detailed guidance for dataset contributors.
 
@@ -134,7 +153,7 @@ The message is automatically added to feedback emails when the issue is selected
 
 HTML tags may be used, including links to relevant documentation.
 
-### Example
+#### Example
 
 
 ```json
@@ -150,38 +169,166 @@ HTML tags may be used, including links to relevant documentation.
 }
 ```
 
-### Checklist representation
+#### Representation in the user interface
+
+**Checklist representation**
 
 The issue appears as a checklist item for reviewers.
 
 images/checklist.png
 
-### Review summary representation
+**Review summary representation**
 
 Issues that are not resolved appear in the review summary.
 
 images/feedback_email.png
 
 
+### Check My Dataset issue definitions
+
+Configuration file: config/check_my_dataset_issue_definitions.json.
+
+Each issue definition controls:
+
+- how the issue is evaluated;
+- how the issue is displayed;
+- in which section(s) it appears;
+- which autocheck script is associated with it (optionally).
+
+#### Validation model
+
+The Check My Dataset interface contains three sections:
+
+- Overview
+- All Autocheck Results
+- General tips to improve your dataset
+
+**Overview**
+
+The **Overview** section highlights issues that require the user's attention.
+
+An issue is displayed in this section when:
+
+- the issue has an autocheck script;
+- the autocheck result is **failure** or **warning**;
+- an 'overview_header' has been configured.
+
+Display logic:
+
+- 'overview_header' is used as the default heading.
+- If the autocheck returns a warning message, the warning message replaces the configured 'overview_header'
+- 'overview_content' is shown inside the accordion.
+- If 'overview_content' is empty or omitted, the accordion is disabled and only the heading is displayed.
+
+The purpose of this section is to provide a concise summary of all detected issues and warnings.
+
+**All autocheck results**
+
+The **All results** section contains every issue that had an autocheck script, regardless of the result.
+
+For each issue:
+
+- the autocheck result (success, failure, or warning) is displayed;
+- 'all_results_header' is shown next to the result indicator.
+
+Examples:
+
+- "Dataset is smaller than 50GB"
+- "README.txt or README.md file is present"
+
+The purpose of this section is to provide a complete overview of all performed checks.
+
+**General tips to improve your dataset**
+
+The **Tips to improve your dataset** section contains additional guidance and recommendations.
+
+Tips can be displayed:
+
+- always;
+- never;
+- conditionally based on the result of an autocheck.
+
+The display behaviour is controlled by the 'display_in_tips' property.
+
+**Supported values**
+
+| Value | Description |
+|---------|-------------|
+| `always` | Always display the tip |
+| `never` | Never display the tip |
+| `success` | Display only when the autocheck succeeds |
+| `fail` | Display only when the autocheck fails |
+| `warning` | Display only when the autocheck returns a warning |
+| `fail_or_warning` | Display when the autocheck fails or returns a warning |
+
+**Display logic**
+
+- 'tips_header' is used as the accordion header.
+- 'tips_content' is displayed when the accordion is expanded.
+- If 'tips_content' is empty, the accordion is disabled an only the header is shown.
+
+Issue definitions do not need to be linked to an autocheck script. When no script is configured, the issue can still be used to provide general recommendations in the General tips to improve your dataset section. This allows the application to present dataset quality guidance even for aspects that cannot currently be evaluated automatically. 
+
+Examples include:
+
+- handling personal data
+- writing a dataset description
+
+#### Structure
+
+```json
+{
+  "category": "files",
+  "script": "totalDatasetFilesSizeIsLessThan50GB",
+  "title": "Dataset size",
+  "overview_header": "Dataset is larger than 50 GB",
+  "overview_content": "...",
+  "all_results_header": "Dataset is smaller than 50 GB",
+  "display_in_tips": "fail",
+  "tips_header": "Dataset size",
+  "tips_content": "..."
+}
+```
+
+#### Properties
+
+| Property | Description | Required | Comment |
+|-----------|-------------|
+| `category` | Determines under which category the issue is grouped | mandatory | Files, Metadata, Terms |
+| `script` | The autocheck script associated with the issue | optional | can be omitted |
+| `title` | Human-readable title of the issue | mandatory | appears in bold in Overview and Tips sections |
+| `overview_header` | Default header shown in the Overview section | mandatory | no html possible |
+| `overview_content` | Accordion content shown in the Overview section | recommended | html possible |
+| `all_results_header` | Text displayed next to the check result | mandatory | appears in All results section |
+| `display_in_tips` | Determines when the tip is displayed | mandatory | "always", "never", "success", "fail", "warning", "fail_or_warning" |
+| `tips_header` | Header shown in the Tips section | mandatory if displayed in Tips | appears in bold, no html possible |
+| `tips_content` | Content shown when the accordion is expanded | recommended if displayed in Tips | html possible |
+
+
 ## Manual and automatic checks
 
-The review dashboard supports both manual and automatic checks.
+The platform supports both manual and automatic checks. These checks are used by the Review Dashboard and, where applicable, by Check My Dataset.
 
 ### Manual checks
 
 Manual checks require reviewer judgement and are evaluated directly by the reviewer.
 
-Manual checks only require an issue definition.
+Manual checks are only available in the Review Dashboard and require an issue definition.
 
 ### Automatic checks
 
-Automatic checks use validation scripts to assist reviewers.
+Automatic checks use validation scripts to evaluate dataset content and metadata.
+
+The automated validation framework is shared by the Review Dashboard and Check My Dataset, ensuring consistent validation results across both applications.
 
 
 An automatic check consists of:
 
 ```text
 Issue Definition
+       │
+       ▼
+Autocheck Definition
        │
        ▼
 Autocheck Script
@@ -200,6 +347,10 @@ Autochecks support the review process but do not replace reviewer judgement.
 Autocheck scripts perform the actual validation of dataset elements and metadata.
 
 Location: rdm-review-dashboard-backend/src/autochecks
+
+**Important**
+
+Autocheck scripts are shared components used by both the Review Dashboard and Check My Dataset. Changes to validation logic or warning messages may therefore affect both applications.
 
 
 Each script is responsible for:
@@ -336,10 +487,16 @@ The process depends on whether the new check should be evaluated manually or aut
 1. Add a new issue definition to: dataset_issue_definitions.json
 2. Create the validation script
 3. Verify that the autocheck result is correctly linked to the issue definition
-4. Test checklist integration and feedback generation
+4. Test the check in the Review Dashboard
+5. If the check should (also) be available in Check My Dataset, add a corresponding entry to check_my_dataset_issue_definitions.json
+6. Verify that all user-facing texts and warning messages are appropriate for both applications.
 
 
 ## Writing guidelines
+
+The Review Dashboard and Check My Dataset use separate issue definition files, but they share the same validation framework. Content across both applications should therefore remain aligned and consistent.
+
+### Review Dashboard
 
 The following fields should remain aligned:
 
@@ -348,10 +505,33 @@ The following fields should remain aligned:
 - warning
 - message
 
-Good feedback messages should:
 
-- explain why the issue matters;
-- explain how researchers can resolve the issue;
+### Check My Dataset
+
+The following fields should remain aligned:
+
+- title
+- overview_header
+- overview_content
+- all_results_header
+- tips_header
+- tips_content
+
+### Consistency between applications
+
+When a Review Dashboard issue and a Check My Dataset issue describe the same requirement:
+
+- use consistent terminology
+- provide compatible recommendations
+- avoid conflicting guidance
+
+### Writing recommendations
+
+User-facing texts should:
+
+- clearly explain why the issue matters;
+- explain how the issue can be resolved;
+- use concise and actionable language;
 - provide links to relevant guidance where appropriate.
 
-Consistency between checklist text, warning text and feedback text improves reviewer efficiency and creates clearer feedback for contributors. 
+Consistent wording across Review Dashboard checklists, validation results, warning messages, feedback messages, and recommendations improves the user experience and helps ensure that both applications provide coherent guidance.

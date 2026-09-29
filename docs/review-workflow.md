@@ -2,7 +2,7 @@
 
 ## Overview
 
-The review dashboard supports the review of datasets submitted through Dataverse.
+The Review Dashboard supports the review of datasets submitted through Dataverse.
 
 The review workflow consists of 4 main steps
 

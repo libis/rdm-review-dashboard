@@ -2,7 +2,7 @@
 
 ## Overview
 
-The review dashboard backend provides access to review dashboard functionality and integrates with Dataverse services.
+The backend provides services for both the Review Dashboard and Check My Dataset and integrates with Dataverse services.
 
 The backend:
 
@@ -10,7 +10,9 @@ The backend:
 - Accesses the Dataverse PostgreSQL database
 - Retrieves data from the Solr index
 - Uses the Dataverse Native API for dataset state changes
-- Provides the API consumed by the Review dashboard UI
+- Provides the API consumed by the Review dashboard and Check My Dataset frontends
+- Manages review workflows, reviewer assignments, and review state
+- Generates structured feedback and email notifications for the Review Dashboard
 
 The backend is implemented in Python and is currently tested with Python 3.8.
 
@@ -32,6 +34,7 @@ The configuration file contains settings for:
 - SMTP configuration
 - User and role management
 - Application paths
+- Validation and review configuration
 
 ### Dataverse related fields:
 ```
@@ -68,7 +71,7 @@ The configuration file contains settings for:
 ```
   "userIdHeaderField": The HTTP header field that contains the dataverse username of the reviewer. 
   "reviewerRoles": The user groups that can access the Review Dashboard. 
-  "dataverseUserGroupAliases": The groups that can review datasets and admin the review dashboard.
+  "dataverseUserGroupAliases": The groups that can review datasets and admin the Review Dashboard.
 ```
 
 More details about roles and permissions: [Roles](roles.md)

@@ -1,46 +1,43 @@
 # Review Dashboard
 ## Introduction
-The Review Dashboard is a web application that aims to streamline the review, feedback and curation of datasets in Dataverse. It enables the installations to provide a standardized roadmap for their reviewers and keep track of datasets in various stages of the curation process. It keeps state of the review checklist, feedback emails composed based on it, and review notes, which can be accessed by the reviewer assigned to the dataset, which makes it useful in case of a reviewer change. 
+The Review Dashboard is a web application that aims to streamline the review, feedback and curation of datasets in Dataverse. It enables the installations to provide a standardized roadmap for their reviewers and keep track of datasets in various stages of the curation process. It provides reviewer assignment, configurable review checklists, automated quality checks, review notes and automated feedback generation, allowing reviewers to efficiently assess datasets before publication. It also maintains review state and reviewer comments, enabling continuity when reviews are reassigned. 
 
-The dashboard connects to Dataverse via PostgreSQL and Solr for fast retrieval of dataverse and dataset information, and uses the Dataverse Native API for reviewer assignments and status changes (publish/return) to ensure safety. It integrates into your authentication system by getting the current authenticated username from HTTP headers. Access rights are controlled using dataverse user groups, by adding users to reviewer and admin groups in the Dataverse UI.
+A demonstration of the review dashboard is available [here](https://kuleuven.mediaspace.kaltura.com/media/KU+Leuven+Review+DashboardA+screen+recording/1_fuuts6ic).
 
-It allows for various customization options, with customizable repository name, review checklists, and feedback emails. Branding can be customized by placing custom header and footer HTMLs. The Dataverse user group names can also be customized to integrate or not conflict with installations’ existing groups. 
+## Features
 
-Here is a screen-recording, demonstrating the review dashboard usage:  https://kuleuven.mediaspace.kaltura.com/media/KU+Leuven+Review+DashboardA+screen+recording/1_fuuts6ic
-
-## Installation
-The review dashboard contains a frontend and a backend. The frontend requires Angular CLI 14.1.2 to build. At the runtime, the app requires a backend_config.json file, which should by default be placed to the default location in the root directory. Alternatively, it’s location can be set in BACKEND_CONFIG_FILE environment variable, which can be useful when running from a container. 
-
-Particularly important is adding the reviewer users to a 'reviewer' group in the Dataverse UI, and setting the 'userIdHeaderField' in your backend configuration. The latter is necessary for the dashboard to get  the authenticated user’s username from the HTTP header field. This field be simulated with browser plugins for testing purposes. For details, see the documentation for backend configuration. 
-
-For more in-depth information please refer to the the configuration documentation. 
-
-To build the frontend use:
-```
-make build-frontend
-```
-
-After building the frontend, you can run the dashboard by running rdm-review-dashboard-backend/src/main.py:
-
-```
-make run  
-```
-
-This will also statically serve the frontend, if the UI_PATH variable is set. If you do not want the frontend to be served by the backend (to put it into a separate container or serve it otherwise), set UI_PATH to null. For more in-depth look at the configuration, see rdm-review-dashboard-backend/docs/configuration.md.
-
-To build the Review Dashboard as a Docker container, after building the frontend, use:
-
-```
-make build-container
-```
+- Overview of datasets awaiting review
+- Reviewer assignment workflow
+- Configurable review checklists
+- Automated checks
+- Review notes and reviewer handover support
+- Automated feedback generation
+- Role-based access management through Dataverse groups
+- Configurable branding, feedback templates and review criteria
 
 
-The container can be added to your Docker Compose by using the compose.review.yml. For example, to try the review dashboard with the Dataverse demo container, download the Dataverse demo compose.yml (https://guides.dataverse.org/en/latest/container/running/demo.html) into the root folder and in the root folder of the review dashboard run:
-```
-docker compose -f compose.yml -f compose.review.yml up
-```
+## Current scope and limitations
 
-## Configuration
-The review dashboard needs a 'reviewer' group to be added to the installation to work. The group aliases for 'reviewer' and 'admin' roles in the dashboard can be configured in the backend configuration. 
+The review dashboard is currently designed for Dataverse installations consisting of a single repository or collection.
 
-The frontend and the backend are configured separately. Please see their configuration documentations in rdm-review-dashboard-backend/docs/configuration.md and rdm-review-dashboard-ui/docs/configuration.md. 
+Support for multi-institutional or multi-collection review workflows is currently not available. Installations that manage multiple independent repositories may require additional customization or future enhancements.
+
+
+## Quick start
+
+See: [Installation](docs/installation.md)
+
+1. Clone the repository
+2. Configure the backend
+3. Build the frontend
+4. Start the application
+
+
+## Documentation
+
+Full documentation is available in [docs](docs/) folder or on [GitHub pages](https://libis.github.io/rdm-review-dashboard/).
+
+
+## License
+
+This project is licensed under the Apache 2.0 License.

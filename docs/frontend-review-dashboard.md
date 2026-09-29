@@ -1,6 +1,6 @@
 # Review Dashboard Frontend
 
-The review dashboard provides the user interface for reviewing datasets in Dataverse. It requires a running review dashboard backend and is built using Angular CLI  14.1.2. The frontend communicates exclusively with the backend API and cannot function independently. 
+The Review Dashboard provides the user interface for reviewing datasets in Dataverse. It requires a running review dashboard backend and is built using Angular CLI  14.1.2. The frontend communicates exclusively with the backend API and cannot function independently. 
 
 
 ## Usage
@@ -24,7 +24,7 @@ The following configuration properties are available:
 
 ## User access
 
-Users without the required permissions cannot access the review dashboard. More information, see: [Roles](roles.md).
+Users without the required permissions cannot access the Review Dashboard. More information, see: [Roles](roles.md).
 
 
 ## User interface overview
