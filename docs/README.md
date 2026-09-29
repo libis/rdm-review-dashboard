@@ -1,8 +1,10 @@
 ![RDR-logo](images/RDR-logo.png)
 
-<a href="installation.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Installation</button></a> <a href="architecture.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Architecture</button></a> <a href="backend.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Backend</button></a> <a href="frontend-review-dashboard.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Frontend Review Dashboard</button></a> <a href="frontend-check-my-dataset.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Frontend Check My Dataset</button></a>
+<a href="https://libis.github.io/rdm-review-dashboard/"><button>Overview</button></a> <a href="https://libis.github.io/rdm-review-dashboard/installation.html"><button>Installation</button></a> <a href="https://libis.github.io/rdm-review-dashboard/architecture.html"><button>Architecture</button></a> 
 
-<a href="roles.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Roles</button></a> <a href="checks.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Checks</button></a> <a href="emails.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Emails</button></a> <a href="review-workflow.md"><button style="background-color:#00407A;color:white;border:none;padding:6px 12px;border-radius:6px;">Review workflow</button></a> 
+<a href="https://libis.github.io/rdm-review-dashboard/backend.html"><button>Backend</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-review-dashboard.html"><button>Frontend Review Dashboard</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-check-my-dataset.html"><button>Frontend Check My Dataset</button></a>
+
+<a href="https://libis.github.io/rdm-review-dashboard/roles.html"><button>Roles</button></a> <a href="https://libis.github.io/rdm-review-dashboard/checks.html"><button>Checks</button></a> <a href="https://libis.github.io/rdm-review-dashboard/emails.html"><button>Emails</button></a> <a href="https://libis.github.io/rdm-review-dashboard/review-workflow.html"><button>Review workflow</button></a> 
 
 # Review Dashboard
 ## Introduction

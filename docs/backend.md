@@ -1,6 +1,8 @@
-<a href="README.md"><button>Overview</button></a> <a href="installation.md"><button>Installation</button></a> <a href="architecture.md"><button>Architecture</button></a> <a href="frontend-review-dashboard.md"><button>Frontend Review Dashboard</button></a> <a href="frontend-check-my-dataset.md"><button>Frontend Check My Dataset</button></a>
+<a href="https://libis.github.io/rdm-review-dashboard/"><button>Overview</button></a> <a href="https://libis.github.io/rdm-review-dashboard/installation.html"><button>Installation</button></a> <a href="https://libis.github.io/rdm-review-dashboard/architecture.html"><button>Architecture</button></a> 
 
-<a href="roles.md"><button>Roles</button></a> <a href="checks.md"><button>Checks</button></a> <a href="emails.md"><button>Emails</button></a> <a href="review-workflow.md"><button>Review workflow</button></a>
+<a href="https://libis.github.io/rdm-review-dashboard/backend.html"><button>Backend</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-review-dashboard.html"><button>Frontend Review Dashboard</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-check-my-dataset.html"><button>Frontend Check My Dataset</button></a>
+
+<a href="https://libis.github.io/rdm-review-dashboard/roles.html"><button>Roles</button></a> <a href="https://libis.github.io/rdm-review-dashboard/checks.html"><button>Checks</button></a> <a href="https://libis.github.io/rdm-review-dashboard/emails.html"><button>Emails</button></a> <a href="https://libis.github.io/rdm-review-dashboard/review-workflow.html"><button>Review workflow</button></a> 
 
 # Backend configuration
 
