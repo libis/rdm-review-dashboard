@@ -29,21 +29,26 @@ Both applications use the same backend infrastructure and validation framework, 
 The platform integrates with several Dataverse components.
 
 
-```text
-                    Dataverse
-         ┌────────────┼────────────┐
-         │            │            │
-    PostgreSQL      Solr      Native API
-         │            │            │
-         └────────────┴────────────┘
-                      │
-                      ▼
-                Shared Backend
-                │            |
-                ▼            ▼
-     Review Dashboard    Check My Dataset
-```
+``` mermaid 
+flowchart TB  
 
+DV[Dataverse]  
+PG[PostgreSQL]  
+SOLR[Solr]  
+API[Native API]  
+
+BE[Review Dashboard Backend]  
+UI[Review Dashboard UI]  
+
+DV --- PG  
+DV --- SOLR  
+DV --- API  
+PG --- BE  
+SOLR --- BE  
+API --- BE  
+BE --- UI
+
+```
 ### Dataverse
 
 Dataverse serves as the system of records for datasets, metadata and permissions.
