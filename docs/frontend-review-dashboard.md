@@ -17,7 +17,7 @@ Selection -> Details -> Feedback -> Publish/Return
 
 ## Frontend configuration
 
-The frontend is configured through: scr/assets/settings.json
+The frontend is configured through: src/assets/settings.json
 
 The following configuration properties are available:
 
