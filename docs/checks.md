@@ -333,6 +333,33 @@ The reviewer remains responsible for the final review decision.
 
 Autochecks support the review process but do not replace reviewer judgement.
 
+## Autocheck definitions
+
+Configuration file: config/automations/autochecks.json
+
+Autocheck definitions serve two purposes:
+
+- defining a unique identifier for each available autocheck
+- providing explanatory help text describing the validation logic
+
+
+### Structure
+
+{
+"name": "readme",
+"helpText": "<div>README.txt or README.md file is present...</div>"
+}
+
+| Property   | Description                                                   |
+| ---------- | ------------------------------------------------------------- |
+| `name`     | Unique autocheck identifier used throughout the configuration |
+| `helpText` | Description of the validation logic. HTML is supported        |
+
+### Usage
+
+The name property acts as the unique identifier of an autocheck and is used to connect issue definitions with validation scripts.
+
+In the Review Dashboard, the helpText is displayed when reviewers click the question mark next to an autocheck in the review checklist. The help text explains the validation logic and helps reviewers interpret the validation result correctly.
 
 ## Autocheck scripts
 
@@ -482,12 +509,12 @@ The process depends on whether the new check should be evaluated manually or aut
 
 ### Adding an automatic check
 
-1. Add a new issue definition to: dataset_issue_definitions.json
-2. Create the validation script
-3. Verify that the autocheck result is correctly linked to the issue definition
-4. Test the check in the Review Dashboard
-5. If the check should (also) be available in Check My Dataset, add a corresponding entry to check_my_dataset_issue_definitions.json
-6. Verify that all user-facing texts and warning messages are appropriate for both applications.
+1. Add a new autocheck definition to autochecks.json.
+2. Create the validation script.
+3. Add a corresponding issue definition to dataset_issue_definitions.json.
+4. Test the check in the Review Dashboard.
+5. If the check should (also) be available in Check My Dataset, add a corresponding entry to check_my_dataset_issue_definitions.json.
+6. Verify that all user-facing texts, help texts, warnings, and recommendations remain consistent across both applications.
 
 
 ## Writing guidelines
