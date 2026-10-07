@@ -1,43 +1,59 @@
+<a href="https://libis.github.io/rdm-review-dashboard/"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Overview</button></a> <a href="https://libis.github.io/rdm-review-dashboard/installation.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Installation</button></a> <a href="https://libis.github.io/rdm-review-dashboard/architecture.html"><button style="background-color:#147fa1; color:white; border:none; border-radius:8px; padding:8px 14px;">Architecture</button></a> <a href="https://libis.github.io/rdm-review-dashboard/backend.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Backend</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-review-dashboard.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Frontend Review Dashboard</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-check-my-dataset.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Frontend Check My Dataset</button></a>
+
+<a href="https://libis.github.io/rdm-review-dashboard/roles.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Roles</button></a> <a href="https://libis.github.io/rdm-review-dashboard/checks.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Checks</button></a> <a href="https://libis.github.io/rdm-review-dashboard/emails.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Emails</button></a> <a href="https://libis.github.io/rdm-review-dashboard/review-workflow.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Review workflow</button></a> 
+
 # Architecture
 
 The review dashboard is a web application that supports dataset review, feedback, and curation workflows for Dataverse repositories.
 
-The application consists of:
+The platform can optionally be extended with Check My Dataset, a self-service validation application that allows researchers to assess draft datasets before review or publication.
 
-- A frontend (Angular)
-- A backend (Python)
+The platform consists of:
+
+- Shared backend services (Python)
+- Review Dashboard frontend (Angular)
+- Check My Dataset frontend (Angular)
 - Dataverse integrations
 - A configurable review and feedback framework
-- An automated validation ("autocheck") framework
+- An shared automated validation (autocheck) framework
 
-The dashboard retrieves dataset information from Dataverse, allows reviewers to assess datasets using configurable review criteria, and generates structured feedback for dataset contributors.
+Both applications use the same backend infrastructure and validation framework, but provide different user experiences:
 
-
-## 1. System architecture
-
-The review dashboard integrates with several Dataverse components.
+- Review Dashboard supports review workflows, dataset curation, and contributor feedback.
+- Check My Dataset supports self-service dataset validation and quality improvement.
 
 
-```text
-                    Dataverse
-         ┌────────────┼────────────┐
-         │            │            │
-    PostgreSQL      Solr      Native API
-         │            │            │
-         └────────────┴────────────┘
-                      │
-                      ▼
-          Review Dashboard Backend
-                      │
-                      ▼
-             Review Dashboard UI
+
+## System architecture
+
+The platform integrates with several Dataverse components.
+
+
+``` mermaid 
+flowchart TB  
+
+DV[Dataverse]  
+PG[PostgreSQL]  
+SOLR[Solr]  
+API[Native API]  
+
+BE[Review Dashboard Backend]  
+UI[Review Dashboard UI]  
+
+DV --- PG  
+DV --- SOLR  
+DV --- API  
+PG --- BE  
+SOLR --- BE  
+API --- BE  
+BE --- UI
+
 ```
-
 ### Dataverse
 
 Dataverse serves as the system of records for datasets, metadata and permissions.
 
-The review dashboard does not replace Dataverse workflows; instead, it adds structured review and feedback functionality on top of existing Dataverse functionality.
+The Review Dashboard does not replace Dataverse workflows; instead, it adds structured review and feedback functionality on top of existing Dataverse functionality.
 
 ### PostgreSQL
 
@@ -62,13 +78,13 @@ The backend provides
 - Autocheck execution
 - Feedback generation
 
-The backend can also serve the frontend as static content.
+The backend can also serve the frontend applications as static content.
 
 More information, see: [Backend](backend.md)
 
-### Frontend
+### Review Dashboard Frontend
 
-The frontend provides:
+The Review Dashboard frontend provides:
 
 - Overview of the datasets in review
 - Assignment management
@@ -79,12 +95,25 @@ The frontend provides:
 
 It communicates exclusively with the backend.
 
-More information, see: [Frontend](frontend.md)
+More information, see: [Frontend Review Dashboard](frontend-review-dashboard.md)
+
+### Check My Dataset Frontend
+
+The Check My Dataset frontend provides:
+
+- Dataset validation
+- Overview of detected issues
+- Complete validation results
+- Recommendations for improving dataset quality
+
+It communicates exclusively with the backend.
+
+More information, see: [Frontend Check My Dataset](frontend-check-my-dataset.md)
 
 
-## 2. Review workflow
+## Review workflow
 
-The review dashboard supports the following review workflow:
+The Review Dashboard supports the following review workflow:
 
 
 ```text
@@ -120,8 +149,44 @@ Return for revision
 More information, see: [Review workflow](review-workflow.md)
 
 
-## 3. Review framework architecture
+## Check My Dataset workflow
 
+Check My Dataset enables researchers to evaluate datasets before they enter a formal review process.
+
+```text
+Researcher
+     │
+     ▼
+Select dataset
+     │
+     ▼
+Run validation checks
+     │
+     ▼
+Overview of issues
+     │
+     ▼
+All autocheck results
+     │
+     ▼
+Tips to improve dataset
+     │
+     ▼
+Dataset improvements
+```
+
+## Validation and review framework
+
+The shared validation framework is driven by issue definitions and autocheck scripts. 
+
+- Review Dashboard uses these components to support review workflows and feedback generation.
+- Check My Dataset uses the same validation framework to present validation results and recommendations directly to dataset contributors.
+ 
+A single autocheck script can be reused by both applications.
+
+For a detailed description of the configuration of checks and feedback, see: [Checks](checks.md). 
+
+### Review Dashboard
 
 The review workflow is driven by a set of configurable definitions and scripts that determine how datasets are evaluated and how feedback is generated.
 
@@ -148,20 +213,31 @@ Autocheck Script
 Automatic Evaluation
 ```
 
-
-For a detailed description of the configuration of checks and feedback, see: [Checks](checks.md). 
-
 Selected review issues are automatically converted into dataset feedback and incorporated into configurable email templates. More information, see: [Emails](emails.md).
 
+### Check My Dataset
 
+
+```text
+Issue Definition
+       │
+       ▼
+Autocheck Script
+       │
+       ▼
+Automatic Evaluation
+       │
+       ▼
+Dataset Recommendations
+```
 
 ## 4. Authentication and authorization
 
-The review dashboard relies on the surrounding authentication infrastructure.
+Neither the Review Dashboard nor Check My Dataset manage authentication themselves.
 
-Authenticated user information is retrieved from HTTP request headers configured in the backend.
+Authenticated user information is retrieved from HTTP request headers configured in the backend. User permissions are derived from Dataverse permissions and role mappings.
 
-For details about role configuration and permission mapping, see: [Roles](roles.md)
+For details about role configuration and permission mapping, see: [Roles](roles.md).
 
 
 

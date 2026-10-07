@@ -1,8 +1,12 @@
+<a href="https://libis.github.io/rdm-review-dashboard/"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Overview</button></a> <a href="https://libis.github.io/rdm-review-dashboard/installation.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Installation</button></a> <a href="https://libis.github.io/rdm-review-dashboard/architecture.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Architecture</button></a> <a href="https://libis.github.io/rdm-review-dashboard/backend.html"><button style="background-color:#147fa1; color:white; border:none; border-radius:8px; padding:8px 14px;">Backend</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-review-dashboard.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Frontend Review Dashboard</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-check-my-dataset.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Frontend Check My Dataset</button></a>
+
+<a href="https://libis.github.io/rdm-review-dashboard/roles.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Roles</button></a> <a href="https://libis.github.io/rdm-review-dashboard/checks.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Checks</button></a> <a href="https://libis.github.io/rdm-review-dashboard/emails.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Emails</button></a> <a href="https://libis.github.io/rdm-review-dashboard/review-workflow.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Review workflow</button></a> 
+
 # Backend configuration
 
 ## Overview
 
-The review dashboard backend provides access to review dashboard functionality and integrates with Dataverse services.
+The backend provides services for both the Review Dashboard and Check My Dataset and integrates with Dataverse services.
 
 The backend:
 
@@ -10,7 +14,9 @@ The backend:
 - Accesses the Dataverse PostgreSQL database
 - Retrieves data from the Solr index
 - Uses the Dataverse Native API for dataset state changes
-- Provides the API consumed by the Review dashboard UI
+- Provides the API consumed by the Review dashboard and Check My Dataset frontends
+- Manages review workflows, reviewer assignments, and review state
+- Generates structured feedback and email notifications for the Review Dashboard
 
 The backend is implemented in Python and is currently tested with Python 3.8.
 
@@ -32,6 +38,7 @@ The configuration file contains settings for:
 - SMTP configuration
 - User and role management
 - Application paths
+- Validation and review configuration
 
 ### Dataverse related fields:
 ```
@@ -68,7 +75,7 @@ The configuration file contains settings for:
 ```
   "userIdHeaderField": The HTTP header field that contains the dataverse username of the reviewer. 
   "reviewerRoles": The user groups that can access the Review Dashboard. 
-  "dataverseUserGroupAliases": The groups that can review datasets and admin the review dashboard.
+  "dataverseUserGroupAliases": The groups that can review datasets and admin the Review Dashboard.
 ```
 
 More details about roles and permissions: [Roles](roles.md)

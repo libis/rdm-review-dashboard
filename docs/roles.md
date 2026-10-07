@@ -1,13 +1,27 @@
+<a href="https://libis.github.io/rdm-review-dashboard/"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Overview</button></a> <a href="https://libis.github.io/rdm-review-dashboard/installation.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Installation</button></a> <a href="https://libis.github.io/rdm-review-dashboard/architecture.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Architecture</button></a> <a href="https://libis.github.io/rdm-review-dashboard/backend.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Backend</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-review-dashboard.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Frontend Review Dashboard</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-check-my-dataset.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Frontend Check My Dataset</button></a>
+
+<a href="https://libis.github.io/rdm-review-dashboard/roles.html"><button style="background-color:#147fa1; color:white; border:none; border-radius:8px; padding:8px 14px;">Roles</button></a> <a href="https://libis.github.io/rdm-review-dashboard/checks.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Checks</button></a> <a href="https://libis.github.io/rdm-review-dashboard/emails.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Emails</button></a> <a href="https://libis.github.io/rdm-review-dashboard/review-workflow.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Review workflow</button></a> 
+
 # Roles and permissions
 
 ## Overview
 
-The review dashboard supports role-based access control to ensure that review activities can be performed by authorized users.
+The Review Dashboard and Check My Dataset support role-based access control to ensure that users can only access datasets for which they have the appropriate permissions.
 
-Rather than maintaining a separate permission model, the review dashboard builds on existing Dataverse roles and permissions. User access is determined through Dataverse role assignments and configurable role mappings in the dashboard.
+Rather than maintaining a separate permission model, both applications build on existing Dataverse roles and permissions. User access is determined through Dataverse role assignments and configurable role mappings.
 
 
-## Role model
+## Access model
+
+Access to datasets is based on the permissions a user already has in Dataverse. As a general principle, users can only access datasets that they are permitted to view or manage in Dataverse itself.
+
+Typical examples include:
+
+- Dataset contributors accessing their own datasets through Check My Dataset.
+- Curators and reviewers accessing datasets assigned to them or available for review through the Review Dashboard.
+- Repository administrators overseeing all datasets within their repository.
+
+## Roles in Review Dashboard
 
 The review dashboard provides two primary roles:
 
@@ -53,11 +67,18 @@ Typical administrator activities include:
 - Managing exceptional review situations
 - Handling repository-level administrative tasks
 
+## Roles in Check My Dataset
 
+Check My Dataset does not introduce additional application-specific roles. Users can access datasets in Check My Dataset when they have sufficient permissions on those datasets in Dataverse. In most cases, this includes:
+
+- Dataset contributors working on their own datasets
+- Curators and reviewers who already have access to the dataset through Dataverse.
+
+The exact set of accessible datasets therefore depends on the permissions granted within Dataverse.
 
 ## Authentication
 
-The Review Dashboard does not manage authentication itself.
+Neither the Review Dashboard nor Check My Dataset manage authentication themselves.
 
 Authenticated user information is obtained from HTTP request headers provided by the surrounding authentication infrastructure.
 
