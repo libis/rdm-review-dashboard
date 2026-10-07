@@ -190,7 +190,7 @@ async def send_support_requested_email(
 
     email_text += _note.get("text", "--no notes--")
     email_html = email_text.replace("\n", "</br>")
-    url = f"{DATAVERSE_URL}/dataset.xhtml?persistentId={persistent_identifier}"
+    url = f"{DATAVERSE_URL}/dataset.xhtml?persistentId=doi:{persistent_identifier}"
     if (
         dataset_
         and dataset_.get("versionstate") == "DRAFT"
