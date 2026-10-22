@@ -39,6 +39,7 @@ API[Native API]
 
 BE[Review Dashboard Backend]  
 UI[Review Dashboard UI]  
+CMD_UI[Check My Dataset UI]  
 
 DV --- PG  
 DV --- SOLR  
@@ -47,7 +48,7 @@ PG --- BE
 SOLR --- BE  
 API --- BE  
 BE --- UI
-
+BE --- CMD_UI
 ```
 ### Dataverse
 
@@ -77,6 +78,8 @@ The backend provides
 - Role management
 - Autocheck execution
 - Feedback generation
+
+Backend includes a Huey based task consumer that runs Python scripts  on specified number of workers. It can be configured to use Redis or Filesystem as task broker.  
 
 The backend can also serve the frontend applications as static content.
 
@@ -238,6 +241,3 @@ Neither the Review Dashboard nor Check My Dataset manage authentication themselv
 Authenticated user information is retrieved from HTTP request headers configured in the backend. User permissions are derived from Dataverse permissions and role mappings.
 
 For details about role configuration and permission mapping, see: [Roles](roles.md).
-
-
-
