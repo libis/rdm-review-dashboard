@@ -1,6 +1,10 @@
+<a href="https://libis.github.io/rdm-review-dashboard/"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Overview</button></a> <a href="https://libis.github.io/rdm-review-dashboard/installation.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Installation</button></a> <a href="https://libis.github.io/rdm-review-dashboard/architecture.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Architecture</button></a> <a href="https://libis.github.io/rdm-review-dashboard/backend.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Backend</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-review-dashboard.html"><button style="background-color:#147fa1; color:white; border:none; border-radius:8px; padding:8px 14px;">Frontend Review Dashboard</button></a> <a href="https://libis.github.io/rdm-review-dashboard/frontend-check-my-dataset.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Frontend Check My Dataset</button></a>
+
+<a href="https://libis.github.io/rdm-review-dashboard/roles.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Roles</button></a> <a href="https://libis.github.io/rdm-review-dashboard/checks.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Checks</button></a> <a href="https://libis.github.io/rdm-review-dashboard/emails.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Emails</button></a> <a href="https://libis.github.io/rdm-review-dashboard/review-workflow.html"><button style="background-color:#00407A; color:white; border:none; border-radius:8px; padding:8px 14px;">Review workflow</button></a> 
+
 # Review Dashboard Frontend
 
-The review dashboard provides the user interface for reviewing datasets in Dataverse. It requires a running review dashboard backend and is built using Angular CLI  14.1.2. The frontend communicates exclusively with the backend API and cannot function independently. 
+The Review Dashboard provides the user interface for reviewing datasets in Dataverse. It requires a running review dashboard backend and is built using Angular CLI  14.1.2. The frontend communicates exclusively with the backend API and cannot function independently. 
 
 
 ## Usage
@@ -13,7 +17,7 @@ Selection -> Details -> Feedback -> Publish/Return
 
 ## Frontend configuration
 
-The frontend is configured through: scr/assets/settings.json
+The frontend is configured through: src/assets/settings.json
 
 The following configuration properties are available:
 
@@ -24,7 +28,7 @@ The following configuration properties are available:
 
 ## User access
 
-Users without the required permissions cannot access the review dashboard. More information, see: [Roles](roles.md).
+Users without the required permissions cannot access the Review Dashboard. More information, see: [Roles](roles.md).
 
 
 ## User interface overview
