@@ -38,13 +38,7 @@ UI_PATH = None
 CHECK_UI_PATH = None
 
 api = fastapi.FastAPI()
-api.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
 
 
 @api.middleware("http")
@@ -80,6 +74,7 @@ def configure():
     filesystem.BASE_DIR = [settings.get("dataPath")]
     utils.logging.configure_logging()
 
+    configure_cors(settings)
     configure_routing()
 
     configure_api_keys(settings)
@@ -130,6 +125,22 @@ def configure_routing():
     api.include_router(feedback.router)
     api.include_router(support.router)
     api.include_router(datasets.router)
+
+
+def configure_cors(settings):
+    allowed_origins = get_setting(settings, "allowedOrigins", required=False) or []
+    if not allowed_origins:
+        logging.warning(
+            "No 'allowedOrigins' configured: CORS will not allow any cross-origin ")
+    if "*" in allowed_origins:
+        raise Exception("'allowedOrigins' must not contain '*' when credentials are allowed. ")
+    api.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 def configure_authentication(settings):
