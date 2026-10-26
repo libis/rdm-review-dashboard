@@ -1,4 +1,5 @@
 from typing import List
+import re
 import psycopg2
 from utils.logging import logging
 from utils.generic import read_value_from_file
@@ -9,6 +10,7 @@ DATABASE = ""
 USER = ""
 PASSWD_FILE = ""
 
+_VALID_VIEW_NAME = re.compile(r"^[A-Za-z0-9_]+$")
 
 def get_password():
     global PASSWD_FILE
@@ -74,15 +76,20 @@ def query_locks():
                 LEFT join datasetlock ON ds.id = datasetlock.dataset_id;"""
     return run_query(query)
 
-def run_query(query):
+def run_query(query, params=None):
     """Establishes a connection to the database, runs the query and closes the connection. 
-    Returns the results in a list of dictionaries, consisting of column name and data. """
+    Returns the results in a list of dictionaries, consisting of column name and data. 
+
+    Args:
+    query (str): SQL query, using %s placeholders for any variable values.
+    params (Optional tuple|list|dict): values to safely substitute into the query placeholders.
+    """
     conn = None
     result = []
     try:
         conn = get_connection()
         with conn.cursor() as cur:
-            cur.execute(query)
+            cur.execute(query, params)
             row = cur.fetchone()
             while row:
                 cols = [description_item[0] for description_item in cur.description]
@@ -107,7 +114,7 @@ def query_dataset_metadata(authority=None, identifier=None):
     Returns:
     PostgreSQL cursor.
     """
-    query = f"""SELECT
+    query = """SELECT
         datasetversion_info.*,
         metadata.metadata
     FROM datasetversion_info
@@ -119,10 +126,10 @@ def query_dataset_metadata(authority=None, identifier=None):
 
         GROUP BY version_id
     ) metadata ON metadata.version_id = datasetversion_info.version_id
-    WHERE authority='{authority}' AND identifier='{identifier}'
+    WHERE authority=%s AND identifier=%s
     ;
     """
-    return run_query(query)
+    return run_query(query, (authority, identifier))
 
 
 def query_datasets_metadata(start=None, rows=None, status=None, reviewer=None):
@@ -151,8 +158,10 @@ def query_datasets_metadata(start=None, rows=None, status=None, reviewer=None):
             status_query = "versionState='RELEASED'"
 
     assigned_to_query = None
+    params = []
     if reviewer:
-        assigned_to_query = f"array_position(reviewers, '{reviewer}') IS NOT null"
+        assigned_to_query = "array_position(reviewers, %s) IS NOT null"
+        params.append(reviewer)
 
     query = f"""SELECT
         datasetversion_info.*,
@@ -170,15 +179,19 @@ def query_datasets_metadata(start=None, rows=None, status=None, reviewer=None):
     {status_query if status_query else ''}
     {'AND' if status_query and assigned_to_query else ''}
     {assigned_to_query if assigned_to_query else ''}
-    {'LIMIT ' + str(rows) if isinstance(rows, int) else ''}
-    {'OFFSET ' + str(start) if isinstance(start, int) else ''}
-    ;
     """
-    return run_query(query)
+    if isinstance(rows, int):
+        query += " LIMIT %s"
+        params.append(rows)
+    if isinstance(start, int):
+        query += " OFFSET %s"
+        params.append(start)
+    query += ";"
+    return run_query(query, tuple(params))
 
 
 def query_dataverse_user_info(user_id):
-    query = f"""SELECT explicitgroup.id AS groupId, 
+    query = """SELECT explicitgroup.id AS groupId, 
         explicitgroup.groupaliasinowner AS groupAliasInOwner, 
         explicitgroup.owner_id AS groupOwnerId, 
         explicitgroup.description AS groupDescription, 
@@ -194,16 +207,17 @@ def query_dataverse_user_info(user_id):
         LEFT JOIN public.explicitgroup_authenticateduser ON explicitgroup_authenticateduser.containedauthenticatedusers_id=authenticateduser.id
         LEFT JOIN public.explicitgroup
         ON explicitgroup.id=explicitgroup_authenticateduser.explicitgroup_id
-        WHERE authenticateduser.useridentifier=\'{user_id.strip('@')}\';
+        WHERE authenticateduser.useridentifier=%s;
         """
-    return run_query(query)
+    return run_query(query, (user_id.strip('@'),))
 
 
 def query_dataverse_users(group_aliases=None):
-    group_id_clause = None
+    group_id_clause = ""
+    params = None
     if group_aliases:
-        joint_ids = ", ".join(["'" + group_alias + "'" for group_alias in group_aliases])
-        group_id_clause = f"WHERE groupAliasInOwner=ANY(ARRAY[{joint_ids}])"
+        group_id_clause = "WHERE groupAliasInOwner=ANY(%s)"
+        params = (list(group_aliases),)
     query = f"""SELECT explicitgroup.id AS groupId, 
             explicitgroup.groupaliasinowner AS groupAliasInOwner, 
             explicitgroup.owner_id AS groupOwnerId, 
@@ -220,38 +234,40 @@ def query_dataverse_users(group_aliases=None):
             LEFT JOIN public.explicitgroup_authenticateduser 
             ON explicitgroup.id=explicitgroup_authenticateduser.explicitgroup_id
             LEFT JOIN authenticateduser ON explicitgroup_authenticateduser.containedauthenticatedusers_id=authenticateduser.id
-            {group_id_clause if isinstance(group_id_clause, str) else ''};
+            {group_id_clause};
         """
-    return run_query(query)
+    return run_query(query, params)
 
 
 def query_dataset_review_status_counts(reviewer=None):
-    assigned_to_query = None
+    assigned_to_query = ""
+    params = None
     if reviewer:
-        assigned_to_query = f"WHERE array_position(reviewers, '{reviewer}') IS NOT null"
+        assigned_to_query = "WHERE array_position(reviewers, %s) IS NOT null"
+        params = (reviewer,)
     query = f"""SELECT count(identifier) AS datasetCount, 
             versionstate,
             CASE WHEN (reviewers IS NOT null) THEN true ELSE false END AS hasReviewer,
             CASE WHEN (array_position(locks, 'InReview') IS NOT null) THEN true ELSE false END AS inReview 
             from datasetversion_info 
-            {assigned_to_query if assigned_to_query else ''}
+            {assigned_to_query}
             GROUP BY versionState, inReview, hasReviewer;"""
-    return run_query(query)
+    return run_query(query, params)
 
 
 def view_exists(view_name):
     """Checks if a view is already present in the database."""
-    query = f"""SELECT EXISTS (
+    query = """SELECT EXISTS (
                 SELECT *
                 FROM information_schema.views
-                WHERE table_name = '{view_name}'
+                WHERE table_name = %s
                 );"""
     result = None
     conn = None
     try:
         conn = get_connection()
         with conn.cursor() as cur:
-            cur.execute(query)
+            cur.execute(query, (view_name,))
             postgres_result = cur.fetchone()
             try:
                 result = postgres_result[0]
@@ -272,6 +288,9 @@ def view_exists(view_name):
 
 def add_view(view_name):
     """Checks if a view is present in the database and adds it if not."""
+    if not _VALID_VIEW_NAME.match(view_name):
+        raise ValueError(f"Invalid view name: {view_name}")
+
     if view_exists(view_name):
         logging.info(f"PosgreSQL view {view_name} already exists.")
         return False
@@ -313,23 +332,24 @@ def add_view(view_name):
 
 def query_dataset_assignments(authority: str, identifier: str):
     """Returns all the assignments and their user info (firstname, lastname, affiliation, email) defined on the latest version of a dataset."""
-    query = f"""SELECT * FROM datasetversion_info LEFT JOIN roleassignment ON roleassignment.definitionpoint_id = datasetversion_info.dataset_id
+    query = """SELECT * FROM datasetversion_info LEFT JOIN roleassignment ON roleassignment.definitionpoint_id = datasetversion_info.dataset_id
 	LEFT JOIN authenticateduser ON authenticateduser.useridentifier=SUBSTRING(roleassignment.assigneeidentifier FROM 2) 
     LEFT JOIN dataverserole ON roleassignment.role_id=dataverserole.id
-	WHERE datasetversion_info.authority='{authority}' AND datasetversion_info.identifier='{identifier}';"""
-    return run_query(query)
+	WHERE datasetversion_info.authority=%s AND datasetversion_info.identifier=%s;"""
+    return run_query(query, (authority, identifier))
 
 def query_user_assignments(user_id, roles:List[str]|None=None):
-    query = f"""SELECT * FROM datasetversion_info LEFT JOIN roleassignment ON roleassignment.definitionpoint_id = datasetversion_info.dataset_id
+    query = """SELECT * FROM datasetversion_info LEFT JOIN roleassignment ON roleassignment.definitionpoint_id = datasetversion_info.dataset_id
  	LEFT JOIN authenticateduser ON authenticateduser.useridentifier=SUBSTRING(roleassignment.assigneeidentifier FROM 2)
     LEFT JOIN dataverserole ON roleassignment.role_id=dataverserole.id 
     LEFT JOIN datasetversion_metadata ON datasetversion_info.version_id=datasetversion_metadata.version_id   
-    WHERE authenticateduser.useridentifier LIKE '{user_id}' 
+    WHERE authenticateduser.useridentifier LIKE %s 
     AND datasetversion_metadata.name LIKE 'title'
-    """    
+    """
+    params = [user_id]
     if roles is not None:
-        role_list = ["'"+ role +"'" for role in roles]
-        query += f" AND dataverserole.alias IN (" + ", ".join(role_list) + ");"
+        query += " AND dataverserole.alias = ANY(%s);"
+        params.append(list(roles))
     else:
-        query+= ";"
-    return run_query(query)
+        query += ";"
+    return run_query(query, tuple(params))
