@@ -353,4 +353,3 @@ def query_user_assignments(user_id, roles:List[str]|None=None):
     else:
         query += ";"
     return run_query(query, tuple(params))
-    return run_query(query)
