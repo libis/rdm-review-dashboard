@@ -29,7 +29,6 @@ async def require_dataset_assignment(user_id: str, roles: List[str], dataset_id:
 
 async def check_dataset_assignment(user_id: str, roles: List[str], dataset_id: str, version: str = None):
     assignments = await user.get_assigned_datasets(user_id, roles)
-    logging.info(assignments)
     for assignment in assignments:
         if assignment.get("role") in roles \
             and assignment.get("identifier") == dataset_id \
