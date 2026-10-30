@@ -18,16 +18,19 @@ export class DatasetService {
 
   setMetadata(dataset: DatasetBasicMetadata | null) {
     this.datasetBasicMetadata = dataset;
-    console.log(this.datasetBasicMetadata);
   }
 
   retrieve(datasetId: string) {
-    console.log('this runs');
     if (datasetId !== null && datasetId !== this.dataset()?.identifier) {
       console.log(`retrieving dataset with Id ${datasetId}`);
-      this.api.retrieveDataset(datasetId).subscribe((dataset) => this.dataset.set(dataset));
+      this.api.retrieveDatasetMetadata(datasetId).subscribe((dataset) => this.dataset.set(dataset));
     }
   }
+
+  getDatasetTitle() {
+    return this.dataset()?.title;
+  }
+
 
   getDatasetUrl() {
     return this.dataset()?.datasetUrl;

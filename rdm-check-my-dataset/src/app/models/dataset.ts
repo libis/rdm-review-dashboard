@@ -5,28 +5,16 @@ export interface DatasetBasicMetadata {
   title: string;
 }
 
+export interface Author {
+  authorName: string |null;
+  authorAffiliation: string | null;
+} 
+
 export interface Dataset {
   identifier: string;
   title: string;
-  description: string[];
-  authorName: string[];
-  status: Status;
-  reviewer: string[];
-  contributor: string[];
-  reviewerDetails: User[];
-  contributorDetails: User[];
-  persistentUrl: string;
-  version: number | null;
-  versionMinorNumber: number | null;
-  versionMajorNumber: number | null;
-  createTime: string;
-  lastUpdateTime: string;
-  size: number;
-  faculty: string[];
-  department: string[];
-  warnings: string[];
-  locks: string[];
-  datasetUrl: string;
+  author: Author[];
+  datasetUrl : string;
 }
 
 export enum Status {

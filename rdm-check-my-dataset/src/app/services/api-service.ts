@@ -34,8 +34,8 @@ export class ApiService {
     return this.http.get<Dataset[]>(url);
   }
 
-  retrieveDataset(datasetId: string): Observable<Dataset> {
-    let url = `${this.config.apiUrl}/datasets/${datasetId}`;
+  retrieveDatasetMetadata(datasetId: string): Observable<Dataset> {
+    let url = `${this.config.apiUrl}/datasets/${datasetId}/draft/info`;
     return this.http.get<Dataset>(url);
   }
 
