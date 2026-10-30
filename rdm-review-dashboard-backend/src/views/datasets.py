@@ -2,6 +2,7 @@ import fastapi
 from typing import Optional
 from utils.logging import logging
 from services.dataverse.dataset import metadata
+from services import auth
 from services import issue
 from autochecks.dataset_context import DatasetContext
 from utils import response_headers
@@ -26,6 +27,20 @@ async def async_get_datasets_details(
         start, rows, status, reviewer=reviewer
     )
     return datasets
+
+
+@router.get("/api/datasets/stats/reviewStatus")
+@response_headers.inject_uid(["reviewer", "admin"])
+async def get_review_status_counts(
+    response: fastapi.Response,
+    request: fastapi.Request,
+    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
+    reviewer: Optional[str] = fastapi.Query(default=None),
+):
+    """Retrieves a list of all status counts for datasets."""
+    datasets = await metadata.get_review_status_counts(reviewer=reviewer)
+    return list(datasets.values())
+
 
 @router.post("/api/datasets/{persistent_identifier:path}/issues/autochecks/:update")
 @response_headers.inject_uid(["reviewer", "admin"])
@@ -86,51 +101,39 @@ async def get_dataset_contact(
     return contact
 
 
-@router.get("/api/datasets/stats/reviewStatus")
-@response_headers.inject_uid(["reviewer", "admin"])
-async def async_get_datasets_details(
-    response: fastapi.Response,
-    request: fastapi.Request,
-    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
-    reviewer: Optional[str] = fastapi.Query(default=None),
-):
-    """Retrieves a list of all status counts for datasets."""
-    datasets = await metadata.get_review_status_counts(reviewer=reviewer)
-    return list(datasets.values())
-
-
 @router.get("/api/datasets/{persistent_identifier:path}/draft/metadata")
-@response_headers.inject_uid(["reviewer", "admin"])
+@response_headers.inject_uid()
 async def get_dataset_draft_metadata(
     response: fastapi.Response,
     request: fastapi.Request,
-    persistent_identifier: str,
-    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
+    persistent_identifier: str
 ):
     """Retrieves the specified dataset's draft version's details."""
+    uid = response.headers.get("X-User")
+    await auth.require_dataset_assignment(uid, ["contributor", "admin", "reviewer"], persistent_identifier)
     datasets = await metadata.async_get_dataset_draft_metadata(persistent_identifier)
     return datasets
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/draft/metadata/:flatten")
-@response_headers.inject_uid(["reviewer", "admin"])
+@response_headers.inject_uid(["reviewer", "admin", "researcher"])
 async def get_dataset_draft_metadata_flatten(
     response: fastapi.Response,
     request: fastapi.Request,
-    persistent_identifier: str,
-    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
+    persistent_identifier: str
 ):
     """Retrieves the specified dataset's draft version's flattened metadata."""
-    datasets = DatasetContext(persistent_identifier).metadata
-    return datasets
+    uid = response.headers.get("X-User")
+    await auth.require_dataset_assignment(uid, ["contributor", "admin", "reviewer"], persistent_identifier)
+    dataset = DatasetContext(persistent_identifier).metadata
+    return dataset
 
 @router.get("/api/datasets/{persistent_identifier:path}/draft/files")
 @response_headers.inject_uid(["reviewer", "admin"])
 async def get_dataset_draft_files(
     response: fastapi.Response,
     request: fastapi.Request,
-    persistent_identifier: str,
-    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
+    persistent_identifier: str
 ):
     """Retrieves the specified dataset's draft version's file list."""
     datasets = DatasetContext(persistent_identifier).files
@@ -142,8 +145,7 @@ async def get_dataset_draft_files(
 async def post_start_autocheck_tasks(
     response: fastapi.Response,
     request: fastapi.Request,
-    persistent_identifier: str,
-    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False)
+    persistent_identifier: str
 ):
     """Updates the autocheck results and returns the results."""
     result = autocheck_orchestrator.orchestrate_autochecks(persistent_identifier)
@@ -154,8 +156,7 @@ async def post_start_autocheck_tasks(
 async def get_poll_autocheck_tasks_results(
     response: fastapi.Response,
     request: fastapi.Request,
-    persistent_identifier: str,
-    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False)
+    persistent_identifier: str
 ):
     """Updates the autocheck results and returns the results."""
     result = autocheck_orchestrator.get_check_status(persistent_identifier)
@@ -170,20 +171,31 @@ async def get_poll_autocheck_tasks_results(
 async def get_dataset_details(
     response: fastapi.Response,
     request: fastapi.Request,
-    persistent_identifier: str,
-    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
+    persistent_identifier: str
 ):
     """Retrieves the specified dataset's details."""
+    uid = response.headers.get("X-User")
+    await auth.require_group_and_assignment(uid,
+                                            {"admin": None,
+                                            "reviewer": None,
+                                            "researcher": {
+                                                "role": "contributor",
+                                                "object": 
+                                                {
+                                                    "type": "dataset",
+                                                    "id": persistent_identifier,
+                                                    "version": "DRAFT"
+                                                }
+                                            }})
     datasets = await metadata.async_get_dataset_details(persistent_identifier)
     return datasets
 
 @router.get("/api/issues/{issueList}")
 @response_headers.inject_uid(["reviewer", "admin"])
-async def get_dataset_issues(
+async def get_issue_definitions(
     response: fastapi.Response,
     request: fastapi.Request,
-    issueList: str,
-    AJP_USER: Optional[str] = fastapi.Header(default=None, convert_underscores=False),
+    issueList: str
 ):
     """Retrieves the issue definitions."""
     
