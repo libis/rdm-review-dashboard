@@ -2,6 +2,7 @@ import json
 from typing import List
 from services.dataverse import postgresql
 from utils.logging import logging
+from fastapi import HTTPException
 
 GROUP_ALIASES = {}
 USERS = {}
@@ -34,7 +35,7 @@ async def get_user_info(user_id: str) -> dict:
     return result
 
 
-async def get_user_roles(user_id: str) -> dict:
+async def get_user_groups(user_id: str) -> dict:
     """Returns the roles of the user."""
     dataverse_user_id = user_id.strip("@")
     rows = postgresql.query_dataverse_user_info(dataverse_user_id)
@@ -95,14 +96,19 @@ async def get_dataverse_assignees(groups=None) -> List[dict]:
     return list(users.values())
 
 
-async def get_user_assigned_datasets(user_id: str, roles: List[str]):
+async def get_assigned_datasets(user_id: str, roles: List[str]):
     query_results = postgresql.query_user_assignments(user_id, roles)
     result = []
     for dataset in query_results:
+        version = None
+        if dataset.get("versionnumber") or dataset.get("minorversionnumber"):
+            version = f"{dataset.get("versionnumber"), 0}.{dataset.get("minorversionnumber")}"
+        else:
+            version = "DRAFT"
         result.append(
             {
                 "identifier": f"doi:{dataset.get("authority")}/{dataset.get("identifier")}",
-                "version": f"{dataset.get("versionnumber",0)}.{dataset.get("minorversionnumber")}",
+                "version": version,
                 "role": f"{dataset.get("alias")}",
                 "title": f"{dataset.get("value")[0]}",
             }
