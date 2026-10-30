@@ -173,8 +173,7 @@ async def get_users_datasets(response: fastapi.Response, request: fastapi.Reques
         user_id = response.headers.get("X-User")
     logging.info(f"looking up user: {user_id}")
     result = {"id": user_id}
-    user_id = user_id.strip("@")
-    result = await user.get_user_assigned_datasets(user_id, ["contributor", "admin", "reviewer"])
+    result = await user.get_assigned_datasets(user_id, ["contributor", "admin", "reviewer"])
     return result
 
 
@@ -187,7 +186,7 @@ async def get_user(response: fastapi.Response, request: fastapi.Request, user_id
     logging.info(f"looking up user: {user_id}")
     result = {"id": user_id}
     user_id = user_id.strip("@")
-    roles = await user.get_user_roles(user_id)
+    roles = await user.get_user_groups(user_id)
     result.update(roles)
     return result
 

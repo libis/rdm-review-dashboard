@@ -7,17 +7,17 @@ USERID_HEADER_FIELD = ""
 ROLES = []
 
 
-async def has_authorized_role(user_id, roles_allowed):
+async def require_group(user_id, groups_allowed):
     """Checks if a user has access to the API, based on their role in Dataverse."""
-    user_roles = await user.get_user_roles(user_id)
-    for role in roles_allowed:
+    user_roles = await user.get_user_groups(user_id)
+    for role in groups_allowed:
         if user_roles.get(f"is{role.capitalize()}"):
             return True
     return False
 
 
-def inject_uid(roles_allowed=None):
-    roles_allowed = roles_allowed or ROLES
+def inject_uid(groups_allowed=None):
+    groups_allowed = groups_allowed or ROLES
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -28,7 +28,7 @@ def inject_uid(roles_allowed=None):
             if not uid:
                 logging.info("User not logged in.")
                 raise HTTPException(status_code=404, detail="User not logged in.")   
-            if not await has_authorized_role(uid, roles_allowed):
+            if not await require_group(uid, groups_allowed):
                 logging.info(f"User {uid} not authorized.")
                 raise HTTPException(status_code=404, detail=f"User '{uid}' not authorized.")
             else:

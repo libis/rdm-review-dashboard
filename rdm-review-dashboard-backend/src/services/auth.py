@@ -29,6 +29,7 @@ async def require_dataset_assignment(user_id: str, roles: List[str], dataset_id:
 
 async def check_dataset_assignment(user_id: str, roles: List[str], dataset_id: str, version: str = None):
     assignments = await user.get_assigned_datasets(user_id, roles)
+    logging.info(assignments)
     for assignment in assignments:
         if assignment.get("role") in roles \
             and assignment.get("identifier") == dataset_id \
@@ -53,13 +54,15 @@ async def require_group_and_assignment(user_id: str, assignment_requirements: di
                 role = assignment_requirement.get("role")
                 _object = assignment_requirement.get("object")
                 object_type = _object.get("type")
-
-                if object_type == "dataset":
-                    persistent_id = _object.get("dataset_id")
-                    version = _object.get("version")
-                    if await check_dataset_assignment(user_id, [role], persistent_id, version):
-                        return True
-                logging.error("Object type not supported")
+                object_id = _object.get("id")
+                match object_type:
+                    case "dataset":
+                        version = _object.get("version")
+                        if await check_dataset_assignment(user_id, [role], object_id, version):
+                            return True
+                        logging.error(f"User {user_id} is not assignned to {object_type}: {object_id} as {role}")
+                    case _:
+                        logging.error("Object type not supported: {object_type}")
     raise HTTPException(status_code=404, detail=f"Unknown authorization error.")
 
 
