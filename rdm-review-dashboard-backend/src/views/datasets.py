@@ -115,7 +115,7 @@ async def get_dataset_draft_metadata(
     return datasets
 
 
-@router.get("/api/datasets/{persistent_identifier:path}/draft/metadata/:flatten")
+@router.get("/api/datasets/{persistent_identifier:path}/draft/info")
 @response_headers.inject_uid(["reviewer", "admin", "researcher"])
 async def get_dataset_draft_metadata_flatten(
     response: fastapi.Response,
@@ -124,9 +124,24 @@ async def get_dataset_draft_metadata_flatten(
 ):
     """Retrieves the specified dataset's draft version's flattened metadata."""
     uid = response.headers.get("X-User")
-    await auth.require_dataset_assignment(uid, ["contributor", "admin", "reviewer"], persistent_identifier)
-    dataset = DatasetContext(persistent_identifier).metadata
-    return dataset
+    await auth.require_group_and_assignment(uid,
+                                            {"admin": None,
+                                            "reviewer": None,
+                                            "researcher": {
+                                                "role": "contributor",
+                                                "object": 
+                                                {
+                                                    "type": "dataset",
+                                                    "id": persistent_identifier,
+                                                    "version": "DRAFT"
+                                                }
+                                            }})
+    dataset = DatasetContext(persistent_identifier)
+    result = {"identifier": persistent_identifier}
+    citation = dataset.metadata.get("citation", {})
+    result["title"] = citation.get("title", {})
+    result["datasetUrl"] =  persistent_identifier
+    return result
 
 @router.get("/api/datasets/{persistent_identifier:path}/draft/files")
 @response_headers.inject_uid(["reviewer", "admin"])
@@ -148,6 +163,19 @@ async def post_start_autocheck_tasks(
     persistent_identifier: str
 ):
     """Updates the autocheck results and returns the results."""
+    uid = response.headers.get("X-User")
+    await auth.require_group_and_assignment(uid,
+                                            {"admin": None,
+                                            "reviewer": None,
+                                            "researcher": {
+                                                "role": "contributor",
+                                                "object": 
+                                                {
+                                                    "type": "dataset",
+                                                    "id": persistent_identifier,
+                                                    "version": "DRAFT"
+                                                }
+                                            }})
     result = autocheck_orchestrator.orchestrate_autochecks(persistent_identifier)
     return result
 
@@ -159,6 +187,20 @@ async def get_poll_autocheck_tasks_results(
     persistent_identifier: str
 ):
     """Updates the autocheck results and returns the results."""
+    uid = response.headers.get("X-User")
+    await auth.require_group_and_assignment(uid,
+                                            {"admin": None,
+                                            "reviewer": None,
+                                            "researcher": {
+                                                "role": "contributor",
+                                                "object": 
+                                                {
+                                                    "type": "dataset",
+                                                    "id": persistent_identifier,
+                                                    "version": "DRAFT"
+                                                }
+                                            }})
+
     result = autocheck_orchestrator.get_check_status(persistent_identifier)
     if result is None:
         autocheck_orchestrator.orchestrate_autochecks(persistent_identifier)
