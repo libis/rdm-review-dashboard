@@ -54,6 +54,13 @@ async def get_user_groups(user_id: str) -> dict:
     result.update(USERS.get("@" + user_id, {}))
     return result
 
+async def get_user_data(user_id: str) -> dict:
+    """Returns the roles of the user."""
+    dataverse_user_id = user_id.strip("@")
+    
+    rows = postgresql.query_dataverse_user_info(dataverse_user_id)
+    return rows
+
 
 async def format_user_data(record):
     """Adds the fields isAdmin and isReviewer to the user record based on user roles in Dataverse and settings."""
@@ -96,13 +103,32 @@ async def get_dataverse_assignees(groups=None) -> List[dict]:
     return list(users.values())
 
 
+async def get_dataset_assignment(user_id: str, roles: List[str], persistent_id: str=None, only_drafts=False, allow_indirect=False):
+    """Returns the user's assignments on one dataset, direct or inherited from a parent collection."""
+    authority = persistent_id.split("/")[0].replace("doi:", "")
+    identifier = "/".join(persistent_id.split("/")[1:])
+    rows = postgresql.query_direct_assignments(user_id, roles)
+    if allow_indirect:
+        rows_indirect = postgresql.query_indirect_assignments(user_id, roles)
+        rows.extend(rows_indirect)
+    result = []
+    if not persistent_id:
+        result = rows
+    else:
+        for row in rows:
+            if row.get("authority") == authority and row.get("identifier") == identifier:
+                if not only_drafts or row.get("versionstate") == "DRAFT":
+                    result.append(row)
+    return result
+
+
 async def get_assigned_datasets(user_id: str, roles: List[str]):
     query_results = postgresql.query_user_assignments(user_id, roles)
     result = []
     for dataset in query_results:
         version = None
         if dataset.get("versionnumber") or dataset.get("minorversionnumber"):
-            version = f"{dataset.get("versionnumber"), 0}.{dataset.get("minorversionnumber")}"
+            version = f"{dataset.get('versionnumber') or 0}.{dataset.get('minorversionnumber') or 0}"
         else:
             version = "DRAFT"
         result.append(

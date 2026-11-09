@@ -193,6 +193,7 @@ def query_datasets_metadata(start=None, rows=None, status=None, reviewer=None):
 def query_dataverse_user_info(user_id):
     query = """SELECT explicitgroup.id AS groupId, 
         explicitgroup.groupaliasinowner AS groupAliasInOwner, 
+        explicitgroup.groupalias AS groupAlias,
         explicitgroup.owner_id AS groupOwnerId, 
         explicitgroup.description AS groupDescription, 
         explicitgroup.displayname AS groupDisplayName, 
@@ -330,20 +331,60 @@ def add_view(view_name):
     return True
 
 
-def query_dataset_assignments(authority: str, identifier: str):
-    """Returns all the assignments and their user info (firstname, lastname, affiliation, email) defined on the latest version of a dataset."""
-    query = """SELECT * FROM datasetversion_info LEFT JOIN roleassignment ON roleassignment.definitionpoint_id = datasetversion_info.dataset_id
-	LEFT JOIN authenticateduser ON authenticateduser.useridentifier=SUBSTRING(roleassignment.assigneeidentifier FROM 2) 
-    LEFT JOIN dataverserole ON roleassignment.role_id=dataverserole.id
-	WHERE datasetversion_info.authority=%s AND datasetversion_info.identifier=%s;"""
-    return run_query(query, (authority, identifier))
+def query_indirect_assignments(user_id, roles: List[str] | None = None, persistent_id: str = None):
+    query = """SELECT datasetversion.id AS version_id,
+        dataset.id AS dataset_id,
+        dataset.authority, dataset.identifier,
+        dataverserole.alias AS role,
+        datasetversion.versionstate,
+        roleassignment.assigneeidentifier
+    FROM datasetversion
+    JOIN dvobject AS dataset ON datasetversion.dataset_id = dataset.id
+    JOIN dvobject ON dataset.owner_id = dvobject.id
+    JOIN roleassignment ON roleassignment.definitionpoint_id = dvobject.id
+    JOIN dataverserole ON roleassignment.role_id = dataverserole.id
+    WHERE roleassignment.assigneeidentifier = %s
+    """
+    user_id = "@" + user_id if not (user_id.startswith("@") or user_id.startswith("&")) else user_id
+
+    params = [user_id]
+    if roles is not None:
+        query += " AND dataverserole.alias = ANY(%s)"
+        params.append([roles] if isinstance(roles, str) else roles)
+    query += ";"
+    print(query, params)
+    return run_query(query, tuple(params))
+
+def query_direct_assignments(user_id, roles: List[str] | None = None, persistent_id: str = None):
+    query = """SELECT datasetversion.id AS version_id,
+        dvobject.id AS dataset_id,
+        dvobject.authority, dvobject.identifier,
+        datasetversion.versionstate,
+        dataverserole.alias AS role,
+        roleassignment.assigneeidentifier
+    FROM datasetversion
+    JOIN dvobject ON datasetversion.dataset_id = dvobject.id
+    JOIN roleassignment ON roleassignment.definitionpoint_id = dvobject.id
+    JOIN dataverserole ON roleassignment.role_id = dataverserole.id
+    WHERE roleassignment.assigneeidentifier = %s AND dvobject.dtype = 'Dataset'
+    """
+    user_id = "@" + user_id if not (user_id.startswith("@") or user_id.startswith("&")) else user_id
+    params = [user_id]
+    if roles is not None:
+        query += " AND dataverserole.alias = ANY(%s)"
+        params.append([roles] if isinstance(roles, str) else roles)
+    query += ";"
+    print(query, params)
+
+    return run_query(query, tuple(params))
+
 
 def query_user_assignments(user_id, roles:List[str]|None=None):
     query = """SELECT * FROM datasetversion_info LEFT JOIN roleassignment ON roleassignment.definitionpoint_id = datasetversion_info.dataset_id
  	LEFT JOIN authenticateduser ON authenticateduser.useridentifier=SUBSTRING(roleassignment.assigneeidentifier FROM 2)
     LEFT JOIN dataverserole ON roleassignment.role_id=dataverserole.id 
     LEFT JOIN datasetversion_metadata ON datasetversion_info.version_id=datasetversion_metadata.version_id   
-    WHERE authenticateduser.useridentifier LIKE %s 
+    WHERE authenticateduser.useridentifier = %s 
     AND datasetversion_metadata.name LIKE 'title'
     """
     params = [user_id]

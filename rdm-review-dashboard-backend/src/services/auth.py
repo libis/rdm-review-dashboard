@@ -2,7 +2,12 @@ from typing import List
 from services.dataverse import user
 from utils.logging import logging
 from fastapi import HTTPException
+import fastapi
+from functools import wraps
 
+
+USERID_HEADER_FIELD = "Ajp_uid"
+ROLES = []
 
 
 async def get_user_groups(user_id):
@@ -14,54 +19,83 @@ async def get_user_groups(user_id):
     return result
 
 
-async def require_group(user_groups, groups_allowed):
-    """Checks if a group has access to the API, based on their role in Dataverse."""
-    for user_group in user_groups:
-        if user_group in groups_allowed:
-            return True
-    raise HTTPException(status_code=404, detail=f"User does not have access to this endpoint.")
+async def check_dataset_assignment(user_id: str, roles: List[str], dataset_id: str, only_drafts: bool = True, allow_indirect=False):
+    """Returns the first assignment or None.
+    By default, assignments inherited from a parent collection count too;
+    with direct_only=True only assignments made on the dataset itself count.
+    If version == "DRAFT", the dataset must also have a draft version."""
+    assignments = await user.get_dataset_assignment(
+        user_id, roles, dataset_id, only_drafts, allow_indirect
+    )
+    return assignments and len(assignments) > 0
 
-async def require_dataset_assignment(user_id: str, roles: List[str], dataset_id: str, version: str = None):
-    result = await check_dataset_assignment(user_id, roles, dataset_id, version)
-    if result:
-        return result
-    raise HTTPException(status_code=404, detail=f"User '{user_id}' does not have access to this dataset'.")
 
-async def check_dataset_assignment(user_id: str, roles: List[str], dataset_id: str, version: str = None):
-    assignments = await user.get_assigned_datasets(user_id, roles)
-    for assignment in assignments:
-        if assignment.get("role") in roles \
-            and assignment.get("identifier") == dataset_id \
-            and (not version or assignment.get("version") == version):
-                return assignment
-    return None
+async def get_user_groups(uid):
+    user_data = await user.get_user_data(uid)
+    user_groups = set()
 
-async def require_group_and_assignment(user_id: str, assignment_requirements: dict):
-    
-    required_groups = assignment_requirements.keys()
-    user_groups = await get_user_groups(user_id)
+    for row in user_data:
+        if row.get("groupalias"): 
+            user_groups.add("&explicit/" + row.get("groupalias"))
+        if row.get("groupaliasinowner"):
+            user_groups.add(row.get("groupaliasinowner"))
+    return user_groups
 
-    if not await require_group(user_groups, required_groups):
-        raise HTTPException(status_code=404, detail=f"User '{user_id}' does not have access to this endpoint'.")
-    
-    for group_name, assignment_requirement in assignment_requirements.items():
 
-        if group_name in user_groups:
-            if assignment_requirement  == None:
-                return True
-            else:
-                role = assignment_requirement.get("role")
-                _object = assignment_requirement.get("object")
-                object_type = _object.get("type")
-                object_id = _object.get("id")
-                match object_type:
+def require_auth(groups_allowed, assignments_required, allow_indirect_assignments=False):
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            try:
+                uid = kwargs.get("request").headers.get(USERID_HEADER_FIELD)
+            except:
+                logging.error("SSO Headers not found.")
+                raise HTTPException(status_code=404, detail=f"User not logged in..")
+            if not uid:
+                logging.info("User not logged in.")
+                raise HTTPException(status_code=404, detail="User not logged in.")   
+
+
+            user_groups = await get_user_groups(uid)
+            if set(user_groups).intersection(set(groups_allowed)) == set():
+                logging.info(f"User {uid} not authorized.")
+                raise HTTPException(status_code=404, detail=f"User '{uid}' not authorized.")
+            
+            if assignments_required:
+                roles = assignments_required.get("roles")
+                object = assignments_required.get("object")
+                dataset_id = kwargs.get("persistent_identifier")
+                match object:
+
                     case "dataset":
-                        version = _object.get("version")
-                        if await check_dataset_assignment(user_id, [role], object_id, version):
-                            return True
-                        logging.error(f"User {user_id} is not assignned to {object_type}: {object_id} as {role}")
+                        if not dataset_id:
+                            raise HTTPException(status_code=404, detail=f"User does not have access.")
+                        if not await auth_for_dataset(uid, user_groups, dataset_id, False, roles, allow_indirect_assignments):
+                            raise HTTPException(status_code=404, detail=f"User does not have access.")
+                    
+                    case "dataset_draft":
+                        if not dataset_id:
+                            raise HTTPException(status_code=404, detail=f"User does not have access.")
+                        if not await auth_for_dataset(uid, user_groups, dataset_id, True, roles, allow_indirect_assignments):
+                            raise HTTPException(status_code=404, detail=f"User does not have access.")
+                    
                     case _:
-                        logging.error("Object type not supported: {object_type}")
-    raise HTTPException(status_code=404, detail=f"Unknown authorization error.")
+                        logging.warning(f"Not implemented; object: {object}, roles: {roles}, args: {kwargs}")
+                        raise HTTPException(status_code=404, detail=f"User does not have access.")
+            
+            kwargs["response"].headers["X-User"] = uid
+            return await func(*args, **kwargs)
+        return wrapper
+    return decorator
 
-
+async def auth_for_dataset(uid, user_groups, persistent_identifier, only_drafts, roles, allow_indirect_assignments):
+            assignment_check_result = await check_dataset_assignment("@" + uid, roles, persistent_identifier, only_drafts, allow_indirect_assignments)
+            if not assignment_check_result:
+                for user_group in user_groups:
+                    assignment_check_result = await check_dataset_assignment(user_group, roles, persistent_identifier, only_drafts, allow_indirect_assignments)
+                    if assignment_check_result:
+                        break
+            print("result: ", assignment_check_result)
+            if not assignment_check_result:
+                raise HTTPException(status_code=404, detail=f"User does not have access to this endpoint.")
+            return assignment_check_result
