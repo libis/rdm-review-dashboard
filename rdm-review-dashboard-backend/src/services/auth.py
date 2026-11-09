@@ -6,17 +6,10 @@ import fastapi
 from functools import wraps
 
 
+
 USERID_HEADER_FIELD = "Ajp_uid"
 ROLES = []
 
-
-async def get_user_groups(user_id):
-    groups = await user.get_user_groups(user_id)
-    result = []
-    for group, membership in groups.items():
-        if membership:
-            result.append(group.removeprefix("is").lower())
-    return result
 
 
 async def check_dataset_assignment(user_id: str, roles: List[str], dataset_id: str, only_drafts: bool = True, allow_indirect=False):
