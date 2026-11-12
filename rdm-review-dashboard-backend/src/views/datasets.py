@@ -1,5 +1,5 @@
 import fastapi
-from typing import Optional
+from typing import Optional, Annotated
 from utils.logging import logging
 from services.dataverse.dataset import metadata
 from services import auth
@@ -7,12 +7,13 @@ from services import issue
 from autochecks.dataset_context import DatasetContext
 from utils import response_headers
 from autochecks import autocheck_orchestrator
+from services.dataverse import postgresql
 
 router = fastapi.APIRouter()
 
 
 @router.get("/api/datasets")
-@response_headers.inject_uid(["reviewer", "admin"])
+@auth.require_auth(groups_allowed=["admin", "reviewer"], allow_indirect_assignments=True)
 async def async_get_datasets_details(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -30,7 +31,7 @@ async def async_get_datasets_details(
 
 
 @router.get("/api/datasets/stats/reviewStatus")
-@response_headers.inject_uid(["reviewer", "admin"])
+@auth.require_auth(groups_allowed=["admin", "reviewer"])
 async def get_review_status_counts(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -43,7 +44,7 @@ async def get_review_status_counts(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/issues/autochecks/:update")
-@response_headers.inject_uid(["reviewer", "admin"])
+@auth.require_auth(groups_allowed=["admin", "reviewer"], assignments_required={"roles": ["admin", "reviewer"], "object": "dataset_draft"}, allow_indirect_assignments=True)
 async def update_dataset_issues_from_autocheck(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -57,7 +58,7 @@ async def update_dataset_issues_from_autocheck(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/issues/checklist")
-@response_headers.inject_uid(["reviewer", "admin"])
+@auth.require_auth(groups_allowed=["admin", "reviewer"], assignments_required={"roles": ["reviewer"], "object": "dataset_draft"}, allow_indirect_assignments=True)
 async def update_dataset_issues(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -76,7 +77,7 @@ async def update_dataset_issues(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/issues")
-@response_headers.inject_uid(["reviewer", "admin"])
+@auth.require_auth(groups_allowed=["admin", "reviewer"])
 async def get_dataset_issues(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -89,7 +90,7 @@ async def get_dataset_issues(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/contact")
-@response_headers.inject_uid(["reviewer", "admin"])
+@auth.require_auth(groups_allowed=["admin", "reviewer"])
 async def get_dataset_contact(
     response: fastapi.Response,
     request: fastapi.Request,
@@ -102,40 +103,25 @@ async def get_dataset_contact(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/draft/metadata")
-@response_headers.inject_uid()
+@auth.require_auth(groups_allowed=["admin", "reviewer", "researcher"], assignments_required={"roles": ["admin", "reviewer", "contributor"], "object": "dataset_draft"}, allow_indirect_assignments=True)
 async def get_dataset_draft_metadata(
     response: fastapi.Response,
     request: fastapi.Request,
     persistent_identifier: str
 ):
     """Retrieves the specified dataset's draft version's details."""
-    uid = response.headers.get("X-User")
-    await auth.require_dataset_assignment(uid, ["contributor", "admin", "reviewer"], persistent_identifier)
     datasets = await metadata.async_get_dataset_draft_metadata(persistent_identifier)
     return datasets
 
 
 @router.get("/api/datasets/{persistent_identifier:path}/draft/info")
-@response_headers.inject_uid(["reviewer", "admin", "researcher"])
+@auth.require_auth(groups_allowed=["admin", "reviewer", "researcher"], assignments_required={"roles": ["admin", "reviewer", "contributor"], "object": "dataset_draft"}, allow_indirect_assignments=True)
 async def get_dataset_draft_metadata_flatten(
     response: fastapi.Response,
     request: fastapi.Request,
     persistent_identifier: str
 ):
     """Retrieves the specified dataset's draft version's flattened metadata."""
-    uid = response.headers.get("X-User")
-    await auth.require_group_and_assignment(uid,
-                                            {"admin": None,
-                                            "reviewer": None,
-                                            "researcher": {
-                                                "role": "contributor",
-                                                "object": 
-                                                {
-                                                    "type": "dataset",
-                                                    "id": persistent_identifier,
-                                                    "version": "DRAFT"
-                                                }
-                                            }})
     dataset = DatasetContext(persistent_identifier)
     result = {"identifier": persistent_identifier}
     citation = dataset.metadata.get("citation", {})
@@ -156,51 +142,24 @@ async def get_dataset_draft_files(
 
 
 @router.post("/api/datasets/{persistent_identifier:path}/:startChecks")
-@response_headers.inject_uid(["reviewer", "admin", "researcher"])
+@auth.require_auth(groups_allowed=["admin", "reviewer", "researcher"], assignments_required={"roles": ["admin", "reviewer", "contributor"], "object": "dataset_draft"}, allow_indirect_assignments=True)
 async def post_start_autocheck_tasks(
     response: fastapi.Response,
     request: fastapi.Request,
     persistent_identifier: str
 ):
     """Updates the autocheck results and returns the results."""
-    uid = response.headers.get("X-User")
-    await auth.require_group_and_assignment(uid,
-                                            {"admin": None,
-                                            "reviewer": None,
-                                            "researcher": {
-                                                "role": "contributor",
-                                                "object": 
-                                                {
-                                                    "type": "dataset",
-                                                    "id": persistent_identifier,
-                                                    "version": "DRAFT"
-                                                }
-                                            }})
     result = autocheck_orchestrator.orchestrate_autochecks(persistent_identifier)
     return result
 
 @router.get("/api/datasets/{persistent_identifier:path}/:pollResults")
-@response_headers.inject_uid(["reviewer", "admin", "researcher"])
+@auth.require_auth(groups_allowed=["admin", "reviewer", "researcher"], assignments_required={"roles": ["admin", "reviewer", "contributor"], "object": "dataset_draft"}, allow_indirect_assignments=True)
 async def get_poll_autocheck_tasks_results(
     response: fastapi.Response,
     request: fastapi.Request,
     persistent_identifier: str
 ):
     """Updates the autocheck results and returns the results."""
-    uid = response.headers.get("X-User")
-    await auth.require_group_and_assignment(uid,
-                                            {"admin": None,
-                                            "reviewer": None,
-                                            "researcher": {
-                                                "role": "contributor",
-                                                "object": 
-                                                {
-                                                    "type": "dataset",
-                                                    "id": persistent_identifier,
-                                                    "version": "DRAFT"
-                                                }
-                                            }})
-
     result = autocheck_orchestrator.get_check_status(persistent_identifier)
     if result is None:
         autocheck_orchestrator.orchestrate_autochecks(persistent_identifier)
@@ -209,37 +168,22 @@ async def get_poll_autocheck_tasks_results(
 
 
 @router.get("/api/datasets/{persistent_identifier:path}")
-@response_headers.inject_uid(["reviewer", "admin", "researcher"])
+@auth.require_auth(groups_allowed=["admin", "reviewer", "researcher"], assignments_required={"roles": ["admin", "reviewer", "contributor"], "object": "dataset_draft"}, allow_indirect_assignments=True)
 async def get_dataset_details(
     response: fastapi.Response,
     request: fastapi.Request,
     persistent_identifier: str
 ):
     """Retrieves the specified dataset's details."""
-    uid = response.headers.get("X-User")
-    await auth.require_group_and_assignment(uid,
-                                            {"admin": None,
-                                            "reviewer": None,
-                                            "researcher": {
-                                                "role": "contributor",
-                                                "object": 
-                                                {
-                                                    "type": "dataset",
-                                                    "id": persistent_identifier,
-                                                    "version": "DRAFT"
-                                                }
-                                            }})
     datasets = await metadata.async_get_dataset_details(persistent_identifier)
     return datasets
 
 @router.get("/api/issues/{issueList}")
-@response_headers.inject_uid(["reviewer", "admin"])
+@auth.require_auth(groups_allowed=["admin", "reviewer"])
 async def get_issue_definitions(
     response: fastapi.Response,
     request: fastapi.Request,
     issueList: str
 ):
     """Retrieves the issue definitions."""
-    
-    
     return issue.get_issue_definitions(issueList)
