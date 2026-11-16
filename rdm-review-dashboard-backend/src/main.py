@@ -2,6 +2,7 @@ from pathlib import Path
 import fastapi
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+from services import auth
 
 import os
 import shutil
@@ -75,13 +76,13 @@ def configure():
     utils.logging.configure_logging()
 
     configure_cors(settings)
+    configure_auth(settings)
     configure_routing()
 
     configure_api_keys(settings)
     native.wait_dataverse()
     configure_email(settings)
     configure_postgresql(settings)
-    configure_authentication(settings)
     solr.BASE_URL = get_setting(settings, "SolrHost", required=True) + "/solr"
     if get_setting(settings, "SolrAPIKeyFile"):
         solr.KEY = read_value_from_file(get_setting(settings, "SolrAPIKeyFile"), required=False)
@@ -126,7 +127,6 @@ def configure_routing():
     api.include_router(support.router)
     api.include_router(datasets.router)
 
-
 def configure_cors(settings):
     allowed_origins = get_setting(settings, "allowedOrigins", required=False) or []
     if not allowed_origins:
@@ -143,11 +143,13 @@ def configure_cors(settings):
     )
 
 
-def configure_authentication(settings):
+def configure_auth(settings):
     response_headers.ROLES = get_setting(settings, "reviewerRoles", required=True)
     response_headers.USERID_HEADER_FIELD = get_setting(settings, "userIdHeaderField")
     user.GROUP_ALIASES = get_setting(settings, "dataverseUserGroupAliases", required=True)
-
+    auth.GROUPS = get_setting(settings, "groupAliasMapping", required=True)
+    auth.ROLE_ASSIGNMENTS = get_setting(settings, "roleAssignmentMapping", required=True)
+    auth.USERID_HEADER_FIELD = get_setting(settings, "userIdHeaderField")
 
 def configure_dataset_issue_definitions(settings):
     issue.ISSUE_DEFINITIONS_FILE = get_setting(settings, "issueDefinitionsFile", required=True)
