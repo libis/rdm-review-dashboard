@@ -55,7 +55,7 @@ export class AssignButtonComponent implements OnInit {
     * Returns if the reviewer can be unassigned from this dataset.
     * 'true' if the dataset is currently under review and the current user is assigned to this dataset as reviewer. 
     */
-    const result = this.dataset.status == Dataset.Status.InReview && this.dataset.reviewer.includes(this.userService.loggedUserId.value || ' ');
+    const result = this.dataset.status == Dataset.Status.InReview;
 
     return result
 
