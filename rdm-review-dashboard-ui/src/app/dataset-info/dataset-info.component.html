@@ -43,7 +43,7 @@
       *ngIf="this.reviewService.canLoggedUserReviewSelectedDataset() && (supportAsked.asObservable() |async)==true"
       type="button" class="flex p-button-outlined p-2 m-2" label="Remove support flag" icon="pi pi-flag"
       (click)="removeSupport()"></button>
-    <button pButton *ngIf="this.reviewService.canLoggedUserReviewSelectedDataset()" type="button"
+    <button pButton *ngIf="this.reviewService.canLoggedUserReadSelectedDataset()" type="button"
       class="flex p-button-outlined p-2 m-2" label="View history" icon="pi pi-history"
       (click)="showReviewHistory()"></button>
   </div>
