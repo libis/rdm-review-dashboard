@@ -7,6 +7,7 @@
   class="flex flex-row my-2 vertical-align-end align-items-center justify-content-end"
   style="margin-right: 20px"
 >
+<div *ngIf="reviewService.canLoggedUserReviewSelectedDataset()"> 
   <button
     pButton
     [class]="autocheckButtonClass"
@@ -89,6 +90,7 @@
     <b> <span>Apply all autochecks</span> </b>
   </button>
 </div>
+</div>
 
 <div *ngFor="let category of checklistCategories">
   <div class="flex flex-row my-2">
@@ -143,7 +145,7 @@
         <app-dataset-checklist-item
           [checkboxId]="item"
           [showAutochecks]="autochecksAvailable && lastAutocheck !== null"
-          [checkboxEnabled]="true"
+          [checkboxEnabled]="reviewService.canLoggedUserReviewSelectedDataset() || false"
           [checkboxChecked]="isChecked(item)"
           [checkboxLabel]="issueDetails.get(item)?.condition || ''"
           [checkboxTitle]="issueDetails.get(item)?.title || ''"

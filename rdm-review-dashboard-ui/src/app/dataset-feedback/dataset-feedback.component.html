@@ -2,7 +2,7 @@
 
 <app-dataset-info> </app-dataset-info>
 
-<div *ngIf="reviewService.canLoggedUserReadSelectedDataset() ">
+<div *ngIf="reviewService.canLoggedUserReviewSelectedDataset() ">
   <div class="review-box border-1 border-300 border-round p-3 mt-2 surface-card">
     <h1>Summary</h1>
     <div *ngIf="reviewService.warnings.value.length>0">

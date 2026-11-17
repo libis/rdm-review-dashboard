@@ -32,18 +32,18 @@
     <app-assign-button class="flex p-2 m-2" [dataset]="dataset"> </app-assign-button>
     <button pButton type="button" class="flex p-button p-2 m-2" label="View dataset in {{this.dataverseName}}" icon="pi pi-link"
       (click)="openDataset()"></button>
-    <button pButton *ngIf="this.reviewService.canLoggedUserReadSelectedDataset()" type="button"
+    <button pButton *ngIf="this.reviewService.canLoggedUserReviewSelectedDataset()" type="button"
       class="flex p-button-outlined p-2 m-2" icon="pi pi-envelope" label="Contact dataset creator(s)"
       (click)="mailToContributors()"></button>
     <button pButton
-      *ngIf="this.reviewService.canLoggedUserReadSelectedDataset() && (supportAsked.asObservable()|async)==false"
+      *ngIf="this.reviewService.canLoggedUserReviewSelectedDataset() && (supportAsked.asObservable()|async)==false"
       type="button" class="flex p-button-outlined p-2 m-2" label="Ask for support" icon="pi pi-flag"
       (click)="askSupport()"></button>
     <button pButton
-      *ngIf="this.reviewService.canLoggedUserReadSelectedDataset() && (supportAsked.asObservable() |async)==true"
+      *ngIf="this.reviewService.canLoggedUserReviewSelectedDataset() && (supportAsked.asObservable() |async)==true"
       type="button" class="flex p-button-outlined p-2 m-2" label="Remove support flag" icon="pi pi-flag"
       (click)="removeSupport()"></button>
-    <button pButton *ngIf="this.reviewService.canLoggedUserReadSelectedDataset()" type="button"
+    <button pButton *ngIf="this.reviewService.canLoggedUserReviewSelectedDataset()" type="button"
       class="flex p-button-outlined p-2 m-2" label="View history" icon="pi pi-history"
       (click)="showReviewHistory()"></button>
   </div>

@@ -60,6 +60,7 @@
           [binary]="true"
           [(ngModel)]="checkboxChecked"
           (onChange)="onCheckboxChange()"
+          [disabled] = "!checkboxEnabled"
         ></p-checkbox>
       </div>
     </td>
