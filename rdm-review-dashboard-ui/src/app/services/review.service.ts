@@ -148,6 +148,11 @@ export class ReviewService {
   getSelectedDatasetFeedback(): string | null {
     return this.selectedDatasetSavedFeedback.value;
   }
+  getSelectedDatasetFeedbackAsHTML(): string {
+    return this.selectedDatasetSavedFeedback.value?.replace(/(?:\r\n|\r|\n)/g, '<br>') || '';
+  }
+
+  
 
 
   setFeedback(newFeedback: string | null) {
@@ -259,11 +264,14 @@ export class ReviewService {
     }
   }
 
-  canLoggedUserReadSelectedDataset() {
+  canLoggedUserReviewSelectedDataset() {
     return this.userService.loggedUserId.value && 
-      this.selectedDataset.value?.reviewer.includes(this.userService.loggedUserId.value) || this.userService.loggedUserDetails.value?.isAdmin;
+      this.selectedDataset.value?.reviewer.includes(this.userService.loggedUserId.value || "") || this.userService.loggedUserDetails.value?.isAdmin;
   }
 
+  canLoggedUserReadSelectedDataset() {
+    return this.userService.loggedUserDetails.value?.isReviewer ;
+  }
 
   getContributor() {
     if (this.selectedDatasetId.value) {

@@ -26,7 +26,7 @@ export class DatasetPublishComponent implements OnInit {
     private router: Router
   ) {
 
-    this.feedbackTextAsHTML = this.reviewService.selectedDatasetSavedFeedback.value?.replace(/(?:\r\n|\r|\n)/g, '<br>') || '';
+    this.feedbackTextAsHTML = this.reviewService.getSelectedDatasetFeedbackAsHTML();
     this.locked = this.reviewService.isLockedForReviewing()
   }
 

@@ -122,12 +122,12 @@ export class ProgressSectionComponent implements OnDestroy {
     }
   }
   onClickReview() {
-    if (this.reviewService.selectedDatasetId.value && this.reviewService.canLoggedUserReadSelectedDataset()) {
+    if (this.reviewService.selectedDatasetId.value && this.reviewService.canLoggedUserReviewSelectedDataset()) {
       this.router.navigate(['feedback', this.reviewService.selectedDatasetId.value]).then();
     }
   }
   onClickPublish() {
-    if (this.reviewService.selectedDatasetId.value && this.reviewService.canLoggedUserReadSelectedDataset()) {
+    if (this.reviewService.selectedDatasetId.value && this.reviewService.canLoggedUserReviewSelectedDataset()) {
       this.router.navigate(['publish', this.reviewService.selectedDatasetId.value]).then();
     }
   }
