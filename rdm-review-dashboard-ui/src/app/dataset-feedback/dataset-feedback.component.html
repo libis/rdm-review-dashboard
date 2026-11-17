@@ -48,15 +48,17 @@
       <div class="border-300 border-round p-3 mt-2 surface-card" [innerHTML]="reviewService.getSelectedDatasetFeedbackAsHTML()"></div>
     </div>
   </div>
+  </div>
   <div class="review-box border-1 border-300 border-round p-3 mt-2 surface-card">
-    <p *ngIf="isInReview()">If there are issues, the dataset should not be published.</p>
+    <p *ngIf="isInReview() && reviewService.canLoggedUserReviewSelectedDataset()">If there are issues, the dataset should not be published.</p>
     <a [routerLink]="['/datasets', this.reviewService.selectedDatasetId.value]">
       <button pButton type="button" class="p-button-outlined p-2 m-2 flex-auto" label="Dataset details"
         icon="pi pi-chevron-left"></button>
     </a>
-    <button *ngIf="isInReview()" pButton type="button" class="p-2 m-2 flex-auto" label="Publish" [disabled]="locked"
+    </div>
+
+    <button *ngIf="isInReview() && reviewService.canLoggedUserReviewSelectedDataset()" pButton type="button" class="p-2 m-2 flex-auto" label="Publish" [disabled]="locked"
       (click)="publish(true)" icon="pi pi-chevron-right" iconPos="right"></button>
-    <button *ngIf="isInReview()" pButton type="button" class="p-2 m-2 flex-auto" label="Return" [disabled]="locked"
+    <button *ngIf="isInReview() && reviewService.canLoggedUserReviewSelectedDataset()" pButton type="button" class="p-2 m-2 flex-auto" label="Return" [disabled]="locked"
       (click)="publish(false)" icon="pi pi-chevron-right" iconPos="right"></button>
-  </div>
 </div>
